@@ -1,0 +1,24 @@
+
+[build-system]
+requires = ["hatchling", "pillow", "glfw", "smithed", "pygame"]
+build-backend = "hatchling.build"
+
+[project]
+name = "python_datapack"
+version = "0.0.1"
+authors = [
+	{ name="Stoupy51", email="stoupy51@gmail.com" },
+]
+description = "Python package to help generating advanced Minecraft datapack contents"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+	"Programming Language :: Python :: 3",
+	"License :: OSI Approved :: MIT License",
+	"Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/Stoupy51/python_datapack"
+Issues = "https://github.com/Stoupy51/python_datapack/issues"
+
