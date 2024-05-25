@@ -14,12 +14,13 @@ from .manual.main import main as manual_main
 from .datapack.main import main as datapack_main
 from .finalyze import main as finalyze_main
 
+# Functions
 def basic_key_check(config: dict, key: str, value_type: type, hint: str, valid: bool) -> bool:
 	bool_return = valid
-	if not config.get(key):
-		bool_return = warning(f"Missing '{key}' key in config file\n" + hint)
-	elif type(config[key])!= value_type:
-		bool_return = warning(f"Invalid type for '{key}' key in config file, found {type(config[key])} instead of {value_type}\n" + hint)
+	if config.get(key, None) == None:
+		bool_return = warning(f"Missing '{key}' key in config file\n ({hint})")
+	elif not isinstance(config[key], value_type):
+		bool_return = warning(f"Invalid type for '{key}' key in config file, found {type(config[key])} instead of {value_type}\n ({hint})")
 	return bool_return
 
 def check_config_format(config: dict) -> bool:
@@ -29,7 +30,7 @@ def check_config_format(config: dict) -> bool:
 	valid = basic_key_check(config, "assets_folder", str, "Folder containing the all assets (textures, sounds, ...) for the datapack", valid)
 	valid = basic_key_check(config, "textures_folder", str, "Folder containing the textures for the datapack", valid)
 	valid = basic_key_check(config, "libs_folder", str, "The libraries are copied to the build destination, and merged with the datapack using Weld", valid)
-	valid = basic_key_check(config, "build_copy_destinations", tuple[str,str], "Can be empty paths if you don't want to copy the generated files", valid)
+	valid = basic_key_check(config, "build_copy_destinations", tuple, "Can be empty paths if you don't want to copy the generated files", valid)
 	valid = basic_key_check(config, "debug_mode", bool, "Shows up grids in manual", valid)
 	valid = basic_key_check(config, "database_debug", str, "Dump of the database for debugging purposes", valid)
 	valid = basic_key_check(config, "cmd_cache", str, "Cache of all items Custom Model Data", valid)
@@ -45,8 +46,8 @@ def check_config_format(config: dict) -> bool:
 	valid = basic_key_check(config, "datapack_format", int, "Pack format version, see https://minecraft.wiki/w/Pack_format#List_of_data_pack_formats", valid)
 	valid = basic_key_check(config, "resource_pack_format", int, "Resource pack format version, see https://minecraft.wiki/w/Pack_format#List_of_resource_pack_formats", valid)
 	valid = basic_key_check(config, "description", str, "Pack description displayed in pack.mcmeta", valid)
-	valid = basic_key_check(config, "dependencies", dict[str, dict[str, list[int] | str]], "Automagically, the datapack will check for the presence of dependencies and their minimum required versions at runtime\nThe url is used when the dependency is not found to suggest where to get it\nThe version dict key contains the minimum required version of the dependency in [major, minor, patch] format\nThe main key is the dependency namespace to check for\nThe name can be whatever you want, it's just used in messages", valid)
-	valid = basic_key_check(config, "source_lore", list[dict], "Appended lore to any custom item, can be an empty string to disable", valid)
+	valid = basic_key_check(config, "dependencies", dict, "Automagically, the datapack will check for the presence of dependencies and their minimum required versions at runtime\nThe url is used when the dependency is not found to suggest where to get it\nThe version dict key contains the minimum required version of the dependency in [major, minor, patch] format\nThe main key is the dependency namespace to check for\nThe name can be whatever you want, it's just used in messages", valid)
+	valid = basic_key_check(config, "source_lore", list, "Appended lore to any custom item, can be an empty string to disable", valid)
 	has_manual = basic_key_check(config, "has_manual", bool, "Do the program generate a manual/guide? (WARNING: if an item is malformed in the database, the server log will be flooded on load by the manual hiding the malformed item)", True)
 	if has_manual == True:
 		valid = basic_key_check(config, "manual_path", str, "Cached manual assets", valid)
@@ -57,13 +58,13 @@ def check_config_format(config: dict) -> bool:
 		valid = basic_key_check(config, "max_items_per_row", int, "Max number of items per row in the manual, should not exceed 6", valid)
 		valid = basic_key_check(config, "max_rows_per_page", int, "Max number of rows per page in the manual, should not exceed 6", valid)
 		valid = basic_key_check(config, "opengl_resolution", int, "Resolution of the OpenGL renders used in the manual, best value is 64 <--- 64x64", valid)
-		valid = basic_key_check(config, "manual_first_page_text", list[dict], "Text for the first page of the manual", valid)
+		valid = basic_key_check(config, "manual_first_page_text", list, "Text for the first page of the manual", valid)
 	elif valid == True:
 		valid = has_manual
 	return valid == True
 
 
-def build_process(config: dict, setup_database: callable, setup_external_database: callable|None = None, user_code: callable|None = None):
+def build_process(config: dict, setup_database: callable, setup_external_database: callable = None, user_code: callable = None):
 	""" Main function of the datapack build process
 	Args:
 		config (dict): Configuration of the program, the program will check the config format with high precision
@@ -71,6 +72,8 @@ def build_process(config: dict, setup_database: callable, setup_external_databas
 		setup_external_database (callable|None): Function that will setup the external database (if you need an item in a craft), same format as first
 		user_code (callable|None): Function that will be called after the datapack has been generated, can be used to add custom code to generated some parts of the datapack
 	"""
+	os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+
 	# Check config format
 	valid = check_config_format(config)
 	if not valid:
@@ -89,6 +92,8 @@ def build_process(config: dict, setup_database: callable, setup_external_databas
 
 	# Generate items/blocks database and verify the format
 	config["database"] = setup_database(config)
+	if config["database"] == None:
+		error("No database returned, when calling the setup_database function")
 	config["external_database"] = setup_external_database(config) if setup_external_database else {}
 	verify_database_main(config)
 
@@ -103,7 +108,7 @@ def build_process(config: dict, setup_database: callable, setup_external_databas
 	datapack_main(config)
 
 	# Finalyze build process
-	finalyze_main(config)
+	finalyze_main(config, user_code)
 
 	# Total time
 	total_time = time.time() - START_TIME

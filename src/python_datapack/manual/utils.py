@@ -69,10 +69,12 @@ def image_count(count: int) -> Image:
 	# Create the image
 	img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
 	draw = ImageDraw.Draw(img)
-	font = ImageFont.truetype(f"{TEMPLATES_PATH}/minecraft_font.ttf", size = 16)
+	font_size = 16
+	font = ImageFont.truetype(f"{TEMPLATES_PATH}/minecraft_font.ttf", size = font_size)
 
 	# Calculate text size and positions of the two texts
-	text_width, text_height = draw.textsize(str(count), font = font)
+	text_width = draw.textlength(str(count), font = font)
+	text_height = font_size
 	pos_1 = (32-text_width), (32-text_height)
 	pos_2 = (30-text_width), (30-text_height)
 	
@@ -443,7 +445,7 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 		craft_type = "crafting_shaped"
 	
 	# Generate the image for the page
-	generate_page_font(name, page_font, craft)
+	generate_page_font(config, name, page_font, craft)
 
 	# Get result component
 	result_component = get_item_component(config, name)
@@ -612,7 +614,7 @@ def generate_wiki_font_for_ingr(config: dict, name: str, craft: dict) -> str:
 			item_texture = item_texture.convert("RGBA")
 
 			# Load the template and paste the texture on it
-			template = Image.open(f"{MANUAL_ASSETS_PATH}/wiki_ingredient_of_craft_template.png")
+			template = Image.open(f"{TEMPLATES_PATH}/wiki_ingredient_of_craft_template.png")
 			template.paste(item_texture, (11, 11), item_texture)
 			
 			# Save the result

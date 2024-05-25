@@ -114,11 +114,11 @@ class EquipmentsConfig():
 		return {key: value for key, value in self.attributes.items() if key not in NOT_ON_ARMOR}
 
 # UUIDs utils
-def format_attributes(attributes: str, slot: str, config: dict = {}) -> list[dict]:
+def format_attributes(config: dict, attributes: str, slot: str, attr_config: dict = {}) -> list[dict]:
 	""" Returns generated attribute_modifiers key for an item (adds up attributes and config) """
 	# Get attributes from config
 	attribute_modifiers = []
-	for attribute_name, value in config.items():
+	for attribute_name, value in attr_config.items():
 		if attribute_name != "durability":
 			attribute_modifiers.append({"type": attribute_name, "amount": value, "operation": "add_value", "slot": slot, "id": f"{config['namespace']}:{attribute_name}.{slot}"})
 
@@ -255,7 +255,7 @@ def generate_everything_about_this_ore(config: dict, database: dict[str, dict], 
 			database[armor][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"category":"equipment","shape":["X X","X X"],"ingredients":{"X": main_ingredient}}]
 			gear_config = VanillaEquipments.BOOTS.value[equivalent_to]
 			database[armor]["max_damage"] = int(gear_config["durability"] * durability_factor)
-		database[armor]["attribute_modifiers"] = format_attributes(armor_attributes, SLOTS[gear], gear_config)
+		database[armor]["attribute_modifiers"] = format_attributes(config, armor_attributes, SLOTS[gear], gear_config)
 	
 	# Tools (sword, pickaxe, axe, shovel, hoe)
 	for gear in ["sword", "pickaxe", "axe", "shovel", "hoe"]:
@@ -290,11 +290,11 @@ def generate_everything_about_this_ore(config: dict, database: dict[str, dict], 
 			gear_config = VanillaEquipments.HOE.value[equivalent_to]
 			database[tool]["max_damage"] = int(gear_config["durability"] * durability_factor)
 			database[tool][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"category":"equipment","shape":["XX"," S"," S"],"ingredients": tools_ingr}]
-		database[tool]["attribute_modifiers"] = format_attributes(tools_attributes, SLOTS[gear], gear_config)
+		database[tool]["attribute_modifiers"] = format_attributes(config, tools_attributes, SLOTS[gear], gear_config)
 	pass
 
 # Generate everything about these ores
-def generate_everything_about_these_ores(database: dict[str, dict], ores: dict[str, EquipmentsConfig|None]) -> dict[str, list[str]]:
+def generate_everything_about_these_ores(config: dict, database: dict[str, dict], ores: dict[str, EquipmentsConfig|None]) -> dict[str, list[str]]:
 	""" Uses function 'generate_everything_about_this_ore' for each ore in the ores dictionary.
 	Args:
 		database	(dict[str, dict]):	The database to apply the ores to.
@@ -303,8 +303,8 @@ def generate_everything_about_these_ores(database: dict[str, dict], ores: dict[s
 		dict[str, list[str]]:	The list of generated items for each ore.
 	"""
 	generated_items = {}
-	for material, config in ores.items():
-		generated_items[material] = generate_everything_about_this_ore(database, material, config)
+	for material, ore_config in ores.items():
+		generated_items[material] = generate_everything_about_this_ore(config, database, material, ore_config)
 	return generated_items
 
 

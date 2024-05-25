@@ -3,6 +3,7 @@
 from ..utils.io import *
 from ..utils.print import *
 from .utils import *
+from .shared_import import *
 from .book_optimizer import *
 from ..constants import *
 
@@ -22,12 +23,12 @@ def main(config: dict):
 
 	# Copy assets in the resource pack
 	if not config['debug_mode']:
-		super_copy(f"{MANUAL_ASSETS_PATH}/none_release.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/none.png")
+		super_copy(f"{TEMPLATES_PATH}/none_release.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/none.png")
 	else:
-		super_copy(f"{MANUAL_ASSETS_PATH}/none.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/none.png")
-	super_copy(f"{MANUAL_ASSETS_PATH}/wiki_information.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_information.png")
-	super_copy(f"{MANUAL_ASSETS_PATH}/wiki_result_of_craft.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_result_of_craft.png")
-	super_copy(f"{MANUAL_ASSETS_PATH}/wiki_ingredient_of_craft.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_ingredient_of_craft.png")
+		super_copy(f"{TEMPLATES_PATH}/none.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/none.png")
+	super_copy(f"{TEMPLATES_PATH}/wiki_information.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_information.png")
+	super_copy(f"{TEMPLATES_PATH}/wiki_result_of_craft.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_result_of_craft.png")
+	super_copy(f"{TEMPLATES_PATH}/wiki_ingredient_of_craft.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_ingredient_of_craft.png")
 
 
 	# If the manual cache is enabled and we have a cache file, load it
@@ -91,7 +92,7 @@ def main(config: dict):
 		# Encode pages
 		book_content = []
 		os.makedirs(f"{config['manual_path']}/font/category", exist_ok=True)
-		simple_case = Image.open(f"{MANUAL_ASSETS_PATH}/simple_case_no_border.png")	# Load the simple case image for later use in categories pages
+		simple_case = Image.open(f"{TEMPLATES_PATH}/simple_case_no_border.png")	# Load the simple case image for later use in categories pages
 		for page in manual_pages:
 			content = []
 			number = page["number"]
@@ -326,9 +327,6 @@ def main(config: dict):
 			content += line * 2
 		
 		# Add the 2 pixels border
-		BORDER_COLOR = 0xB64E2F
-		BORDER_SIZE = 2
-		BORDER_COLOR = (BORDER_COLOR >> 16) & 0xFF, (BORDER_COLOR >> 8) & 0xFF, BORDER_COLOR & 0xFF, 255
 		is_rectangle_shape = len(raw_data) % config['max_items_per_row'] == 0
 		page_image = add_border(page_image, BORDER_COLOR, BORDER_SIZE, is_rectangle_shape)
 		
@@ -407,7 +405,7 @@ def main(config: dict):
 
 	# Add the model to the resource pack
 	from ..resource_pack.item_models import handle_item
-	handle_item("manual", config['database']["manual"])
+	handle_item(config, "manual", config['database']["manual"])
 	vanilla_model = {"parent": "item/handheld","textures": {"layer0": "item/written_book"},"overrides": [{ "predicate": { "custom_model_data": manual_cmd}, "model": f"{config['namespace']}:item/manual" }]}
 	vanilla_model = super_json_dump(vanilla_model).replace('{"','{ "').replace('"}','" }').replace(',"', ', "')
 	write_to_file(f"{config['build_resource_pack']}/assets/minecraft/models/item/written_book.json", vanilla_model)

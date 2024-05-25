@@ -78,9 +78,9 @@ def main(config: dict):
 		
 		# Prepare header
 		header: str = f"""
-	#> {file}
-	#
-	# @within\t"""
+#> {file}
+#
+# @within\t"""
 
 		# Get all the calling function and join them with new lines
 		withins = "\n#\t\t\t".join(w.strip() for w in data["within"])

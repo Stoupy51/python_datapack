@@ -8,7 +8,7 @@ from .datapack.headers import main as headers_main
 from .resource_pack.check_unused_textures import main as check_unused_textures_main
 import shutil
 
-def main(config: dict):
+def main(config: dict, user_code: callable):
 
 	# For every file in the merge folder, copy it to the build folder (with append content)
 	print()
@@ -43,6 +43,10 @@ def main(config: dict):
 				else:
 					super_copy(merge_path, build_path)
 	info(f"All content in the '{config['merge_folder']}' folder copied to '{config['build_folder']}'")
+
+	# Run user code
+	if user_code:
+		user_code(config)
 
 	# Generate lang file
 	if config['enable_translations']:
