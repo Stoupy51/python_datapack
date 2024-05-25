@@ -19,15 +19,17 @@ COMMANDS_ON_BREAK: str = "commands_on_break"			# Key to a list of commands to ex
 VANILLA_BLOCK: str = "vanilla_block"					# Key to a vanilla block that will be placed for custom block interaction, value can either a string of a dict {"id":"minecraft:chest", "block_states": ["facing", "type=single", "waterlogged=false"]}
 VANILLA_BLOCK_FOR_ORES: str = "minecraft:polished_deepslate"	# Vanilla block that will be used for an optimization tip for ores, don't ask questions
 NO_SILK_TOUCH_DROP: str = "no_silk_touch_drop"			# Key to an item ID that will drop when silk touch is not used. Must be used only when using the vanilla block for ores, ex: "adamantium_fragment" or "minecraft:raw_iron"
+OVERRIDE_MODEL: str = "override_model"					# Key to a dictionnary that will be used to override the whole model
 NOT_COMPONENTS: list[str] = [							# Keys that should not be considered as components. Used for recipes, loot tables, etc.
 	"id",
 	"wiki",
-	CATEGORY,
 	RESULT_OF_CRAFTING,
 	USED_FOR_CRAFTING,
+	CATEGORY,
+	COMMANDS_ON_PLACEMENT,
+	COMMANDS_ON_BREAK,
 	VANILLA_BLOCK,
 	NO_SILK_TOUCH_DROP,
-	COMMANDS_ON_PLACEMENT,
-	COMMANDS_ON_BREAK
+	OVERRIDE_MODEL,
 ]
 

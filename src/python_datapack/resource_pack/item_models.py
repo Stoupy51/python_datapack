@@ -4,96 +4,117 @@ from ..utils.io import *
 from ..utils.print import *
 from ..constants import *
 
+# Utility functions
+def get_powered_texture(variants: list[str], side: str, on_off: str) -> str:
+	if on_off != "":
+		for texture in variants:
+			if texture.endswith(side + on_off):
+				return texture
+	for texture in variants:
+		if texture.endswith(side):
+			return texture
+	error(f"Couldn't find texture for side '{side}' in '{variants}', consider adding missing texture or override the model")
+	return ""
+
+# Check if all models are in a string of any variant
+def model_in_variants(models: list[str], variants: list[str]) -> bool:
+	valid = True
+	for model in models:
+		if not any(model in x for x in variants):
+			valid = False
+			break
+	return valid
+
 # Function to handle item
 def handle_item(config: dict, item: str, data: dict, used_textures: set|None = None):
 	block_or_item = "block" if data.get("id") == CUSTOM_BLOCK_VANILLA else "item"
 	dest_base_textu = f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/{block_or_item}"
 
-	# Get every block variant
-	variants = FACES + SIDES + ("_on",)
-	armors = ["helmet", "chestplate", "leggings", "boots"]
-	tools = ["sword", "pickaxe", "axe", "shovel", "hoe"]
+	# Get powered states (if any)
+	powered = [""]
+	on_textures = []
+	for p in config['textures_files']:
+		if p.split("/")[-1].startswith(item) and p.endswith("_on.png"):
+			powered = ["", "_on"]
+			on_textures.append(p)
 
-	# Copy textures to the resource pack
-	source = f"{config['textures_folder']}/{item}.png"
-	if os.path.exists(source):
-		destination = f"{dest_base_textu}/{item}.png"
-		super_copy(source, destination)
-
-	# Get all textures for the item
-	additional_textures = []
-	for file in config['textures_files']:
-		if file.startswith(item):
-			if any(x in file.replace(item, "") for x in variants):
-				additional_textures.append(file.replace(".png", ""))	# Only keep the textures for SIDES/FACES
-
-			# Copy textures to the resource pack
-			source = f"{config['textures_folder']}/{file}"
-			destination = f"{dest_base_textu}/{file}"
-			super_copy(source, destination)
-		pass
-
-	# Generate its model file
-	powered = ["","_on"] if any(x for x in additional_textures if x.endswith("_on")) > 0 else [""]
+	# Generate its model file(s)
 	for on_off in powered:
 		dest_base_model = f"{config['build_resource_pack']}/assets/{config['namespace']}/models/{block_or_item}"
-		if block_or_item == "block":
-			content = {"parent": "block/cube_all"}
-			content["textures"] = {}
+		content = {}
+		if data.get(OVERRIDE_MODEL):
+			content = data[OVERRIDE_MODEL]
 
-			# If only one, apply everywhere
-			if not additional_textures:
-				content["textures"]["all"] = f"{config['namespace']}:{block_or_item}/{item}"
-
-			# If more than one, apply to each side
-			else:
-				content["elements"] = [{"from": [0, 0, 0], "to": [16, 16, 16], "faces": {}}]
-				default_texture = f"{config['namespace']}:{block_or_item}/{item}{on_off}"
-
-				# Generate links between FACES and textures
-				for face in FACES:
-					content["elements"][0]["faces"][face] = {"texture": f"#{face}", "cullface": face}
-					content["textures"][face] = default_texture
-	
-				# For each possible side (in reverse order)
-				for i in range(len(SIDES), 0, -1):
-					side = SIDES[i - 1].replace("_", "")
-	
-					# If we have a texture for the side
-					if any(side in x for x in additional_textures):
-
-						# Get path
-						path = f"{config['namespace']}:{block_or_item}/{item}_{side}"
-						if on_off == "_on" and f"{item}_{side}_on" in additional_textures:
-							path += "_on"
-						if used_textures is not None:
-							used_textures.add(path)
-
-						# If it's a side, apply to all FACES (as it is first, it will be overwritten by the others)
-						if side == "side":
-							for face in FACES:
-								content["textures"][face] = path
-
-						# Else, apply the texture to the face with the same name
-						else:
-							face = FACES[i - 1]
-							content["textures"][face] = path
-	
-							# Exception: apply top texture also to bottom
-							if face == "up":
-								content["textures"]["down"] = path
-
-		# Else, it's an item
 		else:
+			# If it's a block
+			if block_or_item == "block":
 
-			path = f"{config['namespace']}:{block_or_item}/{item}{on_off}"
-			if used_textures is not None:
-				used_textures.add(path)
-			content = {"parent": "item/generated",	"textures": {"layer0": path}}
-			if any(x in item for x in armors):
-				content["textures"]["layer1"] = content["textures"]["layer0"]
-			if any(x in item for x in tools):
-				content["parent"] = "item/handheld"
+				# Get parent
+				content = {"parent": "block/cube_all", "textures": {}}
+
+				# Get all variants
+				variants = [x.replace(".png", "") for x in config['textures_files'] if "gui/" not in x and x.split("/")[-1].startswith(item)]
+				
+				## Check in which variants state we are
+				# If one texture, apply on all faces
+				variants_without_on = [x for x in variants if "_on" not in x]
+				if len(variants_without_on) == 1:
+					content["textures"]["all"] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, "", on_off)
+				else:
+					# Prepare models to check
+					cube_bottom_top = ["bottom", "side", "top"]
+					orientable = ["front", "side", "top"]
+					cube_column = ["end", "side"]
+
+					# Check cube_bottom_top model
+					if model_in_variants(cube_bottom_top, variants):
+						content["parent"] = "block/cube_bottom_top"
+						for side in cube_bottom_top:
+							content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
+					
+					# Check orientable model
+					elif model_in_variants(orientable, variants):
+						content["parent"] = "block/orientable"
+						for side in orientable:
+							content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
+					
+					# Check cube_column model
+					elif model_in_variants(cube_column, variants):
+						content["parent"] = "block/cube_column"
+						for side in cube_column:
+							content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
+					
+					else:
+						error(f"Block '{item}' has invalid variants: {variants}, consider adding missing textures or override the model")
+
+			# Else, it's an item
+			else:
+
+				# Get parent
+				parent = "item/generated"
+				if data["id"] != CUSTOM_ITEM_VANILLA:
+					parent = data["id"].replace(':', ":item/")
+				
+				# Get textures
+				textures = {"layer0": f"{config['namespace']}:{block_or_item}/{item}{on_off}"}
+				if "leather_" in data["id"]:
+					textures["layer1"] = textures["layer0"]
+
+				# Setup content
+				content = {"parent": parent, "textures": textures}
+		
+		# Add used textures
+		if used_textures is not None and content.get("textures"):
+			for texture in content["textures"].values():
+				used_textures.add(texture)
+
+		# Copy used textures
+		if content.get("textures"):
+			for texture in content["textures"].values():
+				texture_path = "/".join(texture.split(":")[-1].split("/")[1:])
+				source = f"{config['textures_folder']}/{texture_path}.png"
+				destination = f"{dest_base_textu}/{texture_path}.png"
+				super_copy(source, destination)
 			
 		# Write content
 		write_to_file(f"{dest_base_model}/{item}{on_off}.json", super_json_dump(content, max_level = 4))
@@ -110,12 +131,13 @@ def main(config: dict):
 	# For each item,
 	used_textures = set()
 	for item, data in config['database'].items():
-		handle_item(config, item, data, used_textures)
+		if data.get("custom_model_data"):
+			handle_item(config, item, data, used_textures)
 
 	# Make warning for missing textures
 	warns = []
 	for texture in used_textures:
-		path = config['textures_folder'] + "/" + texture.split("/")[-1] + ".png"
+		path = config['textures_folder'] + "/" + "/".join(texture.split("/")[1:]) + ".png"
 		if not os.path.exists(path):
 			warns.append(f"Texture '{path}' not found")
 	if warns:

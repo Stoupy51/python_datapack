@@ -76,7 +76,7 @@ def image_count(count: int) -> Image:
 
 	# Calculate text size and positions of the two texts
 	text_width = draw.textlength(str(count), font = font)
-	text_height = font_size
+	text_height = font_size + 4
 	pos_1 = (32-text_width), (32-text_height)
 	pos_2 = (30-text_width), (30-text_height)
 	

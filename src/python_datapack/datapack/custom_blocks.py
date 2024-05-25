@@ -48,7 +48,9 @@ def main(config: dict):
 			## Secondary function
 			unique_blocks.add(block)
 			block = block.replace(":","_")
-			custom_model_data = data["custom_model_data"]
+			set_custom_model_data = ""
+			if data.get("custom_model_data"):
+				set_custom_model_data = f"item replace entity @s container.0 with deepslate[minecraft:custom_model_data={data['custom_model_data']}]\n"
 			content = f"""
 # Add convention and utils tags, and the custom block tag
 tag @s add global.ignore
@@ -60,8 +62,8 @@ tag @s add {config['namespace']}.{item}
 tag @s add {config['namespace']}.vanilla.{block}
 
 # Modify item display entity to match the custom block
-item replace entity @s container.0 with deepslate[minecraft:custom_model_data={custom_model_data}]
-data modify entity @s transformation.scale set value [1.002f,1.002f,1.002f]
+{set_custom_model_data}data modify entity @s transformation.scale set value [1.002f,1.008f,1.002f]
+data modify entity @s transformation.translation[1] set value 0.003f
 data modify entity @s brightness set value {{block:15,sky:15}}
 
 ## Check if the block have rotation

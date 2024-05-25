@@ -43,7 +43,10 @@ function {config['namespace']}:load/waiting_for_player
 	checks = ""
 	for namespace, value in config['dependencies'].items():
 		major, minor, patch = value["version"]
-		checks += f"execute if score #dependency_error {config['namespace']}.data matches 0 unless score #{namespace}.major load.status matches {major}.. unless score #{namespace}.minor load.status matches {minor}.. unless score #{namespace}.patch load.status matches {patch}.. run scoreboard players set #dependency_error {config['namespace']}.data 1\n"
+		unless_major = f"unless score #{namespace}.major load.status matches {major}.. "
+		unless_minor = f"unless score #{namespace}.minor load.status matches {minor}.. " if minor > 0 else ""
+		unless_patch = f"unless score #{namespace}.patch load.status matches {patch}.. " if patch > 0 else ""
+		checks += f"execute if score #dependency_error {config['namespace']}.data matches 0 {unless_major}{unless_minor}{unless_patch}run scoreboard players set #dependency_error {config['namespace']}.data 1\n"
 	content = f"""
 ## Check if {config['datapack_name']} is loadable (dependencies)
 scoreboard players set #dependency_error {config['namespace']}.data 0"""
@@ -55,9 +58,12 @@ scoreboard players set #dependency_error {config['namespace']}.data 0"""
 	decoder_checks = ""
 	for namespace, value in config['dependencies'].items():
 		major, minor, patch = value["version"]
+		unless_major = f"unless score #{namespace}.major load.status matches {major}.. "
+		unless_minor = f"unless score #{namespace}.minor load.status matches {minor}.. " if minor > 0 else ""
+		unless_patch = f"unless score #{namespace}.patch load.status matches {patch}.. " if patch > 0 else ""
 		name = value["name"]
 		url = value["url"]
-		decoder_checks += f'execute if score #dependency_error {config["namespace"]}.data matches 1 unless score #{namespace}.major load.status matches {major}.. unless score #{namespace}.minor load.status matches {minor}.. unless score #{namespace}.patch load.status matches {patch}.. run tellraw @a {{"text":"- [{name}]","color":"gold","clickEvent":{{"action":"open_url","value":"{url}"}}}}\n'
+		decoder_checks += f'execute if score #dependency_error {config["namespace"]}.data matches 1 {unless_major}{unless_minor}{unless_patch}run tellraw @a {{"text":"- [{name}]","color":"gold","clickEvent":{{"action":"open_url","value":"{url}"}}}}\n'
 	write_to_file(f"{config['datapack_functions']}/load/waiting_for_player.mcfunction", f"""
 # Waiting for a player to get the game version, but stop function if no player found
 execute unless entity @p run schedule function {config['namespace']}:load/waiting_for_player 1t replace

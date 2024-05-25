@@ -30,7 +30,7 @@ def main(config: dict):
 		# Get overrides
 		content["overrides"] = []
 		for item, data in config['database'].items():
-			if data.get("id", "").replace("minecraft:","") == id:
+			if data.get("id", "").replace("minecraft:","") == id and data.get("custom_model_data"):
 				content["overrides"].append({"predicate": { "custom_model_data": data["custom_model_data"]}, "model": f"{config['namespace']}:{block_or_item}/{item}" })
 
 				# Additionally, add a "_on" model if there is
@@ -49,7 +49,7 @@ def main(config: dict):
 	content = {"parent": "block/deepslate"}
 	content["overrides"] = []
 	for item, data in config['database'].items():
-		if data.get("id") in (CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE):
+		if data.get("id") in (CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE) and data.get("custom_model_data"):
 			content["overrides"].append({"predicate": { "custom_model_data": data["custom_model_data"]}, "model": f"{config['namespace']}:block/for_item_display/{item}" })
 	content["overrides"].append({"predicate": { "custom_model_data": 2010000}, "model": f"minecraft:item/none"})
 	content["overrides"].sort(key=lambda x: x["predicate"]["custom_model_data"])

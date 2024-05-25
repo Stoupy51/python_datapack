@@ -18,5 +18,5 @@ def main(config: dict):
 	vanilla_models_main(config)
 
 	# Write resource pack files to write
-	write_all_files(config['build_resource_pack'])
+	write_all_files(contains = config['build_resource_pack'])
 

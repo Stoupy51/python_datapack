@@ -118,7 +118,11 @@ def main(config: dict):
 				# For each item in the category, get its page number and texture, then add it to the image
 				for item in raw_data:
 					texture_path = f"{config['manual_path']}/items/{config['namespace']}/{item}.png"
-					item_image = Image.open(texture_path)
+					if os.path.exists(texture_path):
+						item_image = Image.open(texture_path)
+					else:
+						warning(f"Missing texture at '{texture_path}', using empty texture")
+						item_image = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
 					factor = 32 / item_image.size[0]
 					item_image = item_image.resize((32, int(item_image.size[1] * factor)), Image.NEAREST)
 

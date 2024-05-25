@@ -166,7 +166,7 @@ def generate_everything_about_this_ore(config: dict, database: dict[str, dict], 
 		color = [sum(x) / len(color) for x in zip(*color)]					# Get the average color
 		color = int(color[0]) << 16 | int(color[1]) << 8 | int(color[2])	# Convert to int (Minecraft format: Red<<16 + Green<<8 + Blue)
 
-	# Placeables (ore, block, raw_block)
+	# Placeables (ore, deepslate_ore, block, raw_block)
 	for block in [f"{material_base}_block", f"{material_base}_ore", f"deepslate_{material_base}_ore", f"raw_{material_base}_block"]:
 		if block + ".png" not in config['textures_files']:
 			continue
@@ -219,7 +219,7 @@ def generate_everything_about_this_ore(config: dict, database: dict[str, dict], 
 		if item.endswith("nugget"):
 			for gear in SLOTS.keys():
 				if f"{material_base}_{gear}.png" in config['textures_files']:
-					database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"equipment","ingredient":ingr_repr(f"{material_base}_{gear}", ns = config['namespace'])})
+					database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"equipment","experience":0.8,"cookingtime":100,"ingredient":ingr_repr(f"{material_base}_{gear}", ns = config['namespace'])})
 		if item.endswith("stick"):
 			database[item][RESULT_OF_CRAFTING].append({"type":"crafting_shaped","result_count":4,"category":"misc","shape":["X","X"],"ingredients":{"X":main_ingredient}})
 		if item.endswith("rod"):
@@ -348,11 +348,12 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 
 
 # Deterministic custom model data
-def deterministic_custom_model_data(config: dict, database: dict[str, dict], starting_cmd: int) -> None:
+def deterministic_custom_model_data(config: dict, database: dict[str, dict], starting_cmd: int, black_list: list[str] = []) -> None:
 	""" Apply custom model data to all items using a cache method.
 	Args:
 		database		(dict[str, dict]):	The database to apply custom model data to.
 		starting_cmd	(int):				The starting custom model data.
+		blacklist		(list[str]):		The list of items to ignore.
 	"""
 	# Load cached custom model data
 	cached_custom_model_data = {}
@@ -373,7 +374,7 @@ def deterministic_custom_model_data(config: dict, database: dict[str, dict], sta
 	
 	# For each item in the database, apply its new custom model data if it doesn't exist
 	for item, data in database.items():
-		if not data.get("custom_model_data") or not isinstance(data["custom_model_data"], int):
+		if item not in black_list and (not data.get("custom_model_data") or not isinstance(data["custom_model_data"], int)):
 			data["custom_model_data"] = max_cmd + 1
 
 			# Add two custom model data if the item has an on/off texture
@@ -384,7 +385,8 @@ def deterministic_custom_model_data(config: dict, database: dict[str, dict], sta
 	
 	# Update cache
 	for item, data in database.items():
-		cached_custom_model_data[item] = data["custom_model_data"]
+		if data.get("custom_model_data"):
+			cached_custom_model_data[item] = data["custom_model_data"]
 	with open(config['cmd_cache'], "w") as f:
 		super_json_dump(cached_custom_model_data, f)
 	return
