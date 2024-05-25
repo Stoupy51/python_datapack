@@ -139,8 +139,11 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False):
 	# Add the content to the file
 	FILES_TO_WRITE[file_path] += str(content)
 
-def write_all_files():
+def write_all_files(contains: str = ""):
+	contains = contains.replace("\\", "/")
 	for file_path, content in FILES_TO_WRITE.items():
+		if contains not in file_path:
+			continue
 
 		# Make sure the content ends with two break lines
 		if not content.endswith("\n\n"):

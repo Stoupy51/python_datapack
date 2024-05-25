@@ -6,7 +6,9 @@ from ..utils.cache import simple_cache
 from ..utils.ingredients import *
 from ..constants import *
 from .shared_import import *
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
+from model_resolver.cli import main as model_resolver_main
 import requests
 
 # Generate a border for a given Image
@@ -87,6 +89,7 @@ def image_count(count: int) -> Image:
 def generate_all_iso_renders(config: dict):
 	path = config['manual_path'] + "/items"
 	os.makedirs(f"{path}/{config['namespace']}", exist_ok = True)
+	for_model_resolver = {}
 	for item, data in config['database'].items():
 		
 		# If it's not a block, simply copy the texture
@@ -96,47 +99,28 @@ def generate_all_iso_renders(config: dict):
 			if not os.path.exists(f"{path}/{config['namespace']}/{item}.png") or not config['cache_manual_assets']:
 				super_copy(f"{config['textures_folder']}/{item}.png", f"{path}/{config['namespace']}/{item}.png")
 		except:
-			# Else, render all the block textures and faces
-			try:
-				# Skip if item is already generated (to prevent launcher OpenGL for nothing)
-				if os.path.exists(f"{path}/{config['namespace']}/{item}.png") and config['cache_manual_assets']:
-					continue
+			# Else, add the block to the model resolver list
+			# Skip if item is already generated (to prevent launcher OpenGL for nothing)
+			if os.path.exists(f"{path}/{config['namespace']}/{item}.png") and config['cache_manual_assets']:
+				continue
 
-				# # Load front texture
-				# sides = ("_front", "_side", "_top", "_bottom", "")
-				# front_path = f"{config['textures_folder']}/{item}"
-				# for side in sides:
-				# 	if os.path.exists(f"{front_path}{side}.png"):
-				# 		front_path += side
-				# 		break
-				# front_texture = Image.open(front_path + ".png")
-				# side_texture = front_texture
-				# top_texture = front_texture
+			# Add to the model resolver queue
+			rp_path = f"{config['namespace']}:block/{item}"
+			dst_path = f"{path}/{config['namespace']}/{item}.png"
+			for_model_resolver[rp_path] = dst_path
 
-				# # Try to load side
-				# side_path = f"{config['textures_folder']}/{item}_side.png"
-				# if os.path.exists(side_path):
-				# 	side_texture = Image.open(side_path)
-				
-				# # Try to load top texture
-				# top_path = f"{config['textures_folder']}/{item}_top.png"
-				# if os.path.exists(top_path):
-				# 	top_texture = Image.open(top_path)
-				
-				# # Make front texture 50% darker and side texture 25% darker
-				# front_texture = ImageEnhance.Brightness(front_texture).enhance(0.5)
-				# side_texture = ImageEnhance.Brightness(side_texture).enhance(0.75)
-
-				# # Render block and take a screenshot
-				# opengl.render_block(front_texture, side_texture, top_texture)
-				# opengl.take_screenshot(f"{path}/{config['namespace']}/{item}.png")
-				error("TODO")
-
-			except:
-				try:
-					super_copy(f"{config['textures_folder']}/{item}.png", f"{path}/{config['namespace']}/{item}.png")
-				except:
-					error(f"Failed to render iso for item '{item}', please add it manually to '{path}/{config['namespace']}/{item}.png'")
+	# Launch model resolvers for remaining blocks
+	if len(for_model_resolver) > 0:
+		load_dir = Path(config['build_resource_pack'])
+		debug("Generating iso renders for %d items" % len(for_model_resolver))
+		model_resolver_main(
+			render_size = config['opengl_resolution'],
+			load_dir = load_dir,
+			output_dir = None,
+			use_cache = False,
+			minecraft_version = "latest",
+			__special_filter__ = for_model_resolver
+		)
 	debug("Generated iso renders for all items, or used cached renders")
 
 	## Copy every used vanilla items
