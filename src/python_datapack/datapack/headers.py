@@ -20,7 +20,7 @@ def main(config: dict):
 			to_be_called = f"{config['namespace']}:" + splitted[1].replace(".mcfunction","")
 			
 			# Add to mcfunctions dictionary
-			mcfunctions[to_be_called] = {"path": file_path, "within":[]}
+			mcfunctions[to_be_called] = {"path": file_path, "within": []}
 
 	# For each json file, get the functions that it calls
 	functions_tags_folder = "/tags/function/"
@@ -43,7 +43,7 @@ def main(config: dict):
 					calling = value if type(value) == str else value["id"]
 
 					# If the called function is registered, append the name of this file
-					if calling in mcfunctions.keys():
+					if calling in mcfunctions.keys() and to_be_called not in mcfunctions[calling]["within"]:
 						mcfunctions[calling]["within"].append(to_be_called)
 
 
@@ -64,7 +64,7 @@ def main(config: dict):
 					more = " " + " ".join(splitted[1:]) # Add Macros or schedule time
 				
 				# If the called function is registered, append the name of this file as well as the additional text
-				if calling in mcfunctions.keys():
+				if calling in mcfunctions.keys() and (file + more) not in mcfunctions[calling]["within"]:
 					mcfunctions[calling]["within"].append(file + more)
 
 
