@@ -28,11 +28,11 @@ def main(config: dict):
 			# Force VANILLA_BLOCK key for custom blocks
 			elif data["id"] in [CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE]:
 				if not data.get(VANILLA_BLOCK):
-					errors.append(f"VANILLA_BLOCK key missing for '{item}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"block_states\":[]}},\n add 'facing' to the block_states list if you want to use block rotation.")
+					errors.append(f"VANILLA_BLOCK key missing for '{item}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
 				elif not isinstance(data[VANILLA_BLOCK], dict):
-					errors.append(f"VANILLA_BLOCK key should be a dictionary for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"block_states\":[]}},\n add 'facing' to the block_states list if you want to use block rotation.")
-				elif data[VANILLA_BLOCK].get("block_states", None) == None:
-					errors.append(f"VANILLA_BLOCK key should have a 'block_states' key for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"block_states\":[]}},\n add 'facing' to the block_states list if you want to use block rotation.")
+					errors.append(f"VANILLA_BLOCK key should be a dictionary for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
+				elif data[VANILLA_BLOCK].get("apply_facing", None) == None:
+					errors.append(f"VANILLA_BLOCK key should have a 'apply_facing' key to boolean for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
 
 			# Prevent the use of "container" key for custom blocks
 			elif data["id"] == CUSTOM_BLOCK_VANILLA and data.get("container"):
@@ -146,7 +146,7 @@ def main(config: dict):
 
 		# Commands on custom block placement
 		if data.get(COMMANDS_ON_PLACEMENT) and data.get("id"):
-			if data["id"] not in [CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE]:
+			if data["id"] not in [CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE, CUSTOM_BLOCK_HEAD]:
 				errors.append(f"COMMANDS_ON_PLACEMENT key should only be used for custom blocks for '{item}'")
 			elif not isinstance(data[COMMANDS_ON_PLACEMENT], (list, str)):
 				errors.append(f"COMMANDS_ON_PLACEMENT key should be a list of string or a string for '{item}'")
@@ -157,7 +157,7 @@ def main(config: dict):
 		
 		# Commands on custom block break
 		if data.get(COMMANDS_ON_BREAK) and data.get("id"):
-			if data["id"] not in [CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE]:
+			if data["id"] not in [CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE, CUSTOM_BLOCK_HEAD]:
 				errors.append(f"COMMANDS_ON_BREAK key should only be used for custom blocks for '{item}'")
 			elif not isinstance(data[COMMANDS_ON_BREAK], (list, str)):
 				errors.append(f"COMMANDS_ON_BREAK key should be a list of string or a string for '{item}'")

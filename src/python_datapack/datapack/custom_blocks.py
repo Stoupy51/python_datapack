@@ -6,6 +6,39 @@ from ..constants import *
 
 def main(config: dict):
 
+	# Predicates
+	FACING = ["north", "east", "south", "west"]
+	for face in FACING:
+		predicate = {"condition":"minecraft:location_check","predicate":{"block":{"state":{"facing":face}}}}
+		write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/predicate/facing/{face}.json", super_json_dump(predicate))
+
+	# Get rotation function
+	write_to_file(f"{config['datapack_functions']}/custom_blocks/get_rotation.mcfunction", f"""
+# Set up score
+scoreboard players set #rotation {config['namespace']}.data 0
+
+# Player case
+execute if score #rotation {config['namespace']}.data matches 0 if entity @s[y_rotation=-46..45] run scoreboard players set #rotation {config['namespace']}.data 1
+execute if score #rotation {config['namespace']}.data matches 0 if entity @s[y_rotation=45..135] run scoreboard players set #rotation {config['namespace']}.data 2
+execute if score #rotation {config['namespace']}.data matches 0 if entity @s[y_rotation=135..225] run scoreboard players set #rotation {config['namespace']}.data 3
+execute if score #rotation {config['namespace']}.data matches 0 if entity @s[y_rotation=225..315] run scoreboard players set #rotation {config['namespace']}.data 4
+
+# Predicate case
+execute if score #rotation {config['namespace']}.data matches 0 if predicate {config['namespace']}:facing/north run scoreboard players set #rotation {config['namespace']}.data 1
+execute if score #rotation {config['namespace']}.data matches 0 if predicate {config['namespace']}:facing/east run scoreboard players set #rotation {config['namespace']}.data 2
+execute if score #rotation {config['namespace']}.data matches 0 if predicate {config['namespace']}:facing/south run scoreboard players set #rotation {config['namespace']}.data 3
+execute if score #rotation {config['namespace']}.data matches 0 if predicate {config['namespace']}:facing/west run scoreboard players set #rotation {config['namespace']}.data 4
+# No more cases for now
+
+""")
+	APPLY_FACING = f"""
+# Apply rotation
+execute if score #rotation {config['namespace']}.data matches 1 run data modify entity @s Rotation[0] set value 180.0f
+execute if score #rotation {config['namespace']}.data matches 2 run data modify entity @s Rotation[0] set value 270.0f
+execute if score #rotation {config['namespace']}.data matches 3 run data modify entity @s Rotation[0] set value 0.0f
+execute if score #rotation {config['namespace']}.data matches 4 run data modify entity @s Rotation[0] set value 90.0f
+"""
+
 	# For each custom block
 	unique_blocks = set()
 	for item, data in config['database'].items():
@@ -16,37 +49,31 @@ def main(config: dict):
 			path = f"{config['datapack_functions']}/custom_blocks/{item}"
 
 			## Place function	
-			# Place block
-			if isinstance(block, str):
-				content = f"setblock ~ ~ ~ {block}\n"
+			content = ""
+			block_id = block["id"]
+			if block["apply_facing"]:
+				content += f"function {config['namespace']}:custom_blocks/get_rotation\n"
+				block_states = []
+				if '[' in block_id:
+					block_states = block_id.split('[')[1][:-1].split(',')
+					block_id = block_id.split('[')[0]
+				for face in ["north", "east", "south", "west"]:
+					content += f"execute if predicate {config['namespace']}:facing/{face} run setblock ~ ~ ~ {block_id}[facing={face}," + ",".join(block_states) + "]\n"
 			else:
-
-				# Handle block states
-				content = ""
-				states = block.get("block_states", [])
-				block = block["id"]
-				if "facing" in states:
-					other_states = [state for state in states if state != "facing"]
-
-					# For each face, make a different setblock depending on the vanilla block facing
-					for face in FACES[2:]:
-						content += f"execute if block ~ ~ ~ {CUSTOM_BLOCK_VANILLA}[facing={face}] run setblock ~ ~ ~ {block}[facing={face}"
-
-						# Add the other states to the block
-						for state in other_states:
-							content += f",{state}"
-						content += "]\n"
-				else:
-					# Simple setblock with all block states
-					content += f"setblock ~ ~ ~ {block}[" + ",".join(states) + "]\n"
+				# Simple setblock
+				content += f"setblock ~ ~ ~ {block_id}\n"
 			
 			# Summon item display and call secondary function
 			content += f"execute align xyz positioned ~.5 ~.5 ~.5 summon item_display at @s run function {config['namespace']}:custom_blocks/{item}/place_secondary\n"
+
+			# Add temporary tags and call main function
+			content = f"tag @s add {config['namespace']}.placer\n" + content + f"tag @s remove {config['namespace']}.placer\n"
 			write_to_file(f"{path}/place_main.mcfunction", content)
 
 			## Secondary function
-			unique_blocks.add(block)
-			block = block.replace(":","_")
+			block_id = block_id.split('[')[0].split('{')[0]
+			unique_blocks.add(block_id)
+			block_id = block_id.replace(":","_")
 			set_custom_model_data = ""
 			if data.get("custom_model_data"):
 				set_custom_model_data = f"item replace entity @s container.0 with {CUSTOM_BLOCK_VANILLA}[minecraft:custom_model_data={data['custom_model_data']}]\n"
@@ -58,28 +85,16 @@ tag @s add smithed.entity
 tag @s add smithed.block
 tag @s add {config['namespace']}.custom_block
 tag @s add {config['namespace']}.{item}
-tag @s add {config['namespace']}.vanilla.{block}
+tag @s add {config['namespace']}.vanilla.{block_id}
 
 # Modify item display entity to match the custom block
 {set_custom_model_data}data modify entity @s transformation.scale set value [1.002f,1.008f,1.002f]
 data modify entity @s transformation.translation[1] set value 0.003f
 data modify entity @s brightness set value {{block:15,sky:15}}
-
-## Check if the block have rotation
-# Furnace case
-scoreboard players set #rotation {config['namespace']}.data 0
-execute if score #rotation {config['namespace']}.data matches 0 store success score #rotation {config['namespace']}.data if block ~ ~ ~ furnace[facing=north] run data modify entity @s Rotation[0] set value 180.0f
-execute if score #rotation {config['namespace']}.data matches 0 store success score #rotation {config['namespace']}.data if block ~ ~ ~ furnace[facing=east] run data modify entity @s Rotation[0] set value 270.0f
-execute if score #rotation {config['namespace']}.data matches 0 store success score #rotation {config['namespace']}.data if block ~ ~ ~ furnace[facing=south] run data modify entity @s Rotation[0] set value 0.0f
-execute if score #rotation {config['namespace']}.data matches 0 store success score #rotation {config['namespace']}.data if block ~ ~ ~ furnace[facing=west] run data modify entity @s Rotation[0] set value 90.0f
-# Iron trapdoor case
-execute if score #rotation {config['namespace']}.data matches 0 store success score #rotation {config['namespace']}.data if block ~ ~ ~ iron_trapdoor[facing=north] run data modify entity @s Rotation[0] set value 180.0f
-execute if score #rotation {config['namespace']}.data matches 0 store success score #rotation {config['namespace']}.data if block ~ ~ ~ iron_trapdoor[facing=east] run data modify entity @s Rotation[0] set value 270.0f
-execute if score #rotation {config['namespace']}.data matches 0 store success score #rotation {config['namespace']}.data if block ~ ~ ~ iron_trapdoor[facing=south] run data modify entity @s Rotation[0] set value 0.0f
-execute if score #rotation {config['namespace']}.data matches 0 store success score #rotation {config['namespace']}.data if block ~ ~ ~ iron_trapdoor[facing=west] run data modify entity @s Rotation[0] set value 90.0f
-# No more cases for now
-
 """
+			if block["apply_facing"]:
+				content += APPLY_FACING
+
 			# Add the commands on placement if any
 			if COMMANDS_ON_PLACEMENT in data:
 				if isinstance(data[COMMANDS_ON_PLACEMENT], list):
@@ -107,14 +122,14 @@ execute if score #rotation {config['namespace']}.data matches 0 store success sc
 	## Destroy functions
 	# For each unique block, if the vanilla block is missing, call the destroy function for the group
 	content = "\n"
-	for block in unique_blocks:
-		block_underscore = block.replace(":","_")
-		content += f"execute if entity @s[tag={config['namespace']}.vanilla.{block_underscore}] unless block ~ ~ ~ {block} run function {config['namespace']}:custom_blocks/_groups/{block_underscore}\n"
+	for block_id in unique_blocks:
+		block_underscore = block_id.replace(":","_")
+		content += f"execute if entity @s[tag={config['namespace']}.vanilla.{block_underscore}] unless block ~ ~ ~ {block_id} run function {config['namespace']}:custom_blocks/_groups/{block_underscore}\n"
 	write_to_file(f"{config['datapack_functions']}/custom_blocks/destroy.mcfunction", content + "\n")
 
 	# For each unique block, make the group function
-	for block in unique_blocks:
-		block_underscore = block.replace(":","_")
+	for block_id in unique_blocks:
+		block_underscore = block_id.replace(":","_")
 		content = "\n"
 
 		# For every custom block, add a tag check for destroy if it's the right vanilla block
@@ -122,9 +137,7 @@ execute if score #rotation {config['namespace']}.data matches 0 store success sc
 			if data.get(VANILLA_BLOCK):
 
 				# Get the vanilla block
-				this_block = data[VANILLA_BLOCK]
-				if isinstance(this_block, dict):
-					this_block = this_block["id"]
+				this_block = data[VANILLA_BLOCK]["id"].split('[')[0].split('{')[0]
 				this_block = this_block.replace(":","_")
 
 				# Add the line if it's the same vanilla block
@@ -137,13 +150,12 @@ execute if score #rotation {config['namespace']}.data matches 0 store success sc
 		if data.get(VANILLA_BLOCK):
 			block = data[VANILLA_BLOCK]
 			path = f"{config['datapack_functions']}/custom_blocks/{item}"
-			if isinstance(block, dict):
-				block = block["id"]
+			block_id = block["id"].split('[')[0].split('{')[0]
 			
 			# Destroy function
 			content = f"""
 # Replace the item with the custom one
-execute as @e[type=item,nbt={{Item:{{id:"{block}"}}}},limit=1,sort=nearest,distance=..1] run function {config['namespace']}:custom_blocks/{item}/replace_item
+execute as @e[type=item,nbt={{Item:{{id:"{block_id}"}}}},limit=1,sort=nearest,distance=..1] run function {config['namespace']}:custom_blocks/{item}/replace_item
 """
 			# Add the commands on break if any
 			if COMMANDS_ON_BREAK in data:

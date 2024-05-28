@@ -94,6 +94,8 @@ execute if score #game_version {config['namespace']}.data matches 1.. if score #
 				mc_data["components"][k] = v
 			elif k == "id":
 				mc_data[k] = v
+		if mc_data["components"]["custom_model_data"] == -1:
+			del mc_data["components"]["custom_model_data"]
 		items_storage += f"data modify storage {config['namespace']}:items all.{item} set value " + super_json_dump(mc_data, max_level = 0)
 		pass
 

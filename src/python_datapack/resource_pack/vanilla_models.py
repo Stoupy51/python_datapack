@@ -9,7 +9,8 @@ def main(config: dict):
 	# Get every vanilla IDs
 	vanilla_ids = set()
 	for v in config['database'].values():
-		vanilla_ids.add(v.get("id", "").replace("minecraft:", ""))
+		if v.get("custom_model_data"):
+			vanilla_ids.add(v.get("id", "").replace("minecraft:", ""))
 
 	# For each vanilla ID, create the json model file
 	blocks = [CUSTOM_BLOCK_VANILLA, CUSTOM_ITEM_VANILLA]
