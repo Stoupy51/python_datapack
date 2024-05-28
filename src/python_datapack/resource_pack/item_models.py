@@ -119,11 +119,6 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		# Write content
 		write_to_file(f"{dest_base_model}/{item}{on_off}.json", super_json_dump(content, max_level = 4))
 
-		# Generate placed models for item_display if it's a block
-		if block_or_item == "block":
-			dest_base_model = f"{config['build_resource_pack']}/assets/{config['namespace']}/models/{block_or_item}/for_item_display"
-			content["display"] = MODEL_DISPLAY
-			write_to_file(f"{dest_base_model}/{item}{on_off}.json", super_json_dump(content, max_level = 4))
 
 
 def main(config: dict):

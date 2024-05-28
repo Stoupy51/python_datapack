@@ -48,7 +48,7 @@ def main(config: dict):
 	total_chests = (len(config['database']) + CHEST_SIZE - 1) // CHEST_SIZE
 	lore = json.dumps(config['source_lore']).replace('"', "'")
 	chests = []
-	database_copy = config['database'].copy()
+	database_copy = list(config['database'].items())
 	for i in range(total_chests):
 		chest_contents = []
 	
@@ -56,7 +56,7 @@ def main(config: dict):
 		for j in range(CHEST_SIZE):
 			if not database_copy:
 				break
-			item, data = database_copy.popitem()
+			item, data = database_copy.pop(0)
 			data = data.copy()
 			id = data.get("id")
 			for k in NOT_COMPONENTS:	# Remove non-component data

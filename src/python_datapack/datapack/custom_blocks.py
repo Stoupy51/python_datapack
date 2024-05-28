@@ -23,8 +23,7 @@ def main(config: dict):
 
 				# Handle block states
 				content = ""
-				states = block.get("block_states")
-				states = [] if not states else states
+				states = block.get("block_states", [])
 				block = block["id"]
 				if "facing" in states:
 					other_states = [state for state in states if state != "facing"]
@@ -50,7 +49,7 @@ def main(config: dict):
 			block = block.replace(":","_")
 			set_custom_model_data = ""
 			if data.get("custom_model_data"):
-				set_custom_model_data = f"item replace entity @s container.0 with deepslate[minecraft:custom_model_data={data['custom_model_data']}]\n"
+				set_custom_model_data = f"item replace entity @s container.0 with {CUSTOM_BLOCK_VANILLA}[minecraft:custom_model_data={data['custom_model_data']}]\n"
 			content = f"""
 # Add convention and utils tags, and the custom block tag
 tag @s add global.ignore
@@ -211,13 +210,14 @@ execute store result entity @s Item.count byte 1 run scoreboard players get #ite
 	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/predicate/advanced_check_vanilla_blocks.json", super_json_dump(advanced_predicate))
 
 	# Write a destroy check every 2 ticks, every second, and every 5 seconds
+	ore_vanilla_block = VANILLA_BLOCK_FOR_ORES["id"].replace(':', '_')
 	write_to_file(f"{config['datapack_functions']}/tick_2.mcfunction", f"""
 # 2 ticks destroy detection
-execute as @e[type=item_display,tag={config['namespace']}.custom_block,tag=!{config['namespace']}.vanilla.{VANILLA_BLOCK_FOR_ORES.replace(':', '_')},predicate=!{config['namespace']}:check_vanilla_blocks] at @s run function {config['namespace']}:custom_blocks/destroy
+execute as @e[type=item_display,tag={config['namespace']}.custom_block,tag=!{config['namespace']}.vanilla.{ore_vanilla_block},predicate=!{config['namespace']}:check_vanilla_blocks] at @s run function {config['namespace']}:custom_blocks/destroy
 """)
 	write_to_file(f"{config['datapack_functions']}/second.mcfunction", f"""
 # 1 second break detection
-execute as @e[type=item_display,tag={config['namespace']}.custom_block,tag=!{config['namespace']}.vanilla.{VANILLA_BLOCK_FOR_ORES.replace(':', '_')},predicate=!{config['namespace']}:advanced_check_vanilla_blocks] at @s run function {config['namespace']}:custom_blocks/destroy
+execute as @e[type=item_display,tag={config['namespace']}.custom_block,tag=!{config['namespace']}.vanilla.{ore_vanilla_block},predicate=!{config['namespace']}:advanced_check_vanilla_blocks] at @s run function {config['namespace']}:custom_blocks/destroy
 """)
 	write_to_file(f"{config['datapack_functions']}/second_5.mcfunction", f"""
 # 5 seconds break detection

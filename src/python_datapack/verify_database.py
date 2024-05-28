@@ -26,8 +26,13 @@ def main(config: dict):
 				errors.append(f"'id' key should not be 'minecraft:deepslate' for '{item}', it's a reserved ID")
 			
 			# Force VANILLA_BLOCK key for custom blocks
-			elif data["id"] in [CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE] and not data.get(VANILLA_BLOCK):
-				errors.append(f"VANILLA_BLOCK key missing for '{item}', needed format: VANILLA_BLOCK: \"minecraft:stone\"")
+			elif data["id"] in [CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE]:
+				if not data.get(VANILLA_BLOCK):
+					errors.append(f"VANILLA_BLOCK key missing for '{item}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"block_states\":[]}},\n add 'facing' to the block_states list if you want to use block rotation.")
+				elif not isinstance(data[VANILLA_BLOCK], dict):
+					errors.append(f"VANILLA_BLOCK key should be a dictionary for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"block_states\":[]}},\n add 'facing' to the block_states list if you want to use block rotation.")
+				elif data[VANILLA_BLOCK].get("block_states", None) == None:
+					errors.append(f"VANILLA_BLOCK key should have a 'block_states' key for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"block_states\":[]}},\n add 'facing' to the block_states list if you want to use block rotation.")
 
 			# Prevent the use of "container" key for custom blocks
 			elif data["id"] == CUSTOM_BLOCK_VANILLA and data.get("container"):

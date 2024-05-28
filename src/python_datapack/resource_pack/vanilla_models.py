@@ -45,18 +45,12 @@ def main(config: dict):
 		)
 
 
-	# Generate deepslate models
-	content = {"parent": "block/deepslate"}
-	content["overrides"] = []
-	for item, data in config['database'].items():
-		if data.get("id") in (CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE) and data.get("custom_model_data"):
-			content["overrides"].append({"predicate": { "custom_model_data": data["custom_model_data"]}, "model": f"{config['namespace']}:block/for_item_display/{item}" })
-	content["overrides"].append({"predicate": { "custom_model_data": 2010000}, "model": f"minecraft:item/none"})
-	content["overrides"].sort(key=lambda x: x["predicate"]["custom_model_data"])
+	# Generate Common Signals item model
+	content = super_json_dump({"parent": "block/deepslate", "overrides": [{"predicate": { "custom_model_data": 2010000}, "model": f"minecraft:item/none"}]})
 	write_to_file(
 		f"{config['build_resource_pack']}/assets/minecraft/models/item/deepslate.json",
-		super_json_dump(content).replace('{"','{ "').replace('"}','" }').replace(',"', ', "')
-	)
+		content.replace('{"','{ "').replace('"}','" }').replace(',"', ', "')
+	)	
 	write_to_file(f"{config['build_resource_pack']}/assets/minecraft/models/item/none.json", "{}")
 
 	info("Vanilla models created")
