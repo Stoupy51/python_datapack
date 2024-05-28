@@ -171,23 +171,6 @@ execute as @e[type=item,nbt={{Item:{{id:"{block_id}"}}}},limit=1,sort=nearest,di
 data modify entity @s Item.components set from storage {config['namespace']}:items all.{item}.components
 data modify entity @s Item.id set from storage {config['namespace']}:items all.{item}.id
 """
-				"""
-# Replace the item by the ore if the player is holding a silk touch pickaxe
-execute if score #is_silk_touch simplenergy.data matches 1 run data modify entity @e[type=item,nbt={Item:{id:"minecraft:polished_deepslate"}},limit=1,sort=nearest,distance=..1] Item set from storage simplenergy:main all.deepslate_simplunium_ore
-
-# Replace the item by the raw form if the player is not holding a silk touch pickaxe
-execute if score #is_silk_touch simplenergy.data matches 0 run data modify entity @e[type=item,nbt={Item:{id:"minecraft:polished_deepslate"}},limit=1,sort=nearest,distance=..1] Item set from storage simplenergy:main all.raw_simplunium
-execute if score #is_silk_touch simplenergy.data matches 0 run scoreboard players operation #count simplenergy.data = #item_count simplenergy.data
-execute if score #is_silk_touch simplenergy.data matches 0 store result score #temp simplenergy.data run data get entity @s UUID[1]
-execute if score #is_silk_touch simplenergy.data matches 0 run scoreboard players operation #temp simplenergy.data %= #4 simplenergy.data
-execute if score #is_silk_touch simplenergy.data matches 0 run scoreboard players add #temp simplenergy.data 1
-execute if score #is_silk_touch simplenergy.data matches 0 run scoreboard players operation #count simplenergy.data *= #temp simplenergy.data
-execute if score #is_silk_touch simplenergy.data matches 0 store result entity @e[type=item,nbt={Age:0s,Item:{tag:{simplenergy:{raw_simplunium:1b}}}},limit=1,sort=nearest,distance=..1] Item.Count byte 1 run scoreboard players get #count simplenergy.data
-
-# Remove the block
-kill @s
-
-"""
 			else:
 				no_silk_touch_drop = data[NO_SILK_TOUCH_DROP]
 				if ':' in no_silk_touch_drop:
@@ -254,6 +237,28 @@ execute store success score #is_silk_touch {config['namespace']}.data if data en
 # Try to destroy the block
 execute as @e[tag={config['namespace']}.custom_block,dx=0,dy=0,dz=0] at @s run function {config['namespace']}:custom_blocks/destroy
 """)
+	
+
+
+	## Custom blocks using player_head
+	for item, data in config['database'].items():
+		if data["id"] == CUSTOM_BLOCK_HEAD and data.get(VANILLA_BLOCK):
+
+			# Make advancement
+			predicate = {"criteria":{"requirement":{"trigger":"minecraft:placed_block","conditions":{"location": [{"condition": "minecraft:location_check","predicate": {"block": {}}}]}}},"requirements":[["requirement"]],"rewards":{}}
+			predicate["criteria"]["requirement"]["conditions"]["location"][0]["predicate"]["block"]["nbt"] = json.dumps({"components":{"minecraft:custom_data":data.get("custom_data", {})}})
+			predicate["rewards"]["function"] = f"{config['namespace']}:custom_blocks/_player_head/search_{item}"
+			write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/advancement/custom_block_head/{item}.json", super_json_dump(predicate, max_level = -1))
+
+			# Make search function
+			content = "# Search where the head has been placed\n"
+			mid_x, mid_y, mid_z = [x // 2 for x in CUSTOM_BLOCK_HEAD_CUBE_RADIUS]
+			for x in range(-mid_x, mid_x + 1):
+				for y in range(-mid_y, mid_y + 1):
+					for z in range(-mid_z, mid_z + 1):
+						content += f"execute positioned ~{x} ~{y} ~{z} if data block ~ ~ ~ components.\"minecraft:custom_data\".{config['namespace']}.{item} run function {config['namespace']}:custom_blocks/{item}/place_main\n"
+			content += f"\n# Advancement\nadvancement revoke @s only {config['namespace']}:custom_block_head/{item}\n\n"
+			write_to_file(f"{config['datapack_functions']}/custom_blocks/_player_head/search_{item}.mcfunction", content)
 
 	info("All customs blocks are now placeable and destroyable!")
 
