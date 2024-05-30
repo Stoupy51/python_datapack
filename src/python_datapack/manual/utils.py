@@ -11,6 +11,39 @@ from PIL import Image, ImageDraw, ImageFont
 from model_resolver.cli import main as model_resolver_main
 import requests
 
+# Generate high res simple case no border
+def load_simple_case_no_border(high_res: bool) -> Image.Image:
+	path = f"{TEMPLATES_PATH}/simple_case_no_border.png"
+	img = Image.open(path)
+	if not high_res:
+		return img
+
+	# Make the image bigger on the right
+	middle_x = img.size[0] // 2
+	result = Image.new("RGBA", (img.size[0] + 1, img.size[1]))
+	result.paste(img, (0, 0))
+	img = img.crop((middle_x, 0, img.size[0], img.size[1]))
+	result.paste(img, (middle_x + 1, 0))
+	return result
+
+# Careful resize
+def careful_resize(image: Image.Image, max_result_size: int) -> Image.Image:
+	""" Resize an image while keeping the aspect ratio.\n
+	Example 1: if the image is 100x200 and the max_result_size is 150, the result will be 75x150.\n
+	Example 2: if the image is 200x100 and the max_result_size is 256, the result will be 256x128.\n
+	Args:
+		image			(Image):	The image to resize
+		max_result_size	(int):		The minimum result size of the image (ex: 256)
+	Returns:
+		Image: The resized image
+	"""
+	if image.size[0] >= image.size[1]:
+		factor = max_result_size / image.size[0]
+		return image.resize((max_result_size, int(image.size[1] * factor)), Image.NEAREST)
+	else:
+		factor = max_result_size / image.size[1]
+		return image.resize((int(image.size[0] * factor), max_result_size), Image.NEAREST)
+
 # Generate a border for a given Image
 def add_border(image: Image.Image, border_color: tuple, border_size: int, is_rectangle_shape: bool) -> Image.Image:
 	""" Add a border to every part of the image
@@ -61,7 +94,7 @@ def add_border(image: Image.Image, border_color: tuple, border_size: int, is_rec
 	return image
 
 # Generate an image showing the result count
-def image_count(count: int) -> Image:
+def image_count(count: int) -> Image.Image:
 	""" Generate an image showing the result count
 	Args:
 		count (int): The count to show
@@ -77,8 +110,8 @@ def image_count(count: int) -> Image:
 	# Calculate text size and positions of the two texts
 	text_width = draw.textlength(str(count), font = font)
 	text_height = font_size + 4
-	pos_1 = (32-text_width), (32-text_height)
-	pos_2 = (30-text_width), (30-text_height)
+	pos_1 = (34-text_width), (32-text_height)
+	pos_2 = (32-text_width), (30-text_height)
 	
 	# Draw the count
 	draw.text(pos_1, str(count), (50, 50, 50), font = font)
@@ -156,7 +189,6 @@ def generate_all_iso_renders(config: dict):
 			if response.status_code == 200:
 				with super_open(destination, "wb") as file:
 					file.write(response.content)
-				debug(f"Downloaded texture for item '{item}'!")
 			else:
 				warning(f"Failed to download texture for item '{item}', please add it manually to '{destination}'")
 				warning(f"Suggestion link: '{DOWNLOAD_VANILLA_ASSETS_SOURCE}'")
@@ -192,11 +224,7 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 		result_texture = Image.open(image_path)
 
 	# Resize the texture and get the mask
-	factor = SQUARE_SIZE / result_texture.size[0]
-	result_texture = result_texture.resize(
-		(int(result_texture.size[0]*factor), int(result_texture.size[1]*factor)),
-		Image.NEAREST
-	)
+	result_texture = careful_resize(result_texture, SQUARE_SIZE)
 	result_mask = result_texture.convert("RGBA").split()[3]
 	
 	# Check if there is a craft
@@ -229,11 +257,7 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 						if not os.path.exists(image_path):
 							error(f"Missing item texture at '{image_path}'")
 						item_texture = Image.open(image_path)
-						factor = SQUARE_SIZE / item_texture.size[0]
-						item_texture = item_texture.resize(
-							(int(item_texture.size[0]*factor), int(item_texture.size[1]*factor)),
-							Image.NEAREST
-						)
+						item_texture = careful_resize(item_texture, SQUARE_SIZE)
 						coords = (
 							j * (SQUARE_SIZE + CASE_OFFSETS[0]) + STARTING_PIXEL[0],
 							i * (SQUARE_SIZE + CASE_OFFSETS[1]) + STARTING_PIXEL[1]
@@ -267,11 +291,7 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 			if not os.path.exists(image_path):
 				error(f"Missing item texture at '{image_path}'")
 			item_texture = Image.open(image_path)
-			factor = SQUARE_SIZE / item_texture.size[0]
-			item_texture = item_texture.resize(
-				(int(item_texture.size[0]*factor), int(item_texture.size[1]*factor)),
-				Image.NEAREST
-			)
+			item_texture = careful_resize(item_texture, SQUARE_SIZE)
 			mask = item_texture.convert("RGBA").split()[3]
 			template.paste(item_texture, (4, 4), mask)
 
@@ -594,7 +614,7 @@ def generate_wiki_font_for_ingr(config: dict, name: str, craft: dict) -> str:
 
 			# Load texture and resize it
 			item_texture = Image.open(texture_path)
-			item_texture = item_texture.resize((42, 42), Image.NEAREST)
+			item_texture = careful_resize(item_texture, 42)
 			item_texture = item_texture.convert("RGBA")
 
 			# Load the template and paste the texture on it
@@ -615,3 +635,48 @@ def generate_wiki_font_for_ingr(config: dict, name: str, craft: dict) -> str:
 	# Return the font
 	return font
 
+# Generate high res image for item
+def generate_high_res_font(config: dict, item: str, item_image: Image.Image, count: int = 1) -> str:
+	""" Generate the high res font to display in the manual for the item
+	Args:
+		item		(str):		The name of the item, ex: "adamantium_fragment"
+		item_image	(Image):	The image of the item
+		count		(int):		The count of the item
+	Returns:
+		str: The font to the generated texture
+	"""
+	font = get_next_font()
+	item = f"{item}_{count}" if count > 1 else item
+	
+	# Get output path
+	path = f"{config['manual_path']}/font/high_res/{item}.png"
+	provider_path = f"{config['namespace']}:font/high_res/{item}.png"
+	for p in font_providers:	# Check if it already exists
+		if p["file"] == provider_path:
+			return p["chars"][0]
+	font_providers.append({"type":"bitmap","file": provider_path, "ascent": 7, "height": 16, "chars": [font]})
+
+
+	# Generate high res font
+	os.makedirs(os.path.dirname(path), exist_ok = True)
+	high_res: int = 256
+	resized = careful_resize(item_image, high_res)
+	resized = resized.convert("RGBA")
+
+	# Add the item count
+	if count > 1:
+		img_count = image_count(count)
+		img_count = careful_resize(img_count, high_res)
+		resized.paste(img_count, (0, 0), img_count)
+
+	# Add invisible pixels for minecraft font at each corner
+	total_width = resized.size[0] - 1
+	total_height = resized.size[1] - 1
+	angles = [(0, 0), (total_width, 0), (0, total_height), (total_width, total_height)]
+	for angle in angles:
+		resized.putpixel(angle, (0, 0, 0, 100))
+
+	# Save the result and return the font
+	resized.save(path)
+	return MICRO_NONE_FONT + font
+	

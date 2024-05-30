@@ -6,6 +6,7 @@ from .utils import *
 from .shared_import import *
 from .book_optimizer import *
 from ..constants import *
+from copy import deepcopy
 
 def main(config: dict):
 
@@ -29,7 +30,10 @@ def main(config: dict):
 	super_copy(f"{TEMPLATES_PATH}/wiki_information.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_information.png")
 	super_copy(f"{TEMPLATES_PATH}/wiki_result_of_craft.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_result_of_craft.png")
 	super_copy(f"{TEMPLATES_PATH}/wiki_ingredient_of_craft.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_ingredient_of_craft.png")
-
+	if config['manual_high_resolution']:
+		super_copy(f"{TEMPLATES_PATH}/furnace.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/furnace.png")
+		super_copy(f"{TEMPLATES_PATH}/shaped_2x2.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/shaped_2x2.png")
+		super_copy(f"{TEMPLATES_PATH}/shaped_3x3.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/shaped_3x3.png")
 
 	# If the manual cache is enabled and we have a cache file, load it
 	if config['cache_manual_pages'] and os.path.exists(config['manual_debug']):
@@ -92,7 +96,7 @@ def main(config: dict):
 		# Encode pages
 		book_content = []
 		os.makedirs(f"{config['manual_path']}/font/category", exist_ok=True)
-		simple_case = Image.open(f"{TEMPLATES_PATH}/simple_case_no_border.png")	# Load the simple case image for later use in categories pages
+		simple_case = load_simple_case_no_border(config['manual_high_resolution'])	# Load the simple case image for later use in categories pages
 		for page in manual_pages:
 			content = []
 			number = page["number"]
@@ -117,38 +121,47 @@ def main(config: dict):
 
 				# For each item in the category, get its page number and texture, then add it to the image
 				for item in raw_data:
+
+					# Get item texture
 					texture_path = f"{config['manual_path']}/items/{config['namespace']}/{item}.png"
 					if os.path.exists(texture_path):
 						item_image = Image.open(texture_path)
 					else:
 						warning(f"Missing texture at '{texture_path}', using empty texture")
-						item_image = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-					factor = 32 / item_image.size[0]
-					item_image = item_image.resize((32, int(item_image.size[1] * factor)), Image.NEAREST)
+						item_image = Image.new("RGBA", (1, 1), (0, 0, 0, 0))
+					if not config['manual_high_resolution']:
+						resized = careful_resize(item_image, 32)
+					else:
+						resized = Image.new("RGBA", (1, 1), (0, 0, 0, 0))	# Empty texture to use for category page
+						high_res_font = generate_high_res_font(config, item, item_image)
 
 					# Paste the simple case and the item_image
 					page_image.paste(simple_case, (x, y))
-					mask = item_image.convert("RGBA").split()[3]
-					page_image.paste(item_image, (x + 2, y + 2), mask)
-					x += 36
+					mask = resized.convert("RGBA").split()[3]
+					page_image.paste(resized, (x + 2, y + 2), mask)
+					x += simple_case.size[0]
 
 					# Add the clickEvent part to the line and add the 2 times the line if enough items
 					component = get_item_component(config, item, ["custom_model_data", "item_name", "custom_name"])
-					component["text"] = MEDIUM_NONE_FONT
+					component["text"] = MEDIUM_NONE_FONT if not config['manual_high_resolution'] else high_res_font
 					line.append(component)
 					if len(line) == config['max_items_per_row']:
-						line[-1]["text"] += "\n"
-						line[0]["text"] = SMALL_NONE_FONT * LEFT_PADDING + line[0]["text"]
-						content += line * 2
+						line.insert(0, SMALL_NONE_FONT * LEFT_PADDING)
+						content += deepcopy(line)
+						for i in range(1, len(line)):
+							line[-i]["text"] = MEDIUM_NONE_FONT
+						content += ["\n"] + line + ["\n"]
 						line = []
 						x = 2
-						y += 36
+						y += simple_case.size[1]
 				
 				# If remaining items in the line, add them
 				if len(line) > 0:
-					line[-1]["text"] += "\n"
-					line[0]["text"] = SMALL_NONE_FONT * LEFT_PADDING + line[0]["text"]
-					content += line * 2
+					line.insert(0, SMALL_NONE_FONT * LEFT_PADDING)
+					content += deepcopy(line)
+					for i in range(1, len(line)):
+						line[-i]["text"] = MEDIUM_NONE_FONT
+					content += ["\n"] + line + ["\n"]
 				
 				# Add the 2 pixels border
 				is_rectangle_shape = len(raw_data) % config['max_items_per_row'] == 0
@@ -301,14 +314,26 @@ def main(config: dict):
 				item = page["raw_data"][0]
 				texture_path = f"{config['manual_path']}/items/{config['namespace']}/{item}.png"
 				item_image = Image.open(texture_path)
-				factor = 32 / item_image.size[0]
-				item_image = item_image.resize((32, int(item_image.size[1] * factor)), Image.NEAREST)
+				item_image = careful_resize(item_image, 32)
+
+				# Get item texture
+				texture_path = f"{config['manual_path']}/items/{config['namespace']}/{item}.png"
+				if os.path.exists(texture_path):
+					item_image = Image.open(texture_path)
+				else:
+					warning(f"Missing texture at '{texture_path}', using empty texture")
+					item_image = Image.new("RGBA", (1, 1), (0, 0, 0, 0))
+				if not config['manual_high_resolution']:
+					resized = careful_resize(item_image, 32)
+				else:
+					resized = Image.new("RGBA", (1, 1), (0, 0, 0, 0))	# Empty texture to use for category page
+					high_res_font = generate_high_res_font(config, item, item_image)
 
 				# Paste the simple case and the item_image
 				page_image.paste(simple_case, (x, y))
 				mask = item_image.convert("RGBA").split()[3]
 				page_image.paste(item_image, (x + 2, y + 2), mask)
-				x += 36
+				x += simple_case.size[0]
 
 				# Add the clickEvent part to the line and add the 2 times the line if enough items
 				component = get_item_component(config, item, ["custom_model_data"])
@@ -322,7 +347,7 @@ def main(config: dict):
 					content += line * 2
 					line = []
 					x = 2
-					y += 36
+					y += simple_case.size[1]
 		
 		# If remaining items in the line, add them
 		if len(line) > 0:
@@ -351,7 +376,7 @@ def main(config: dict):
 		if not os.path.exists(icon_path):
 			error(f"Missing icon path at '{icon_path}' (needed for the manual)")
 		logo = Image.open(icon_path)
-		logo = logo.resize((256, 256), Image.NEAREST)
+		logo = careful_resize(logo, 256)
 
 		# Write the introduction text
 		content.append("\n" * 6)
@@ -369,6 +394,7 @@ def main(config: dict):
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 8, "height": 18, "chars": [MEDIUM_NONE_FONT]})
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 7, "height": 7, "chars": [SMALL_NONE_FONT]})
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 0, "height": 2, "chars": [VERY_SMALL_NONE_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 0, "height": 1, "chars": [MICRO_NONE_FONT]})
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 7, "height": 16, "chars": [WIKI_NONE_FONT]})
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/wiki_information.png", "ascent": 8, "height": 16, "chars": [WIKI_INFO_FONT]})
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/wiki_result_of_craft.png", "ascent": 8, "height": 16, "chars": [WIKI_RESULT_OF_CRAFT_FONT]})
@@ -388,6 +414,8 @@ def main(config: dict):
 	super_copy(f"{config['manual_path']}/font/category/", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/category/")
 	super_copy(f"{config['manual_path']}/font/page/", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/page/")
 	super_copy(f"{config['manual_path']}/font/wiki_icons/", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_icons/")
+	if config['manual_high_resolution']:
+		super_copy(f"{config['manual_path']}/font/high_res/", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/high_res/")
 
 
 	# Finally, prepend the manual to the database

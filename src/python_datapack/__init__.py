@@ -51,13 +51,14 @@ def check_config_format(config: dict) -> bool:
 	has_manual = basic_key_check(config, "has_manual", bool, "Do the program generate a manual/guide? (WARNING: if an item is malformed in the database, the server log will be flooded on load by the manual hiding the malformed item)", True)
 	if has_manual == True:
 		valid = basic_key_check(config, "manual_path", str, "Cached manual assets", valid)
+		valid = basic_key_check(config, "manual_high_resolution", bool, "Enable the high resolution for the manual to increase the craft resolutions", valid)
 		valid = basic_key_check(config, "cache_manual_assets", bool, "Caches the MC assets and the items renders for the manual (manual/items/*.png)", valid)
 		valid = basic_key_check(config, "cache_manual_pages", bool, "Caches the content of the manual and the images (manual/pages/*.png)", valid)
 		valid = basic_key_check(config, "manual_debug", str, "Dump of the manual for debugging purposes", valid)
 		valid = basic_key_check(config, "manual_name", str, "Name of the manual, used for the title of the book and first page", valid)
 		valid = basic_key_check(config, "max_items_per_row", int, "Max number of items per row in the manual, should not exceed 6", valid)
 		valid = basic_key_check(config, "max_rows_per_page", int, "Max number of rows per page in the manual, should not exceed 6", valid)
-		valid = basic_key_check(config, "opengl_resolution", int, "Resolution of the OpenGL renders used in the manual, best value is 64 <--- 64x64", valid)
+		valid = basic_key_check(config, "opengl_resolution", int, "Resolution of the OpenGL renders used in the manual, best value is 256 <--- 256x256", valid)
 		valid = basic_key_check(config, "manual_first_page_text", list, "Text for the first page of the manual", valid)
 	elif valid == True:
 		valid = has_manual
