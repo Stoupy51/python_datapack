@@ -653,7 +653,7 @@ def generate_high_res_font(config: dict, item: str, item_image: Image.Image, cou
 	provider_path = f"{config['namespace']}:font/high_res/{item}.png"
 	for p in font_providers:	# Check if it already exists
 		if p["file"] == provider_path:
-			return p["chars"][0]
+			return MICRO_NONE_FONT + p["chars"][0]
 	font_providers.append({"type":"bitmap","file": provider_path, "ascent": 7, "height": 16, "chars": [font]})
 
 

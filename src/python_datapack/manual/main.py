@@ -312,11 +312,8 @@ def main(config: dict):
 		for page in manual_pages:
 			if page["type"] == CATEGORY:
 				item = page["raw_data"][0]
-				texture_path = f"{config['manual_path']}/items/{config['namespace']}/{item}.png"
-				item_image = Image.open(texture_path)
-				item_image = careful_resize(item_image, 32)
 
-				# Get item texture
+				# Get item texture TODO
 				texture_path = f"{config['manual_path']}/items/{config['namespace']}/{item}.png"
 				if os.path.exists(texture_path):
 					item_image = Image.open(texture_path)
@@ -331,29 +328,36 @@ def main(config: dict):
 
 				# Paste the simple case and the item_image
 				page_image.paste(simple_case, (x, y))
-				mask = item_image.convert("RGBA").split()[3]
-				page_image.paste(item_image, (x + 2, y + 2), mask)
+				mask = resized.convert("RGBA").split()[3]
+				page_image.paste(resized, (x + 2, y + 2), mask)
 				x += simple_case.size[0]
 
 				# Add the clickEvent part to the line and add the 2 times the line if enough items
 				component = get_item_component(config, item, ["custom_model_data"])
 				component["hoverEvent"]["contents"]["components"]["item_name"] = str({"text": page["name"], "color": "white"})
 				component["clickEvent"]["value"] = str(page["number"])
-				component["text"] = MEDIUM_NONE_FONT
+				if not config['manual_high_resolution']:
+					component["text"] = MEDIUM_NONE_FONT
+				else:
+					component["text"] = high_res_font
 				line.append(component)
 				if len(line) == config['max_items_per_row']:
-					line[-1]["text"] += "\n"
-					line[0]["text"] = SMALL_NONE_FONT * LEFT_PADDING + line[0]["text"]
-					content += line * 2
+					line.insert(0, SMALL_NONE_FONT * LEFT_PADDING)
+					content += deepcopy(line) + ["\n"]
+					for i in range(1, len(line)):
+						line[-i]["text"] = MEDIUM_NONE_FONT
+					content += line + ["\n"]
 					line = []
 					x = 2
 					y += simple_case.size[1]
 		
 		# If remaining items in the line, add them
 		if len(line) > 0:
-			line[-1]["text"] += "\n"
-			line[0]["text"] = SMALL_NONE_FONT * LEFT_PADDING + line[0]["text"]
-			content += line * 2
+			line.insert(0, SMALL_NONE_FONT * LEFT_PADDING)
+			content += deepcopy(line) + ["\n"]
+			for i in range(1, len(line)):
+				line[-i]["text"] = MEDIUM_NONE_FONT
+			content += line + ["\n"]
 		
 		# Add the 2 pixels border
 		is_rectangle_shape = len(raw_data) % config['max_items_per_row'] == 0
