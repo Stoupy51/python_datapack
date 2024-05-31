@@ -13,6 +13,7 @@ def main(config: dict):
 	# Prework
 	os.makedirs(f"{config['manual_path']}/font/page", exist_ok=True)
 	os.makedirs(f"{config['manual_path']}/font/wiki_icons", exist_ok = True)
+	os.makedirs(f"{config['manual_path']}/font/high_res", exist_ok = True)
 	generate_all_iso_renders(config)
 
 	# Constants
@@ -427,7 +428,7 @@ def main(config: dict):
 			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_2x2.png", "ascent": 1, "height": 58, "chars": [SHAPED_2X2_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/furnace.png", "ascent": 1, "height": 58, "chars": [FURNACE_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_3x3.png", "ascent": -4, "height": 58, "chars": [HOVER_SHAPED_3X3_FONT]})
-			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_2x2.png", "ascent": -1, "height": 58, "chars": [HOVER_SHAPED_2X2_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_2x2.png", "ascent": -2, "height": 58, "chars": [HOVER_SHAPED_2X2_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/furnace.png", "ascent": -3, "height": 58, "chars": [HOVER_FURNACE_FONT]})
 		fonts = {"providers": font_providers}
 		with super_open(f"{config['manual_path']}/font/manual.json", "w") as f:

@@ -475,7 +475,10 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 
 	# Get result component
 	result_count = craft.get("result_count", 1)
-	result_component = get_item_component(config, name, count = result_count)
+	if not craft.get("result"):
+		result_component = get_item_component(config, name, count = result_count)
+	else:
+		result_component = get_item_component(config, craft["result"], count = result_count)
 	if result_component.get("clickEvent"):
 		del result_component["clickEvent"]	# Remove clickEvent for result item (as we already are on the page)
 	result_component["text"] = MICRO_NONE_FONT + result_component["text"]	# Left adjustment
