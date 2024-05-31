@@ -610,16 +610,19 @@ def generate_wiki_font_for_ingr(config: dict, name: str, craft: dict) -> str:
 		texture_path = f"{config['manual_path']}/items/{result_item}.png"
 		result_item = result_item.replace("/", "_")
 		dest_path = f"{config['manual_path']}/font/wiki_icons/{result_item}.png"
-		if not os.path.exists(dest_path):
+		if not os.path.exists(dest_path) or not config['cache_manual_assets']:
 
 			# Load texture and resize it
 			item_texture = Image.open(texture_path)
-			item_texture = careful_resize(item_texture, 42)
+			item_res = 64 if not config["manual_high_resolution"] else 256
+			item_res_adjusted = int(item_res * 0.75)
+			item_texture = careful_resize(item_texture, item_res_adjusted)
 			item_texture = item_texture.convert("RGBA")
 
 			# Load the template and paste the texture on it
 			template = Image.open(f"{TEMPLATES_PATH}/wiki_ingredient_of_craft_template.png")
-			template.paste(item_texture, (11, 11), item_texture)
+			offset = (item_res - item_res_adjusted) // 2
+			template.paste(item_texture, (offset, offset), item_texture)
 			
 			# Save the result
 			template.save(dest_path)
