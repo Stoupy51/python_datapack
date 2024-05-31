@@ -38,7 +38,10 @@ WIKI_INGR_OF_CRAFT_FONT = get_font(0x0008)
 SHAPED_2X2_FONT = get_font(0x0009)
 SHAPED_3X3_FONT = get_font(0x000A)
 FURNACE_FONT = get_font(0x000B)
-INVISIBLE_ITEM_FONT = get_font(0x000C)	# Invisible item to place
+HOVER_SHAPED_2X2_FONT = get_font(0x000C)
+HOVER_SHAPED_3X3_FONT = get_font(0x000D)
+HOVER_FURNACE_FONT = get_font(0x000E)
+INVISIBLE_ITEM_FONT = get_font(0x000F)	# Invisible item to place
 INVISIBLE_ITEM_WIDTH = INVISIBLE_ITEM_FONT + MICRO_NONE_FONT
 
 # Global variables

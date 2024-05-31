@@ -219,15 +219,25 @@ def main(config: dict):
 				for i, craft in enumerate(crafts):
 					if craft["type"] == "crafting_shapeless":
 						craft = convert_shapeless_to_shaped(craft)
-					craft_font = get_next_font()	# Unique used font for the craft
-					generate_page_font(config, name, craft_font, craft, output_name = f"{name}_{i+1}")
-					hover_text = [""]
 
-					# Append the craft font and breaklines
+					# Get breaklines
 					breaklines = 3
 					if "shape" in craft:
 						breaklines = max(2, max(len(craft["shape"]), len(craft["shape"][0])))
-					hover_text.append({"text": craft_font + "\n\n" * breaklines, "font": FONT, "color": "white"})
+
+					if not config['manual_high_resolution']:
+						craft_font = get_next_font()	# Unique used font for the craft
+						generate_page_font(config, name, craft_font, craft, output_name = f"{name}_{i+1}")
+						hover_text = [""]
+						hover_text.append({"text": craft_font + "\n\n" * breaklines, "font": FONT, "color": "white"})
+					else:
+						l = generate_craft_content(config, craft, name, "")
+						l = [l[0]] + l[2:]	# Remove craft title
+						remove_events(l)
+						replaces = {SHAPED_2X2_FONT: HOVER_SHAPED_2X2_FONT, SHAPED_3X3_FONT: HOVER_SHAPED_3X3_FONT, FURNACE_FONT: HOVER_FURNACE_FONT}
+						for k, v in replaces.items():
+							l[1] = l[1].replace(k, v)
+						hover_text = ["", l]
 
 					# Append ingredients
 					if craft.get("ingredient"):
@@ -416,6 +426,9 @@ def main(config: dict):
 			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_3x3.png", "ascent": 1, "height": 58, "chars": [SHAPED_3X3_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_2x2.png", "ascent": 1, "height": 58, "chars": [SHAPED_2X2_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/furnace.png", "ascent": 1, "height": 58, "chars": [FURNACE_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_3x3.png", "ascent": -4, "height": 58, "chars": [HOVER_SHAPED_3X3_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_2x2.png", "ascent": -1, "height": 58, "chars": [HOVER_SHAPED_2X2_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/furnace.png", "ascent": -3, "height": 58, "chars": [HOVER_FURNACE_FONT]})
 		fonts = {"providers": font_providers}
 		with super_open(f"{config['manual_path']}/font/manual.json", "w") as f:
 			f.write(super_json_dump(fonts).replace("\\\\", "\\"))

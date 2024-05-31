@@ -3,28 +3,45 @@
 from .utils import *
 
 # Page optimizer
-def optimize_array(page_content: list) -> list:
-	""" Optimize the page content by associating compounds when possible
+def optimize_element(content: list|dict|str) -> list|dict|str:
+	""" Optimize the page content by merging compounds when possible
 	Args:
-		page_content (list): The page content
+		content (list|dict|str): The page content
 	Returns:
-		list: The optimized page content
+		list|dict|str: The optimized page content
 	"""
+	# If dict, optimize the values
+	if isinstance(content, dict):
+		if not any(x in content for x in ["text", "translate", "contents"]):	# If not a text, translate or contents, just return
+			return content
+		content = content.copy()
+		new_content = {}
+		for key, value in content.items():
+			new_content[key] = optimize_element(value)
+		return new_content
+
+	# If not a list, just return
+	if not isinstance(content, list):
+		return content
+
+	# If list with only one element, return the element
+	if len(content) == 1:
+		return content[0]
+
 	# For each compound
-	new_page_content = []
-	for i, compound in enumerate(page_content):
-		if isinstance(compound, list):
-			new_page_content.append(optimize_array(compound))
-		elif i == 0:
-			if isinstance(compound, dict):
-				new_page_content.append(compound.copy())
-			else:
-				new_page_content.append(compound)
+	new_content = []
+	for i, compound in enumerate(content):
+		if isinstance(compound, list) or i == 0:
+			new_content.append(optimize_element(compound))
 		else:
+			# If the current is a dict with only "text" key, transform it to a string
+			if isinstance(compound, dict) and len(compound) == 1 and "text" in compound:
+				compound = compound["text"]
+
 			# For checks
 			compound_without_text = compound.copy() if isinstance(compound, dict) else compound
-			previous_without_text = new_page_content[-1].copy() if isinstance(new_page_content[-1], dict) else new_page_content[-1]
-			if isinstance(compound, dict) and isinstance(new_page_content[-1], dict):
+			previous_without_text = new_content[-1].copy() if isinstance(new_content[-1], dict) else new_content[-1]
+			if isinstance(compound, dict) and isinstance(new_content[-1], dict):
 				compound_without_text.pop("text", None)
 				previous_without_text.pop("text", None)
 
@@ -32,38 +49,48 @@ def optimize_array(page_content: list) -> list:
 			if str(compound_without_text) == str(previous_without_text):
 
 				# If the previous compound is a text, merge the text
-				if isinstance(new_page_content[-1], str):
-					new_page_content[-1] += str(compound)
+				if isinstance(new_content[-1], str):
+					new_content[-1] += str(compound)
 
 				# If the previous compound is a dict, merge the dict
-				elif isinstance(new_page_content[-1], dict):
-					new_page_content[-1]["text"] += compound["text"]
+				elif isinstance(new_content[-1], dict):
+					new_content[-1]["text"] += compound["text"]
 			
-			# Always add break lines to the previous part
-			elif compound == "\n":
-				if isinstance(new_page_content[-1], str):
-					new_page_content[-1] += "\n"
-				elif isinstance(new_page_content[-1], dict):
-					new_page_content[-1]["text"] += "\n"
+			# Always add break lines to the previous part (if the text is a string containing only break lines)
+			elif isinstance(compound, str) and all([c == "\n" for c in compound]):
+				if isinstance(new_content[-1], str):
+					new_content[-1] += compound
+				elif isinstance(new_content[-1], dict):
+					new_content[-1]["text"] += compound
 			
 			# Always merge two strings
-			elif isinstance(compound, str) and isinstance(new_page_content[-1], str):
-				new_page_content[-1] += compound
+			elif isinstance(compound, str) and isinstance(new_content[-1], str):
+				new_content[-1] += compound
 			
-			# DISABLED, REASON: You may not want that invisible items shows up for mouse cursor
-			# # Merge the compound if the previous compound is a dict of the same font and the current one is a small none font (that is always at the very left)
-			# elif isinstance(compound, str) and isinstance(new_page_content[-1], dict) and not new_page_content[-1].get("font") and compound == SMALL_NONE_FONT:
-			# 	new_page_content[-1]["text"] += compound
-			
-			# Otherwise, just add the compound
+			# Otherwise, just add the optimized compound
 			else:
-				if isinstance(compound, dict):
-					new_page_content.append(compound.copy())
-				else:
-					new_page_content.append(compound)
-	
+				new_content.append(optimize_element(compound))
+
 	# Return
-	return new_page_content
+	return new_content
+
+# Remove events recursively
+EVENTS = ["hoverEvent", "clickEvent"]
+def remove_events(compound: dict):
+	""" Remove events from a compound recursively
+	Args:
+		compound (dict): The compound
+	"""
+	if not isinstance(compound, dict):
+		if isinstance(compound, list):
+			for element in compound:
+				remove_events(element)
+		return
+	for key in EVENTS:
+		if key in compound:
+			del compound[key]
+	for value in compound.values():
+		remove_events(value)
 
 # Function
 def optimize_book(book_content: list) -> list:
@@ -73,17 +100,21 @@ def optimize_book(book_content: list) -> list:
 	Returns:
 		list: The optimized book content
 	"""
-	# For each page
-	new_book_content = []
+	if not isinstance(book_content, list):
+		book_content = [book_content]
+
+	# For each page, remove events if useless (in an item Lore for example)
 	for page in book_content:
-		if isinstance(page, list):
-			new_book_content.append(optimize_array(page))
-		else:
-			new_book_content.append(page)
+		for compound in page:
+			if isinstance(compound, list):
+				l = compound
+			else:
+				l = [compound]
+			for e in l:
+				if isinstance(e, dict) and e.get("hoverEvent"):
+					remove_events(e["hoverEvent"])	# Remove all events below the first hoverEvent
 
-	# Return
-	return new_book_content
-
-
+	# For each page, optimize the array
+	return optimize_element(book_content)
 
 

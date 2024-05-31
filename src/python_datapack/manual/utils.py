@@ -276,7 +276,8 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 				template.paste(count_img, [x + 2 for x in coords], count_img)
 
 			# Save the image
-			template.save(f"{config['manual_path']}/font/page/{output_filename}.png")
+			if not config['manual_high_resolution']:
+				template.save(f"{config['manual_path']}/font/page/{output_filename}.png")
 
 		# Smelting craft
 		elif craft["type"] in FURNACES_RECIPES_TYPES:
@@ -305,7 +306,8 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 				template.paste(count_img, [x + 2 for x in coords], count_img)
 			
 			# Save the image
-			template.save(f"{config['manual_path']}/font/page/{output_filename}.png")
+			if not config['manual_high_resolution']:
+				template.save(f"{config['manual_path']}/font/page/{output_filename}.png")
 	
 	# Else, there is no craft, just put the item in a box
 	else:
@@ -380,7 +382,7 @@ def convert_shapeless_to_shaped(craft: dict) -> dict:
 
 
 # Convert ingredient to formatted JSON for book
-COMPONENTS_TO_IGNORE = NOT_COMPONENTS + ["custom_data", "count"]
+COMPONENTS_TO_IGNORE = NOT_COMPONENTS + ["custom_data", "count", "profile", "dyed_color", "container"]
 def get_item_component(config: dict, ingredient: dict|str, only_those_components: list[str] = None, count: int = 1) -> dict:
 	""" Generate item hover text for a craft ingredient
 	Args:
@@ -461,13 +463,7 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 	
 	# If high resolution, get proper page font
 	if config['manual_high_resolution']:
-		if craft_type in FURNACES_RECIPES_TYPES:
-			page_font = FURNACE_FONT
-		elif craft_type == "crafting_shaped":
-			if len(craft["shape"]) == 3 or len(craft["shape"][0]) == 3:
-				page_font = SHAPED_3X3_FONT
-			else:
-				page_font = SHAPED_2X2_FONT
+		page_font = high_res_font_from_craft(craft)
 	
 	# Show up item title and page font
 	titled = name.replace("_", " ").title() + "\n"
@@ -754,4 +750,18 @@ def high_res_font_from_ingredient(config: dict, ingredient: str|dict, count: int
 	
 	# Generate the high res font
 	return generate_high_res_font(config, ingredient, item_image, count)
-	
+
+# Util function
+@simple_cache
+def high_res_font_from_craft(craft: dict) -> str:
+	if craft["type"] in FURNACES_RECIPES_TYPES:
+		return FURNACE_FONT
+	elif craft["type"] == "crafting_shaped":
+		if len(craft["shape"]) == 3 or len(craft["shape"][0]) == 3:
+			return SHAPED_3X3_FONT
+		else:
+			return SHAPED_2X2_FONT
+	else:
+		error(f"Unknown craft type '{craft['type']}'")
+		return ""
+
