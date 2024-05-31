@@ -35,6 +35,9 @@ WIKI_NONE_FONT = get_font(0x0005)
 WIKI_INFO_FONT = get_font(0x0006)
 WIKI_RESULT_OF_CRAFT_FONT = get_font(0x0007)
 WIKI_INGR_OF_CRAFT_FONT = get_font(0x0008)
+SHAPED_2X2_FONT = get_font(0x0009)
+SHAPED_3X3_FONT = get_font(0x000A)
+FURNACE_FONT = get_font(0x000B)
 
 # Global variables
 next_craft_font = 0x8000

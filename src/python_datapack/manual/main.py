@@ -100,14 +100,17 @@ def main(config: dict):
 		for page in manual_pages:
 			content = []
 			number = page["number"]
-			page_font = get_page_font(number)
+			raw_data: dict = page["raw_data"]
+			page_font = ""
+			if not config['manual_high_resolution']:
+				page_font = get_page_font(number)
 			name = str(page["name"])
-			raw_data = page["raw_data"]
 			titled = name.replace("_", " ").title() + "\n"
 
 			# Encode categories {'number': 2, 'name': 'Material #1', 'raw_data': ['adamantium_block', 'adamantium_fragment', ...]}
 			if page["type"] == CATEGORY:
 				file_name = name.replace(" ", "_").replace("#", "").lower()
+				page_font = get_page_font(number)
 				font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/category/{file_name}.png", "ascent": 0, "height": 130, "chars": [page_font]})
 				content.append({"text": "", "font": FONT, "color": "white"})	# Make default font for every next component
 				content.append({"text": "➤ ", "font": "minecraft:default", "color": "black"})
@@ -182,8 +185,11 @@ def main(config: dict):
 				
 				# Else, generate the content for the single item in a big box
 				else:
+					if not page_font:
+						page_font = get_page_font(number)
 					generate_page_font(config, name, page_font, craft = None)
 					component = get_item_component(config, name)
+					component["text"] = NONE_FONT
 					component["text"] *= 2
 					content.append({"text": "", "font": FONT, "color": "white"})	# Make default font for every next component
 					content.append({"text": titled, "font": "minecraft:default", "color": "black", "underlined": True})
@@ -403,6 +409,10 @@ def main(config: dict):
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/wiki_information.png", "ascent": 8, "height": 16, "chars": [WIKI_INFO_FONT]})
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/wiki_result_of_craft.png", "ascent": 8, "height": 16, "chars": [WIKI_RESULT_OF_CRAFT_FONT]})
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/wiki_ingredient_of_craft.png", "ascent": 8, "height": 16, "chars": [WIKI_INGR_OF_CRAFT_FONT]})
+		if config['manual_high_resolution']:
+			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_3x3.png", "ascent": 6, "height": 60, "chars": [page_font]})
+			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_2x2.png", "ascent": 6, "height": 60, "chars": [page_font]})
+			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/furnace.png", "ascent": 6, "height": 60, "chars": [page_font]})
 		fonts = {"providers": font_providers}
 		with super_open(f"{config['manual_path']}/font/manual.json", "w") as f:
 			f.write(super_json_dump(fonts).replace("\\\\", "\\"))
@@ -421,6 +431,15 @@ def main(config: dict):
 	if config['manual_high_resolution']:
 		super_copy(f"{config['manual_path']}/font/high_res/", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/high_res/")
 
+	# Verify font providers and textures
+	for fp in font_providers:
+		if "file" in fp:
+			path: str = fp["file"]
+			path = path.replace(config['namespace'] + ':', f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/")
+			if not os.path.exists(path):
+				error(f"Missing font provider at '{path}' for {fp})")
+			if len(fp["chars"]) < 1 or (len(fp["chars"]) == 1 and not fp["chars"][0]):
+				error(f"Font provider '{path}' has no chars")
 
 	# Finally, prepend the manual to the database
 	manual_cmd = min(x["custom_model_data"] for x in config['database'].values() if x.get("custom_model_data")) - 1		# First custom_model_data minus 1

@@ -223,12 +223,12 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 		image_path = f"{config['manual_path']}/items/{result_id}.png"
 		result_texture = Image.open(image_path)
 
-	# Resize the texture and get the mask
-	result_texture = careful_resize(result_texture, SQUARE_SIZE)
-	result_mask = result_texture.convert("RGBA").split()[3]
-	
 	# Check if there is a craft
 	if craft:
+
+		# Resize the texture and get the mask
+		result_texture = careful_resize(result_texture, SQUARE_SIZE)
+		result_mask = result_texture.convert("RGBA").split()[3]
 
 		# Shaped craft
 		if craft["type"] in "crafting_shaped":
@@ -236,7 +236,8 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 			# Get the image template and append the provider
 			shaped_size = max(2, max(len(craft["shape"]), len(craft["shape"][0])))
 			template = Image.open(f"{TEMPLATES_PATH}/shaped_{shaped_size}x{shaped_size}.png")
-			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/page/{output_filename}.png", "ascent": 0 if not output_name else 6, "height": 60, "chars": [page_font]})
+			if config['manual_high_resolution']:
+				font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/page/{output_filename}.png", "ascent": 0 if not output_name else 6, "height": 60, "chars": [page_font]})
 
 			# Loop the shape matrix
 			STARTING_PIXEL = (4, 4)
@@ -282,7 +283,8 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 			
 			# Get the image template and append the provider
 			template = Image.open(f"{TEMPLATES_PATH}/furnace.png")
-			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/page/{output_filename}.png", "ascent": 0 if not output_name else 6, "height": 60, "chars": [page_font]})
+			if config['manual_high_resolution']:
+				font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/page/{output_filename}.png", "ascent": 0 if not output_name else 6, "height": 60, "chars": [page_font]})
 
 			# Place input item
 			input_item = ingr_to_id(craft["ingredient"])
@@ -309,10 +311,20 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 	else:
 		# Get the image template and append the provider
 		template = Image.open(f"{TEMPLATES_PATH}/simple_case_no_border.png")
+		factor = 1
+		if config['manual_high_resolution']:
+			factor = 256 // template.size[0]
+			result_texture = careful_resize(result_texture, SQUARE_SIZE * factor)
+			template = careful_resize(template, 256)
+			result_mask = result_texture.convert("RGBA").split()[3]
+		else:
+			# Resize the texture and get the mask
+			result_texture = careful_resize(result_texture, SQUARE_SIZE)
+			result_mask = result_texture.convert("RGBA").split()[3]
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/page/{output_filename}.png", "ascent": 0 if not output_name else 6, "height": 40, "chars": [page_font]})
 
 		# Place the result item
-		template.paste(result_texture, (2, 2), result_mask)
+		template.paste(result_texture, (2 * factor, 2 * factor), result_mask)
 		template = add_border(template, BORDER_COLOR, BORDER_SIZE, is_rectangle_shape = True)
 		template.save(f"{config['manual_path']}/font/page/{output_filename}.png")
 	return
@@ -369,7 +381,7 @@ def convert_shapeless_to_shaped(craft: dict) -> dict:
 
 # Convert ingredient to formatted JSON for book
 COMPONENTS_TO_IGNORE = NOT_COMPONENTS + ["custom_data", "count"]
-def get_item_component(config: dict, ingredient: dict|str, only_those_components: list[str] = None) -> dict:
+def get_item_component(config: dict, ingredient: dict|str, only_those_components: list[str] = None, count: int = 1) -> dict:
 	""" Generate item hover text for a craft ingredient
 	Args:
 		ingredient (dict|str): The ingredient
@@ -391,7 +403,7 @@ def get_item_component(config: dict, ingredient: dict|str, only_those_components
 			id = ingredient
 			item = config['database'][ingredient]
 		else:
-			custom_data = ingredient["components"]["custom_data"]
+			custom_data: dict = ingredient["components"]["custom_data"]
 			id = ingr_to_id(ingredient, add_namespace = False)
 			if custom_data.get(config['namespace']):
 				item = config['database'].get(id)
@@ -421,6 +433,10 @@ def get_item_component(config: dict, ingredient: dict|str, only_those_components
 		if page_number != -1:
 			formatted["clickEvent"] = {"action":"change_page","value":str(page_number)}
 	
+	# High resolution
+	if config['manual_high_resolution']:
+		formatted["text"] = high_res_font_from_ingredient(config, ingredient, count)
+
 	# Return
 	return formatted
 
@@ -437,22 +453,33 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 	"""
 	craft_type = craft["type"]
 	content = [{"text": "", "font": config['namespace'] + ':' + FONT_FILE, "color": "white"}]	# Make default font for every next component
-	
-	# Show up item title and page font
-	titled = name.replace("_", " ").title() + "\n"
-	content.append({"text": titled, "font": "minecraft:default", "color": "black", "underlined": True})
-	content.append(SMALL_NONE_FONT + page_font + "\n")
 
 	# Convert shapeless crafting to shaped crafting
 	if craft_type == "crafting_shapeless":
 		craft = convert_shapeless_to_shaped(craft)
 		craft_type = "crafting_shaped"
 	
+	# If high resolution, get proper page font
+	if config['manual_high_resolution']:
+		if craft_type in FURNACES_RECIPES_TYPES:
+			page_font = FURNACE_FONT
+		elif craft_type == "crafting_shaped":
+			if len(craft["shape"]) == 3 or len(craft["shape"][0]) == 3:
+				page_font = SHAPED_3X3_FONT
+			else:
+				page_font = SHAPED_2X2_FONT
+	
+	# Show up item title and page font
+	titled = name.replace("_", " ").title() + "\n"
+	content.append({"text": titled, "font": "minecraft:default", "color": "black", "underlined": True})
+	content.append(SMALL_NONE_FONT + page_font + "\n")
+	
 	# Generate the image for the page
 	generate_page_font(config, name, page_font, craft)
 
 	# Get result component
-	result_component = get_item_component(config, name)
+	result_count = craft.get("result_count", 1)
+	result_component = get_item_component(config, name, count = result_count)
 	if result_component.get("clickEvent"):
 		del result_component["clickEvent"]	# Remove clickEvent for result item (as we already are on the page)
 
@@ -460,19 +487,24 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 	if craft_type == "crafting_shaped":
 
 		# Convert each ingredients to its text component
-		formatted_ingredients = {}
+		formatted_ingredients: dict[str, dict] = {}
 		for k, v in craft["ingredients"].items():
 			formatted_ingredients[k] = get_item_component(config, v)
 
 		# Add each ingredient to the craft
 		for line in craft["shape"]:
-			for _ in range(2):	# We need two lines to make a square, otherwise it will be a rectangle
+			for i in range(2):	# We need two lines to make a square, otherwise it will be a rectangle
 				content.append(SMALL_NONE_FONT)
 				for k in line:
 					if k == " ":
 						content.append(NONE_FONT)
 					else:
-						content.append(formatted_ingredients[k])
+						if i == 0:
+							content.append(formatted_ingredients[k])
+						else:
+							copy = formatted_ingredients[k].copy()
+							copy["text"] = NONE_FONT
+							content.append(copy)
 				content.append("\n")
 		if len(craft["shape"]) == 1 and len(craft["shape"][0]) < 3:
 			content.append("\n")
@@ -495,7 +527,9 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 				content.insert(break_line_pos + 2, "\n" + SMALL_NONE_FONT)
 			break_line_pos = content.index("\n", break_line_pos + 3)	# Find the third line break
 			content.insert(break_line_pos, NONE_FONT * offset_2)
-			content.insert(break_line_pos + 1, result_component)
+			copy = result_component.copy()
+			copy["text"] = NONE_FONT
+			content.insert(break_line_pos + 1, copy)
 		else:
 			# First layer of the square
 			len_line = len(craft["shape"][1]) if len(craft["shape"]) > 1 else 0
@@ -516,7 +550,9 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 				content.append("\n" + SMALL_NONE_FONT)
 				break_line_pos = len(content)
 			content.insert(break_line_pos, NONE_FONT * (offset - 1) + SMALL_NONE_FONT * 2)
-			content.insert(break_line_pos + 1, result_component)
+			copy = result_component.copy()
+			copy["text"] = NONE_FONT
+			content.insert(break_line_pos + 1, copy)
 
 			# Add break lines for the third layer of a 3x3 craft
 			if len(craft["shape"]) < 3 and len(craft["shape"][0]) == 3:
@@ -532,15 +568,25 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 		formatted_ingredient = get_item_component(config, craft["ingredient"])
 
 		# Add the ingredient to the craft
-		for _ in range(2):
+		for i in range(2):
 			content.append(SMALL_NONE_FONT)
-			content.append(formatted_ingredient)
+			if i == 0:
+				content.append(formatted_ingredient)
+			else:
+				copy = formatted_ingredient.copy()
+				copy["text"] = NONE_FONT
+				content.append(copy)
 			content.append("\n")
 		
 		# Add the result to the craft
-		for _ in range(2):
+		for i in range(2):
 			content.append(SMALL_NONE_FONT * 4 + NONE_FONT * 2)
-			content.append(result_component)
+			if i == 0:
+				content.append(result_component)
+			else:
+				copy = result_component.copy()
+				copy["text"] = NONE_FONT
+				content.append(copy)
 			content.append("\n")
 		content.append("\n\n")
 
@@ -575,6 +621,7 @@ def generate_otherside_crafts(config: dict, item: str) -> list[dict]:
 	for key, value in config['database'].items():
 		if key != item and value.get(RESULT_OF_CRAFTING):
 			for craft in value[RESULT_OF_CRAFTING]:
+				craft: dict = craft
 				if ("ingredient" in craft and item == ingr_to_id(craft["ingredient"], False)) or \
 					("ingredients" in craft and isinstance(craft["ingredients"], dict) and item in [ingr_to_id(x, False) for x in craft["ingredients"].values()]) or \
 					("ingredients" in craft and isinstance(craft["ingredients"], list) and item in [ingr_to_id(x, False) for x in craft["ingredients"]]):
@@ -623,7 +670,7 @@ def generate_wiki_font_for_ingr(config: dict, name: str, craft: dict) -> str:
 			template = Image.open(f"{TEMPLATES_PATH}/wiki_ingredient_of_craft_template.png")
 			offset = (item_res - item_res_adjusted) // 2
 			template.paste(item_texture, (offset, offset), item_texture)
-			
+
 			# Save the result
 			template.save(dest_path)
 
@@ -682,4 +729,28 @@ def generate_high_res_font(config: dict, item: str, item_image: Image.Image, cou
 	# Save the result and return the font
 	resized.save(path)
 	return MICRO_NONE_FONT + font
+
+# Call the previous function
+def high_res_font_from_ingredient(config: dict, ingredient: str|dict, count: int = 1) -> str:
+	""" Generate the high res font to display in the manual for the ingredient
+	Args:
+		ingredient	(str|dict):	The ingredient, ex: "adamantium_fragment" or {"item": "minecraft:stick"} or {"components": {"custom_data": {"iyc": {"adamantium_fragment": true}}}}
+		count		(int):		The count of the item
+	Returns:
+		str: The font to the generated texture
+	"""
+	# Decode the ingredient
+	if isinstance(ingredient, dict):
+		ingredient = ingr_to_id(ingredient, add_namespace = True)
+	if ':' in ingredient:
+		image_path = f"{config['manual_path']}/items/{ingredient.replace(':', '/')}.png"
+		if not os.path.exists(image_path):
+			error(f"Missing item texture at '{image_path}'")
+		item_image = Image.open(image_path)
+		ingredient = ingredient.split(":")[1]
+	else:
+		item_image = Image.open(f"{config['manual_path']}/items/{config['namespace']}/{ingredient}.png")
+	
+	# Generate the high res font
+	return generate_high_res_font(config, ingredient, item_image, count)
 	
