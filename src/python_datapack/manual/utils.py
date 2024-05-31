@@ -236,7 +236,7 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 			# Get the image template and append the provider
 			shaped_size = max(2, max(len(craft["shape"]), len(craft["shape"][0])))
 			template = Image.open(f"{TEMPLATES_PATH}/shaped_{shaped_size}x{shaped_size}.png")
-			if config['manual_high_resolution']:
+			if not config['manual_high_resolution']:
 				font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/page/{output_filename}.png", "ascent": 0 if not output_name else 6, "height": 60, "chars": [page_font]})
 
 			# Loop the shape matrix
@@ -283,7 +283,7 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 			
 			# Get the image template and append the provider
 			template = Image.open(f"{TEMPLATES_PATH}/furnace.png")
-			if config['manual_high_resolution']:
+			if not config['manual_high_resolution']:
 				font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/page/{output_filename}.png", "ascent": 0 if not output_name else 6, "height": 60, "chars": [page_font]})
 
 			# Place input item
@@ -482,6 +482,7 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 	result_component = get_item_component(config, name, count = result_count)
 	if result_component.get("clickEvent"):
 		del result_component["clickEvent"]	# Remove clickEvent for result item (as we already are on the page)
+	result_component["text"] = MICRO_NONE_FONT + result_component["text"]	# Left adjustment
 
 	# If the craft is shaped
 	if craft_type == "crafting_shaped":
@@ -497,13 +498,13 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 				content.append(SMALL_NONE_FONT)
 				for k in line:
 					if k == " ":
-						content.append(NONE_FONT)
+						content.append(INVISIBLE_ITEM_WIDTH)
 					else:
 						if i == 0:
 							content.append(formatted_ingredients[k])
 						else:
 							copy = formatted_ingredients[k].copy()
-							copy["text"] = NONE_FONT
+							copy["text"] = INVISIBLE_ITEM_WIDTH
 							content.append(copy)
 				content.append("\n")
 		if len(craft["shape"]) == 1 and len(craft["shape"][0]) < 3:
@@ -517,7 +518,7 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 			len_1 = len(craft["shape"][0])
 			offset_1 = 3 - len_1
 			break_line_pos = content.index("\n", content.index("\n") + 1)	# Find the second line break
-			content.insert(break_line_pos, NONE_FONT * offset_1)
+			content.insert(break_line_pos, (INVISIBLE_ITEM_WIDTH * offset_1))
 			content.insert(break_line_pos + 1, result_component)
 			
 			# Second layer of the square
@@ -526,9 +527,9 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 			if len_2 == 0:
 				content.insert(break_line_pos + 2, "\n" + SMALL_NONE_FONT)
 			break_line_pos = content.index("\n", break_line_pos + 3)	# Find the third line break
-			content.insert(break_line_pos, NONE_FONT * offset_2)
+			content.insert(break_line_pos, (INVISIBLE_ITEM_WIDTH * offset_2))
 			copy = result_component.copy()
-			copy["text"] = NONE_FONT
+			copy["text"] = INVISIBLE_ITEM_WIDTH
 			content.insert(break_line_pos + 1, copy)
 		else:
 			# First layer of the square
@@ -540,7 +541,7 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 			except:
 				content.append(SMALL_NONE_FONT)
 				break_line_pos = len(content)
-			content.insert(break_line_pos, NONE_FONT * (offset - 1) + SMALL_NONE_FONT * 2)
+			content.insert(break_line_pos, (INVISIBLE_ITEM_WIDTH * (offset - 1) + SMALL_NONE_FONT * 2))
 			content.insert(break_line_pos + 1, result_component)
 
 			# Second layer of the square
@@ -549,9 +550,9 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 			except:
 				content.append("\n" + SMALL_NONE_FONT)
 				break_line_pos = len(content)
-			content.insert(break_line_pos, NONE_FONT * (offset - 1) + SMALL_NONE_FONT * 2)
+			content.insert(break_line_pos, (INVISIBLE_ITEM_WIDTH * (offset - 1) + SMALL_NONE_FONT * 2))
 			copy = result_component.copy()
-			copy["text"] = NONE_FONT
+			copy["text"] = INVISIBLE_ITEM_WIDTH
 			content.insert(break_line_pos + 1, copy)
 
 			# Add break lines for the third layer of a 3x3 craft
@@ -574,18 +575,18 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 				content.append(formatted_ingredient)
 			else:
 				copy = formatted_ingredient.copy()
-				copy["text"] = NONE_FONT
+				copy["text"] = INVISIBLE_ITEM_WIDTH
 				content.append(copy)
 			content.append("\n")
 		
 		# Add the result to the craft
 		for i in range(2):
-			content.append(SMALL_NONE_FONT * 4 + NONE_FONT * 2)
+			content.append(SMALL_NONE_FONT * 4 + INVISIBLE_ITEM_WIDTH * 2)
 			if i == 0:
 				content.append(result_component)
 			else:
 				copy = result_component.copy()
-				copy["text"] = NONE_FONT
+				copy["text"] = INVISIBLE_ITEM_WIDTH
 				content.append(copy)
 			content.append("\n")
 		content.append("\n\n")
