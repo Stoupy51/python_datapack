@@ -24,25 +24,43 @@ def main(config: dict):
 
 	# For each json file, get the functions that it calls
 	functions_tags_folder = "/tags/function/"
+	advancements_folder = "/advancement/"
 	for file_path in FILES_TO_WRITE:
-		if functions_tags_folder in file_path and file_path.endswith(".json"):
+		if file_path.endswith(".json"):
+			if functions_tags_folder in file_path:
 
-			# Get namespace of the file
-			splitted = file_path.split(functions_tags_folder)
-			namespace = splitted[0].split("/")[-1]
+				# Get namespace of the file
+				splitted = file_path.split(functions_tags_folder)
+				namespace = splitted[0].split("/")[-1]
 
-			# Get string that is used for calling the function (ex: "#namespace:my_function")
-			to_be_called = f"#{namespace}:" + splitted[1].replace(".json","")
+				# Get string that is used for calling the function (ex: "#namespace:my_function")
+				to_be_called = f"#{namespace}:" + splitted[1].replace(".json","")
 
-			# Read the json file and loop its values
-			data = json.loads(FILES_TO_WRITE[file_path])
-			if data.get("values"):
-				for value in data["values"]:
+				# Read the json file and loop its values
+				data = json.loads(FILES_TO_WRITE[file_path])
+				if data.get("values"):
+					for value in data["values"]:
 
-					# Get the function that is called, either "function" or {"id": "function", ...}
-					calling = value if type(value) == str else value["id"]
+						# Get the function that is called, either "function" or {"id": "function", ...}
+						calling = value if type(value) == str else value["id"]
 
-					# If the called function is registered, append the name of this file
+						# If the called function is registered, append the name of this file
+						if calling in mcfunctions.keys() and to_be_called not in mcfunctions[calling]["within"]:
+							mcfunctions[calling]["within"].append(to_be_called)
+
+			elif advancements_folder in file_path:
+
+				# Get namespace of the file
+				splitted = file_path.split(advancements_folder)
+				namespace = splitted[0].split("/")[-1]
+
+				# Get string that is used for calling the function (ex: "advancement namespace:my_function")
+				to_be_called = f"advancement {namespace}:" + splitted[1].replace(".json","")
+
+				# Read the json file and loop its values
+				data: dict = json.loads(FILES_TO_WRITE[file_path])
+				if data.get("rewards", {}) and data["rewards"].get("function"):
+					calling = data["rewards"]["function"]
 					if calling in mcfunctions.keys() and to_be_called not in mcfunctions[calling]["within"]:
 						mcfunctions[calling]["within"].append(to_be_called)
 
