@@ -39,7 +39,7 @@ def main(config: dict):
 		super_copy(f"{TEMPLATES_PATH}/shaped_3x3.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/shaped_3x3.png")
 
 	# If the manual cache is enabled and we have a cache file, load it
-	if config['cache_manual_pages'] and os.path.exists(config['manual_debug']):
+	if config['cache_manual_pages'] and os.path.exists(config['manual_debug']) and os.path.exists(f"{config['manual_path']}/font/manual.json"):
 		with super_open(config['manual_debug'], "r") as f:
 			book_content = json.load(f)
 
