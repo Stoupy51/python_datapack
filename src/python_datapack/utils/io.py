@@ -120,6 +120,19 @@ FILES_TO_WRITE: dict[str, str] = {}
 def is_in_write_queue(file_path: str) -> bool:
 	return file_path.replace("\\", "/") in FILES_TO_WRITE
 
+def sort_override_model(json_content: dict) -> None:
+	for key, value in json_content.items():
+		if key == "overrides" \
+			and isinstance(value, list) and len(value) > 1 \
+			and all(isinstance(x, dict) \
+				and x.get("predicate") \
+				and isinstance(x["predicate"], dict) \
+				and x["predicate"].get("custom_model_data") is not None \
+				and isinstance(x["predicate"]["custom_model_data"], int) \
+				for x in value
+			):
+				json_content["overrides"] = sorted(value, key=lambda x: x["predicate"]["custom_model_data"])
+
 def write_to_file(file_path: str, content: str, overwrite: bool = False):
 
 	# Clean path
@@ -133,7 +146,9 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False):
 	if not overwrite and file_path in FILES_TO_WRITE and file_path.endswith(".json") and FILES_TO_WRITE[file_path] != "":
 		dict_content = json.loads(content)
 		old_content = json.loads(FILES_TO_WRITE[file_path])
-		FILES_TO_WRITE[file_path] = super_json_dump(super_merge_dict(old_content, dict_content))
+		merged = super_merge_dict(old_content, dict_content)
+		sort_override_model(merged)
+		FILES_TO_WRITE[file_path] = super_json_dump(merged)
 		return
 	
 	# Add the content to the file

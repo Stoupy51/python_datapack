@@ -115,6 +115,8 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 				source = f"{config['textures_folder']}/{texture_path}.png"
 				destination = f"{dest_base_textu}/{texture_path}.png"
 				super_copy(source, destination)
+				if os.path.exists(source + ".mcmeta"):
+					super_copy(source + ".mcmeta", destination + ".mcmeta")
 			
 		# Write content
 		write_to_file(f"{dest_base_model}/{item}{on_off}.json", super_json_dump(content, max_level = 4))
