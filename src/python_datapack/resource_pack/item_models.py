@@ -44,6 +44,11 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		content = {}
 		if data.get(OVERRIDE_MODEL):
 			content = data[OVERRIDE_MODEL]
+			if on_off:	# Check if the override model has the on/off texture
+				for key, texture in content["textures"].items():
+					on_off_path = "/".join(texture.split("/")[1:]) + on_off + ".png"
+					if on_off_path in config["textures_files"]:
+						content["textures"][key] = texture + on_off
 
 		else:
 			# If it's a block

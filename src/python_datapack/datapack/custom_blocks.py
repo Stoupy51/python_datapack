@@ -124,6 +124,7 @@ data modify entity @s brightness set value {{block:15,sky:15}}
 	content = "\n"
 	for block_id in unique_blocks:
 		block_underscore = block_id.replace(":","_")
+		block_id = "#minecraft:cauldrons" if block_id == "minecraft:cauldron" else block_id
 		content += f"execute if entity @s[tag={config['namespace']}.vanilla.{block_underscore}] unless block ~ ~ ~ {block_id} run function {config['namespace']}:custom_blocks/_groups/{block_underscore}\n"
 	write_to_file(f"{config['datapack_functions']}/custom_blocks/destroy.mcfunction", content + "\n")
 
@@ -194,13 +195,19 @@ execute store result entity @s Item.count byte 1 run scoreboard players get #ite
 
 	# Write the used_vanilla_blocks tag, the predicate to check the blocks with the tag and an advanced one
 	VANILLA_BLOCKS_TAG = "used_vanilla_blocks"
-	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/tags/block/{VANILLA_BLOCKS_TAG}.json", super_json_dump({"values": list(unique_blocks)}))
+	listed_blocks = list(unique_blocks)
+	if "minecraft:cauldron" in listed_blocks:
+		listed_blocks.remove("minecraft:cauldron")
+		listed_blocks.append("#minecraft:cauldrons")
+	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/tags/block/{VANILLA_BLOCKS_TAG}.json", super_json_dump({"values": listed_blocks}))
 	predicate = {"condition": "minecraft:location_check", "predicate": {"block": {"blocks": f"#{config['namespace']}:{VANILLA_BLOCKS_TAG}"}}}
 	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/predicate/check_vanilla_blocks.json", super_json_dump(predicate))
 	advanced_predicate = {"condition": "minecraft:any_of", "terms": []}
 	for block in unique_blocks:
 		block_underscore = block.replace(":","_")
-		predicate = {"condition": "minecraft:entity_properties", "entity": "this", "predicate": { "nbt": f"{{Tags:[\"iyc.vanilla.{block_underscore}\"]}}", "location": { "block": { "blocks": [block] }}}}
+		if block == "minecraft:cauldron":
+			block = "#minecraft:cauldrons"
+		predicate = {"condition": "minecraft:entity_properties", "entity": "this", "predicate": { "nbt": f"{{Tags:[\"iyc.vanilla.{block_underscore}\"]}}", "location": { "block": { "blocks": block }}}}
 		advanced_predicate["terms"].append(predicate)
 	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/predicate/advanced_check_vanilla_blocks.json", super_json_dump(advanced_predicate))
 
