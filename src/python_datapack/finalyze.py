@@ -5,6 +5,7 @@ from .utils.print import *
 from .utils.weld import weld_datapack, weld_resource_pack
 from .datapack.lang import main as lang_main
 from .datapack.headers import main as headers_main
+from .datapack.custom_block_ticks import custom_blocks_ticks_and_second_functions
 from .resource_pack.check_unused_textures import main as check_unused_textures_main
 import shutil
 
@@ -47,6 +48,9 @@ def main(config: dict, user_code: callable):
 	# Run user code
 	if user_code:
 		user_code(config)
+	
+	# Second and tick functions for custom blocks
+	custom_blocks_ticks_and_second_functions(config)
 
 	# Generate lang file
 	if config['enable_translations']:

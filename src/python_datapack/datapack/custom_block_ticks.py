@@ -1,7 +1,7 @@
 
 # Imports
-from .print import *
-from .io import *
+from ..utils.print import *
+from ..utils.io import *
 
 # Setup custom blocks ticks and second functions calls
 def custom_blocks_ticks_and_second_functions(config: dict) -> None:
@@ -11,7 +11,6 @@ def custom_blocks_ticks_and_second_functions(config: dict) -> None:
 	Args:
 		config (dict): The config dictionary\n
 	"""
-	database: dict[str, dict] = config['database']
 	namespace: str = config['namespace']
 	build_datapack: str = config['build_datapack']
 	custom_blocks = f"{build_datapack}/data/{namespace}/function/custom_blocks/"
@@ -39,13 +38,13 @@ def custom_blocks_ticks_and_second_functions(config: dict) -> None:
 	
 	# Write second functions
 	if custom_blocks_second:
-		write_to_file(f"{build_datapack}/data/{namespace}/function/second.mcfunction", f"\n# Custom blocks second functions\nexecute as @e[tag={namespace}.second] run function {namespace}:custom_blocks/second")
+		write_to_file(f"{build_datapack}/data/{namespace}/function/second.mcfunction", f"\n# Custom blocks second functions\nexecute as @e[tag={namespace}.second] at @s run function {namespace}:custom_blocks/second")
 		content = "\n".join(f"execute if entity @s[tag={namespace}.{custom_block}] run function {namespace}:custom_blocks/{custom_block}/second" for custom_block in custom_blocks_second)
 		write_to_file(f"{build_datapack}/data/{namespace}/function/custom_blocks/second.mcfunction", content)
 	
 	# Write tick functions
 	if custom_blocks_tick:
-		write_to_file(f"{build_datapack}/data/{namespace}/function/tick.mcfunction", f"\n# Custom blocks tick functions\nexecute as @e[tag={namespace}.tick] run function {namespace}:custom_blocks/tick")
+		write_to_file(f"{build_datapack}/data/{namespace}/function/tick.mcfunction", f"\n# Custom blocks tick functions\nexecute as @e[tag={namespace}.tick] at @s run function {namespace}:custom_blocks/tick")
 		content = "\n".join(f"execute if entity @s[tag={namespace}.{custom_block}] run function {namespace}:custom_blocks/{custom_block}/tick" for custom_block in custom_blocks_tick)
 		write_to_file(f"{build_datapack}/data/{namespace}/function/custom_blocks/tick.mcfunction", content)
 
