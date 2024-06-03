@@ -133,7 +133,7 @@ def sort_override_model(json_content: dict) -> None:
 			):
 				json_content["overrides"] = sorted(value, key=lambda x: x["predicate"]["custom_model_data"])
 
-def write_to_file(file_path: str, content: str, overwrite: bool = False):
+def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
 
 	# Clean path
 	file_path = file_path.replace("\\", "/")
@@ -152,7 +152,10 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False):
 		return
 	
 	# Add the content to the file
-	FILES_TO_WRITE[file_path] += str(content)
+	if prepend:
+		FILES_TO_WRITE[file_path] = str(content) + FILES_TO_WRITE[file_path]
+	else:
+		FILES_TO_WRITE[file_path] += str(content)
 
 def write_all_files(contains: str = ""):
 	contains = contains.replace("\\", "/")
