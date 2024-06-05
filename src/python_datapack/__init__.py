@@ -35,7 +35,6 @@ def check_config_format(config: dict) -> bool:
 	valid = basic_key_check(config, "database_debug", str, "Dump of the database for debugging purposes", valid)
 	valid = basic_key_check(config, "cmd_cache", str, "Cache of all items Custom Model Data", valid)
 	valid = basic_key_check(config, "enable_translations", bool, "Will convert all the text components to translate and generate a lang file (WARNING: The algorithm is pretty slow, so it's recommended to disable it when not needed)", valid)
-	valid = basic_key_check(config, "lang_file_debug", str, "Dump of the lang file for debugging purposes", valid)
 	valid = basic_key_check(config, "merge_libs", bool, "Make new zip of merged libraries with the datapack and resource pack using Smithed Weld", valid)
 	valid = basic_key_check(config, "author", str, "Author(s) name(s) displayed in pack.mcmeta, also used to add convention.debug tag to the players of the same name(s) <-- showing additionnal displays like datapack loading", valid)
 	valid = basic_key_check(config, "datapack_name", str, "Name of the datapack, used for messages and items lore", valid)
