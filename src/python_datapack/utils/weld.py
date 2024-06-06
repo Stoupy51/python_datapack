@@ -2,6 +2,7 @@
 # Imports
 from .io import *
 from .print import *
+from ..dependencies.main import OFFICIAL_LIBS, OFFICIAL_LIBS_PATH
 from smithed.weld.toolchain.cli import weld
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -17,6 +18,14 @@ def weld_datapack(config: dict, dest_path: str) -> None:
 		f"{config['build_folder']}/{config['datapack_name']}_datapack.zip",
 		config['libs_folder'] + "/datapack/*",
 	]
+
+	# Add the used official libs
+	for lib in OFFICIAL_LIBS.values():
+		if lib["is_used"]:
+			name: str = lib["name"]
+			path: str = f"{OFFICIAL_LIBS_PATH}/datapack/{name}.zip"
+			if os.path.exists(path):
+				datapacks_to_merge.append(path)
 
 	# Weld all datapacks
 	output_dir = os.path.dirname(dest_path)
@@ -46,6 +55,14 @@ def weld_resource_pack(config: dict, dest_path: str) -> None:
 		f"{config['build_folder']}/{config['datapack_name']}_resource_pack.zip",
 		config['libs_folder'] + "/resource_pack/*",
 	]
+
+	# Add the used official libs
+	for lib in OFFICIAL_LIBS.values():
+		if lib["is_used"]:
+			name: str = lib["name"]
+			path: str = f"{OFFICIAL_LIBS_PATH}/resource_pack/{name}.zip"
+			if os.path.exists(path):
+				resource_packs_to_merge.append(path)
 	
 	# Weld all resource packs
 	output_dir = os.path.dirname(dest_path)

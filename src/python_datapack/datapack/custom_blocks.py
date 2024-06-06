@@ -107,14 +107,26 @@ data modify entity @s brightness set value {{block:15,sky:15}}
 		pass
 
 	# Link the custom block library to the datapack
-	write_to_file(f"{config['build_datapack']}/data/smithed.custom_block/tags/function/event/on_place.json", super_json_dump({"values": [f"{config['namespace']}:custom_blocks/on_place"]}))
-	write_to_file(f"{config['datapack_functions']}/custom_blocks/on_place.mcfunction", f"execute if data storage smithed.custom_block:main blockApi.__data.Items[0].components.\"minecraft:custom_data\".smithed.block{{from:\"{config['namespace']}\"}} run function {config['namespace']}:custom_blocks/place\n")
-	content = f"tag @s add {config['namespace']}.placer\n"
-	for item, data in config['database'].items():
-		if data.get("id") == CUSTOM_BLOCK_VANILLA:
-			content += f"execute if data storage smithed.custom_block:main blockApi{{id:\"{config['namespace']}:{item}\"}} run function {config['namespace']}:custom_blocks/{item}/place_main\n"
-	content += f"tag @s remove {config['namespace']}.placer\n"
-	write_to_file(f"{config['datapack_functions']}/custom_blocks/place.mcfunction", content)
+	smithed_custom_blocks = [(item, data) for item, data in config['database'].items() if data.get("id") == CUSTOM_BLOCK_VANILLA]
+	if smithed_custom_blocks:
+
+		# Change is_used state
+		if not official_lib_used("smithed.custom_block"):
+			info("Found custom blocks using CUSTOM_BLOCK_VANILLA in the database, adding 'smithed.custom_block' to the library to the dependencies")
+
+		# Write function tag to link with the library
+		write_to_file(f"{config['build_datapack']}/data/smithed.custom_block/tags/function/event/on_place.json", super_json_dump({"values": [f"{config['namespace']}:custom_blocks/on_place"]}))
+
+		# Write the slot function
+		write_to_file(f"{config['datapack_functions']}/custom_blocks/on_place.mcfunction", f"execute if data storage smithed.custom_block:main blockApi.__data.Items[0].components.\"minecraft:custom_data\".smithed.block{{from:\"{config['namespace']}\"}} run function {config['namespace']}:custom_blocks/place\n")
+
+		# Write the function that will place the custom blocks
+		content = f"tag @s add {config['namespace']}.placer\n"
+		for item, data in config['database'].items():
+			if data.get("id") == CUSTOM_BLOCK_VANILLA:
+				content += f"execute if data storage smithed.custom_block:main blockApi{{id:\"{config['namespace']}:{item}\"}} run function {config['namespace']}:custom_blocks/{item}/place_main\n"
+		content += f"tag @s remove {config['namespace']}.placer\n"
+		write_to_file(f"{config['datapack_functions']}/custom_blocks/place.mcfunction", content)
 
 	# Sort unique blocks
 	unique_blocks = sorted(list(unique_blocks))

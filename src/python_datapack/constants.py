@@ -33,3 +33,16 @@ NOT_COMPONENTS: list[str] = [							# Keys that should not be considered as comp
 	OVERRIDE_MODEL,
 ]
 
+# Automatically handled dependencies for supported libs with additional key "is_used" that is True when the lib is found to be used.
+def official_lib_used(lib: str) -> bool:
+	is_used: bool = OFFICIAL_LIBS[lib]["is_used"]
+	OFFICIAL_LIBS[lib]["is_used"] = True
+	return is_used
+OFFICIAL_LIBS: dict[str, dict[str, list[int] | str | bool]] = {
+	"common_signals":		{"version":[0, 0, 3], "name":"Common Signals",					"url":"https://github.com/Stoupy51/CommonSignals",			"is_used": False},
+	"smithed.custom_block":	{"version":[0, 3, 0], "name":"Smithed Custom Block",			"url":"https://wiki.smithed.dev/libraries/custom-block/",	"is_used": False},
+	"smithed.crafter":		{"version":[0, 3, 1], "name":"Smithed Crafter",					"url":"https://wiki.smithed.dev/libraries/crafter/",		"is_used": False},
+	"furnace_nbt_recipes":	{"version":[1, 4, 0], "name":"Furnace NBT Recipes",				"url":"https://github.com/Stoupy51/FurnaceNbtRecipes",		"is_used": False},
+	"smart_ore_generation":	{"version":[1, 3, 0], "name":"Smart Ore Generation",			"url":"https://github.com/Stoupy51/SmartOreGeneration",		"is_used": False},
+}
+

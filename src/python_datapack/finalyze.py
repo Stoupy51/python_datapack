@@ -7,6 +7,7 @@ from .datapack.lang import main as lang_main
 from .datapack.headers import main as headers_main
 from .datapack.custom_block_ticks import custom_blocks_ticks_and_second_functions
 from .resource_pack.check_unused_textures import main as check_unused_textures_main
+from .dependencies.main import main as dependencies_main, OFFICIAL_LIBS_PATH, OFFICIAL_LIBS
 import shutil
 
 def main(config: dict, user_code: callable):
@@ -52,6 +53,9 @@ def main(config: dict, user_code: callable):
 	# Second and tick functions for custom blocks
 	custom_blocks_ticks_and_second_functions(config)
 
+	# Check for official libs uses
+	dependencies_main(config)
+
 	# Generate lang file
 	if config['enable_translations']:
 		lang_main(config)
@@ -68,9 +72,11 @@ def main(config: dict, user_code: callable):
 
 
 	# Generate zip files
+	datapack_dest: str = config['build_copy_destinations'][0]
+	resourcepack_dest: str = config['build_copy_destinations'][1]
 	processes = [
-		(config['build_datapack'], f"{config['build_folder']}/{config['datapack_name_simple']}_datapack", config['build_copy_destinations'][0]),
-		(config['build_resource_pack'], f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack", config['build_copy_destinations'][1])
+		(config['build_datapack'], f"{config['build_folder']}/{config['datapack_name_simple']}_datapack", datapack_dest),
+		(config['build_resource_pack'], f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack", resourcepack_dest)
 	]
 	for source, destination, copy_destination in processes:
 		if os.path.exists(source):
@@ -89,23 +95,33 @@ def main(config: dict, user_code: callable):
 
 	# Copy datapack libraries
 	try:
+		
+		# Copy lib folder
 		for root, _, files in os.walk(config['libs_folder'] + "/datapack"):
 			for file in files:
 				if file.endswith(".zip"):
-					shutil.copy(f"{root}/{file}", config['build_copy_destinations'][0])
-					info(f"Library '{file}' copied to '{config['build_copy_destinations'][0]}/'")
-	except:
-		warning(f"Could not copy datapack libraries to '{config['build_copy_destinations'][0]}/'")
+					shutil.copy(f"{root}/{file}", datapack_dest)
+					info(f"Library '{file}' copied to '{datapack_dest}/'")
+		
+		# Copy official used libs
+		for data in OFFICIAL_LIBS.values():
+			if data["is_used"]:
+				name: str = data["name"]
+				shutil.copy(f"{OFFICIAL_LIBS_PATH}/datapack/{name}.zip", datapack_dest)
+				info(f"Library '{name}.zip' copied to '{datapack_dest}/'")
+		
+	except OSError as e:
+		warning(f"Could not copy datapack libraries to '{datapack_dest}/': {e}")
 
 
 	# If merge libs is enabled, use weld to generate datapack and resource pack with bundled libraries
 	if config['merge_libs']:
 		weld_dp = f"{config['build_folder']}/{config['datapack_name_simple']}_datapack_with_libs.zip"
 		weld_rp = f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack_with_libs.zip"
-		weld_datapack(weld_dp)
-		weld_resource_pack(weld_rp)
+		weld_datapack(config, weld_dp)
+		weld_resource_pack(config, weld_rp)
 		try:
-			shutil.copy(weld_rp, config['build_copy_destinations'][1])
+			shutil.copy(weld_rp, resourcepack_dest)
 		except OSError:
 			pass
 		info("Datapack and resource pack merged with bundled libraries")

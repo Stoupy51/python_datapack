@@ -13,7 +13,7 @@ def main(config: dict):
 
 			# Remove texture from the list if it is used in the json file, ex: /adamantium_ore"
 			to_check = f'/{texture}"'
-			if to_check in file_content:
+			if to_check in file_content or to_check.replace('"','.png') in file_content:
 				unused_textures.remove(texture)
 
 	# Print out loud
