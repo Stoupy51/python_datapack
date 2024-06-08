@@ -1,5 +1,26 @@
 
+# Imports
 import time
+import sys
+import os
+
+# Decorator that make a function silent
+def silent(func):
+	def wrapper(*args, **kwargs):
+
+		# Disable stdout
+		_original_stdout  = sys.stdout
+		sys.stdout = open(os.devnull, "w", encoding = "utf-8")
+
+		# Call the function
+		result = func(*args, **kwargs)
+
+		# Re-Enable stdout
+		sys.stdout.close()
+		sys.stdout = _original_stdout 
+		return result
+	
+	return wrapper
 
 # Colors constants
 GREEN = "\033[92m"

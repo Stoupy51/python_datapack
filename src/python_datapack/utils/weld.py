@@ -8,6 +8,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 
 # Weld datapack
+@silent
 def weld_datapack(config: dict, dest_path: str) -> None:
 	""" Merge the datapack and libs into one file using Weld
 	Args:
@@ -45,6 +46,7 @@ def weld_datapack(config: dict, dest_path: str) -> None:
 	os.remove(dest_path.replace(".zip",".temp.zip"))
 
 # Weld resource pack
+@silent
 def weld_resource_pack(config: dict, dest_path: str) -> None:
 	""" Merge the resource pack and libs into one file using Weld
 	Args:
