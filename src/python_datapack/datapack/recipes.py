@@ -53,81 +53,49 @@ def main(config: dict):
 		Returns:
 			dict: The generated recipe
 		"""
-		try:
-			data = config['database'][item]
-		except:
-			data = config['external_database'][item]
+		result_ingr = ingr_repr(item, config['namespace']) if not recipe.get("result") else recipe["result"]
 		to_return = {
 			"type": "minecraft:" + recipe["type"],
 			"category": recipe[CATEGORY],
 			"group": recipe["group"] if recipe.get("group") else None,
 			"ingredients": recipe["ingredients"],
-			"result": {"id": data.get("id"), "count": recipe["result_count"]} if not recipe.get("result") else recipe["result"]
+			"result": item_to_id_ingr_repr(get_item_from_ingredient(config, result_ingr)),
 		}
 		if not to_return["group"]:
 			del to_return["group"]
-		if not recipe.get("result"):
-			for k, v in data.items():
-				if k not in NOT_COMPONENTS:
-					if to_return["result"].get("components") is None:
-						to_return["result"]["components"] = {}
-					to_return["result"]["components"][f"minecraft:{k}"] = v
-		else:
-			# Replace "item" to "id" but keep "id" as the first key
-			to_return["result"] = item_to_id_ingr_repr(to_return["result"])
+		to_return["result"]["count"] = recipe["result_count"]
 		return to_return
 
 	@simple_cache
 	def vanilla_shaped_recipe(recipe: dict, item: str) -> dict:
-		try:
-			data = config['database'][item]
-		except:
-			data = config['external_database'][item]
+		result_ingr = ingr_repr(item, config['namespace']) if not recipe.get("result") else recipe["result"]
 		to_return = {
 			"type": "minecraft:" + recipe["type"],
 			"category": recipe[CATEGORY],
 			"group": recipe["group"] if recipe.get("group") else None,
 			"pattern": recipe["shape"],
 			"key": recipe["ingredients"],
-			"result": {"id": data["id"], "count": recipe["result_count"]} if not recipe.get("result") else recipe["result"]
+			"result": item_to_id_ingr_repr(get_item_from_ingredient(config, result_ingr)),
 		}
 		if not to_return["group"]:
 			del to_return["group"]
-		if not recipe.get("result"):
-			for k, v in data.items():
-				if k not in NOT_COMPONENTS:
-					if to_return["result"].get("components") is None:
-						to_return["result"]["components"] = {}
-					to_return["result"]["components"][f"minecraft:{k}"] = v
-		else:
-			# Replace "item" to "id" but keep "id" as the first key 
-			to_return["result"] = item_to_id_ingr_repr(to_return["result"])
+		to_return["result"]["count"] = recipe["result_count"]
 		return to_return
 	
 	@simple_cache
 	def vanilla_furnace_recipe(recipe: dict, item: str) -> dict:
-		try:
-			data = config['database'][item]
-		except:
-			data = config['external_database'][item]
+		result_ingr = ingr_repr(item, config['namespace']) if not recipe.get("result") else recipe["result"]
 		to_return = {
 			"type": "minecraft:" + recipe["type"],
 			"category": recipe[CATEGORY],
 			"group": recipe["group"] if recipe.get("group") else None,
 			"ingredient": recipe["ingredient"],
-			"result": {"id": data["id"], "count": recipe["result_count"]} if not recipe.get("result") else recipe["result"]
+			"result": item_to_id_ingr_repr(get_item_from_ingredient(config, result_ingr)),
 		}
 		if not to_return["group"]:
 			del to_return["group"]
-		if not recipe.get("result"):
-			for k, v in data.items():
-				if k not in NOT_COMPONENTS:
-					if to_return["result"].get("components") is None:
-						to_return["result"]["components"] = {}
-					to_return["result"]["components"][f"minecraft:{k}"] = v
-		else:
-			# Replace "item" to "id" but keep "id" as the first key
-			to_return["result"] = item_to_id_ingr_repr(to_return["result"])
+		to_return["result"]["count"] = recipe["result_count"]
+		return to_return
 	
 	@simple_cache
 	def smithed_shapeless_recipe(recipe: dict, result_loot: str) -> str:
@@ -190,14 +158,15 @@ def main(config: dict):
 	@simple_cache
 	def furnace_nbt_recipe(recipe: dict, result_loot: str, result_ingr: dict) -> str:
 		ingredient: dict = recipe["ingredient"]
+		result: dict = item_to_id_ingr_repr(get_item_from_ingredient(config, result_ingr))
 
 		# Create a vanilla recipe for the furnace
 		type: str = recipe["type"]
 		ingredient_vanilla: str = get_vanilla_item_id_from_ingredient(config, ingredient)
-		result_vanilla: str = get_vanilla_item_id_from_ingredient(config, result_ingr)
-		path: str = f"{config['build_datapack']}/data/furnace_nbt_recipes/recipe/vanilla_items/{type}__{ingredient_vanilla.split(':')[1]}__{result_vanilla.split(':')[1]}.json"
+		result_item: str = ingr_to_id(result_ingr).replace(':','_')
+		path: str = f"{config['build_datapack']}/data/furnace_nbt_recipes/recipe/vanilla_items/{type}__{ingredient_vanilla.split(':')[1]}__{result_item}.json"
 		type = f"minecraft:{type}" if ":" not in type else type
-		json_file: dict = {"type":type,"ingredient":{"item": ingredient_vanilla},"result":{"id": result_vanilla},"experience":recipe.get("experience", 0),"cookingtime":recipe.get("cookingtime", 200)}
+		json_file: dict = {"type":type,"ingredient":{"item": ingredient_vanilla},"result":result,"experience":recipe.get("experience", 0),"cookingtime":recipe.get("cookingtime", 200)}
 		write_to_file(path, super_json_dump(json_file, max_level = -1), overwrite = True)
 
 		# Prepare line and return

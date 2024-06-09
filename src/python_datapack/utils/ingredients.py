@@ -2,6 +2,7 @@
 # Imports
 from .print import *
 from .cache import simple_cache
+from ..constants import *
 
 # Recipes constants
 FURNACES_RECIPES_TYPES = ("smelting", "blasting", "smoking", "campfire_cooking")
@@ -17,7 +18,7 @@ def ingr_repr(id: str, ns: str|None = None, count: int|None = None) -> dict:
 		count	(int|None):	The count of the ingredient (optional)
 	Returns:
 		str: The identity of the ingredient for custom crafts,
-			ex: {"components":{"custom_data":{"iyc":{"adamantium_fragment":True}}}}
+			ex: {"components":{"minecraft:custom_data":{"iyc":{"adamantium_fragment":True}}}}
 			ex: {"item": "minecraft:stick"}
 	"""
 	if ":" in id:
@@ -25,7 +26,7 @@ def ingr_repr(id: str, ns: str|None = None, count: int|None = None) -> dict:
 	else:
 		if ns is None:
 			error(f"Namespace must be specified for custom ingredient '{id}'")
-		to_return = {"components":{"custom_data":{ns:{id:True}}}}
+		to_return = {"components":{"minecraft:custom_data":{ns:{id:True}}}}
 	if count is not None:
 		to_return["count"] = count
 	return to_return
@@ -55,7 +56,7 @@ def ingr_to_id(ingredient: dict, add_namespace: bool = True) -> str:
 	""" Get the id from an ingredient dict
 	Args:
 		ingredient (dict): The ingredient dict
-			ex: {"components":{"custom_data":{iyc:{adamantium_ingot=True}}}}
+			ex: {"components":{"minecraft:custom_data":{iyc:{adamantium_ingot=True}}}}
 			ex: {"item": "minecraft:stick"}
 	Returns:
 		str: The id of the ingredient, ex: "minecraft:stick" or "iyc:adamantium_ingot"
@@ -65,7 +66,7 @@ def ingr_to_id(ingredient: dict, add_namespace: bool = True) -> str:
 			return ingredient["item"].split(":")[1]
 		return ingredient["item"]
 	else:
-		custom_data = ingredient["components"]["custom_data"]
+		custom_data = ingredient["components"]["minecraft:custom_data"]
 		namespace = list(custom_data.keys())[0]
 		id = list(custom_data[namespace].keys())[0]
 		if add_namespace:
@@ -100,4 +101,49 @@ def get_vanilla_item_id_from_ingredient(config: dict, ingredient: dict, add_name
 			return config['external_database'][f"{ns}:{ingr_id}"]["id"].split(":")[1]
 		else:
 			error(f"External item '{ns}:{ingr_id}' not found in the external database")
+
+# Used for recipes
+@simple_cache
+def get_item_from_ingredient(config: dict, ingredient: dict) -> dict:
+	""" Get the item dict from an ingredient dict
+	Args:
+		config (dict): The config dict
+		ingredient (dict): The ingredient dict
+			ex: {"item": "minecraft:stick"}
+	Returns:
+		dict: The item data dict, ex: {"id": "minecraft:stick", "count": 1}
+	"""
+	ingr_id = ingr_to_id(ingredient)
+	ns, id = ingr_id.split(":")
+
+	# Get from internal database
+	if ns == config['namespace']:
+		item_data: dict = config['database'][id].copy()
+		result: dict = {"id": item_data.pop("id"), "count": 1}
+
+		# Add components
+		for k, v in item_data.items():
+			if k not in NOT_COMPONENTS:
+				if result.get("components") is None:
+					result["components"] = {}
+				result["components"][f"minecraft:{k}"] = v
+		return result
+	
+	# External database
+	if config['external_database'].get(ingr_id):
+		item_data: dict = config['external_database'][ingr_id].copy()
+		result: dict = {"id": item_data.pop("id"), "count": 1}
+
+		# Add components
+		for k, v in item_data.items():
+			if k not in NOT_COMPONENTS:
+				if result.get("components") is None:
+					result["components"] = {}
+				result["components"][f"minecraft:{k}"] = v
+		return result
+	
+	# Minecraft item
+	if ns == "minecraft":
+		return {"id": id, "count": 1}
+	error(f"External item '{ingr_id}' not found in the external database")
 
