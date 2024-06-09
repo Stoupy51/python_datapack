@@ -6,14 +6,6 @@ from ..constants import *
 
 def main(config: dict):
 
-	# Setup load json files and tick json file
-	write_to_file(f"{config['build_datapack']}/data/load/tags/function/load.json", super_json_dump({"values": [f"#{config['namespace']}:load/main"]}))
-	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/tags/function/load/main.json", super_json_dump({"values": [{"id":f"#{config['namespace']}:load/dependencies","required":False}, f"{config['namespace']}:load/main"]}, max_level = 3))
-	calls = [{"id":f"#{namespace}:load", "required": False} for namespace in config['dependencies'].keys()]
-	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/tags/function/load/dependencies.json", super_json_dump({"values": calls}))
-	write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/tick.json", super_json_dump({"values": [f"{config['namespace']}:load/tick_verification"]}))
-
-
 	# Setup load main and secondary function
 	write_to_file(f"{config['datapack_functions']}/load/main.mcfunction", f"""
 # Avoiding multiple executions of the same load function

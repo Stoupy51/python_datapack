@@ -36,6 +36,24 @@ def main(config: dict) -> None:
 				if not official_lib_used("common_signals"):
 					info("Found the use of official supported library 'common_signals', adding it to the datapack")
 				break
+	dependencies: list[tuple] = [(ns, data) for ns, data in OFFICIAL_LIBS.items() if data["is_used"]]
+	dependencies += list(config['dependencies'].items())
+
+	# Setup Lantern Load
+	write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/load.json", super_json_dump({"values": ["#load:_private/load"]}))
+	write_to_file(f"{config['build_datapack']}/data/load/tags/function/_private/load.json", super_json_dump({"values": ["#load:_private/init",{"id":"#load:pre_load","required":False},{"id":"#load:load","required":False},{"id":"#load:post_load","required":False}]}))
+	write_to_file(f"{config['build_datapack']}/data/load/function/_private/init.mcfunction", f"""
+# Reset scoreboards so packs can set values accurate for current load.
+scoreboard objectives add load.status dummy
+scoreboard players reset * load.status
+""")
+
+	# Setup load json files and tick json file
+	write_to_file(f"{config['build_datapack']}/data/load/tags/function/load.json", super_json_dump({"values": [f"#{namespace}:load/main"]}))
+	write_to_file(f"{config['build_datapack']}/data/{namespace}/tags/function/load/main.json", super_json_dump({"values": [{"id":f"#{namespace}:load/dependencies","required":False}, f"{namespace}:load/main"]}, max_level = 3))
+	calls = [{"id":f"#{namespace}:load", "required": False} for namespace, _ in dependencies]
+	write_to_file(f"{config['build_datapack']}/data/{namespace}/tags/function/load/dependencies.json", super_json_dump({"values": calls}))
+	write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/tick.json", super_json_dump({"values": [f"{namespace}:load/tick_verification"]}))
 	
 	# For each used library, show message
 	message = ""
@@ -48,8 +66,6 @@ def main(config: dict) -> None:
 	## Write check_dependencies and waiting_for_player functions now that we have all the dependencies
 	encoder_checks = ""
 	decoder_checks = ""
-	dependencies: list[tuple] = [(ns, data) for ns, data in OFFICIAL_LIBS.items() if data["is_used"]]
-	dependencies += list(config['dependencies'].items())
 	for lib_ns, value in dependencies:
 
 		# Encoder check
