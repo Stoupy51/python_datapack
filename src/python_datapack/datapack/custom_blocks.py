@@ -71,7 +71,7 @@ execute if score #rotation {config['namespace']}.data matches 4 run data modify 
 			write_to_file(f"{path}/place_main.mcfunction", content)
 
 			## Secondary function
-			block_id = block_id.split('[')[0].split('{')[0]
+			block_id: str = block_id.split('[')[0].split('{')[0]
 			unique_blocks.add(block_id)
 			block_id = block_id.replace(":","_")
 			set_custom_model_data = ""
@@ -101,6 +101,11 @@ data modify entity @s brightness set value {{block:15,sky:15}}
 					content += "\n".join(data[COMMANDS_ON_PLACEMENT]) + "\n"
 				else:
 					content += f"{data[COMMANDS_ON_PLACEMENT]}\n"
+			
+			# If Furnace NBT Recipes is enabled and the block is a furnace, summon the marker
+			if OFFICIAL_LIBS["furnace_nbt_recipes"]["is_used"] and block_id.endswith("_furnace"):
+				content += '\n# Furnace NBT Recipes\n'
+				content += 'execute align xyz positioned ~.5 ~ ~.5 unless entity @e[type=marker,dx=-1,dy=-1,dz=-1,tag=furnace_nbt_recipes.furnace] run summon marker ~ ~ ~ {Tags:["furnace_nbt_recipes.furnace"]}\n'
 				
 			# Write file
 			write_to_file(f"{path}/place_secondary.mcfunction", content)

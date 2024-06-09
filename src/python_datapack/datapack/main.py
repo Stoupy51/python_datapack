@@ -16,14 +16,14 @@ def main(config: dict):
 	# Generate basic datapack structure (tick, tick_2, second, second_5, minute)
 	basic_structure_main(config)
 
+	# Generate custom recipes
+	recipes_main(config)
+
 	# Custom Blocks (place + destroy)
 	custom_blocks_main(config)
 	# TODO: Custom Ores generation
 
 	# Generate items loot tables
 	loot_tables_main(config)
-
-	# Generate custom recipes
-	recipes_main(config)
 	info("Datapack successfully generated!")
 
