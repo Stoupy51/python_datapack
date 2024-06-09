@@ -30,6 +30,25 @@ def ingr_repr(id: str, ns: str|None = None, count: int|None = None) -> dict:
 		to_return["count"] = count
 	return to_return
 
+@simple_cache
+def item_to_id_ingr_repr(ingr: dict) -> dict:
+	""" Replace the "item" key by "id" in an item ingredient representation
+	Args:
+		ingr (dict): The item ingredient, ex: {"item": "minecraft:stick"}
+	Returns:
+		dict: The item ingredient representation, ex: {"id": "minecraft:stick"}
+	"""
+	if ingr.get("item") is None:
+		return ingr
+	if "Slot" in ingr:
+		r = {"Slot": ingr["Slot"], "id": ingr["item"]}
+	else:
+		r = {"id": ingr["item"]}
+	copy = ingr.copy()
+	copy.pop("item")
+	r.update(copy)
+	return r
+
 # Mainly used for manual
 @simple_cache
 def ingr_to_id(ingredient: dict, add_namespace: bool = True) -> str:
@@ -52,4 +71,33 @@ def ingr_to_id(ingredient: dict, add_namespace: bool = True) -> str:
 		if add_namespace:
 			return namespace + ":" + id
 		return id
+
+# Mainly used for recipes
+@simple_cache
+def get_vanilla_item_id_from_ingredient(config: dict, ingredient: dict, add_namespace: bool = True) -> str:
+	""" Get the id of the vanilla item from an ingredient dict
+	Args:
+		config (dict): The config dict
+		ingredient (dict): The ingredient dict
+			ex: {"item": "minecraft:stick"}
+		add_namespace (bool): Whether to add the namespace to the id
+	Returns:
+		str: The id of the vanilla item, ex: "minecraft:stick"
+	"""
+	ns, ingr_id = ingr_to_id(ingredient).split(":")
+	if ns == config['namespace']:
+		if add_namespace:
+			return config['database'][ingr_id]["id"]
+		return config['database'][ingr_id]["id"].split(":")[1]
+	elif ns == "minecraft":
+		if add_namespace:
+			return f"{ns}:{ingr_id}"
+		return ingr_id
+	else:
+		if config['external_database'].get(f"{ns}:{ingr_id}"):
+			if add_namespace:
+				return config['external_database'][f"{ns}:{ingr_id}"]["id"]
+			return config['external_database'][f"{ns}:{ingr_id}"]["id"].split(":")[1]
+		else:
+			error(f"External item '{ns}:{ingr_id}' not found in the external database")
 

@@ -8,7 +8,6 @@ from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 
 # Weld datapack
-@silent
 def weld_datapack(config: dict, dest_path: str) -> None:
 	""" Merge the datapack and libs into one file using Weld
 	Args:

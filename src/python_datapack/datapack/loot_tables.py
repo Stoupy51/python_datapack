@@ -20,6 +20,18 @@ def main(config: dict):
 		loot_table["pools"][0]["entries"][0]["functions"] = [set_components]
 
 		write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/loot_table/i/{item}.json", super_json_dump(loot_table, max_level = 9))
+	
+	# Same for external items
+	for item, data in config['external_database'].items():
+		namespace, item = item.split(":")
+		loot_table = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:item", "name": data.get("id")}]}]}
+		set_components = {"function":"minecraft:set_components","components":{}}
+		for k, v in data.items():
+			if k not in NOT_COMPONENTS:
+				set_components["components"][f"minecraft:{k}"] = v
+		loot_table["pools"][0]["entries"][0]["functions"] = [set_components]
+		write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/loot_table/external/{namespace}/{item}.json", super_json_dump(loot_table, max_level = 9))
+	
 	info("Made loot tables for every item")
 
 

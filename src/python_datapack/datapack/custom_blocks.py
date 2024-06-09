@@ -112,7 +112,7 @@ data modify entity @s brightness set value {{block:15,sky:15}}
 
 		# Change is_used state
 		if not official_lib_used("smithed.custom_block"):
-			info("Found custom blocks using CUSTOM_BLOCK_VANILLA in the database, adding 'smithed.custom_block' to the library to the dependencies")
+			debug("Found custom blocks using CUSTOM_BLOCK_VANILLA in the database, adding 'smithed.custom_block' to the dependencies")
 
 		# Write function tag to link with the library
 		write_to_file(f"{config['build_datapack']}/data/smithed.custom_block/tags/function/event/on_place.json", super_json_dump({"values": [f"{config['namespace']}:custom_blocks/on_place"]}))

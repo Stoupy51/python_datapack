@@ -116,6 +116,7 @@ def main(config: dict, user_code: callable):
 
 	# If merge libs is enabled, use weld to generate datapack and resource pack with bundled libraries
 	if config['merge_libs']:
+		time_start = time.perf_counter()
 		weld_dp = f"{config['build_folder']}/{config['datapack_name_simple']}_datapack_with_libs.zip"
 		weld_rp = f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack_with_libs.zip"
 		weld_datapack(config, weld_dp)
@@ -124,5 +125,6 @@ def main(config: dict, user_code: callable):
 			shutil.copy(weld_rp, resourcepack_dest)
 		except OSError:
 			pass
-		info("Datapack and resource pack merged with bundled libraries")
+		time_end = time.perf_counter()
+		info(f"Datapack and resource pack merged with bundled libraries in {(time_end - time_start):.3f}s")
 
