@@ -21,7 +21,6 @@ def main(config: dict):
 
 	# Custom Blocks (place + destroy)
 	custom_blocks_main(config)
-	# TODO: Custom Ores generation
 
 	# Generate items loot tables
 	loot_tables_main(config)

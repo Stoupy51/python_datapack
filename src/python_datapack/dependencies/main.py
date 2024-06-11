@@ -54,7 +54,16 @@ scoreboard players reset * load.status
 	calls = [{"id":f"#{namespace}:load", "required": False} for namespace, _ in dependencies]
 	write_to_file(f"{config['build_datapack']}/data/{namespace}/tags/function/load/dependencies.json", super_json_dump({"values": calls}))
 	write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/tick.json", super_json_dump({"values": [f"{namespace}:load/tick_verification"]}))
-	
+
+	# Link smart_ore_generation library functions
+	if OFFICIAL_LIBS["smart_ore_generation"]["is_used"]:
+		for function_tag in ["denied_dimensions", "generate_ores", "post_generation"]:
+			function_path: str = f"{config['build_datapack']}/data/{namespace}/function/calls/smart_ore_generation/{function_tag}.mcfunction"
+			if FILES_TO_WRITE.get(function_path):
+				json_file: dict = {"values": [f"{namespace}:calls/smart_ore_generation/{function_tag}"]}
+				path: str = f"{config['build_datapack']}/data/smart_ore_generation/tags/function/v1/signals/{function_tag}.json"
+				write_to_file(path, super_json_dump(json_file))
+
 	# For each used library, show message
 	message = ""
 	for data in OFFICIAL_LIBS.values():
