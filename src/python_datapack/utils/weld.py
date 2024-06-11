@@ -8,6 +8,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 
 # Weld datapack
+@silent
 def weld_datapack(config: dict, dest_path: str) -> None:
 	""" Merge the datapack and libs into one file using Weld
 	Args:
@@ -39,7 +40,8 @@ def weld_datapack(config: dict, dest_path: str) -> None:
 				if file not in ["pack.mcmeta", "pack.png"]:
 					zip.writestr(file, temp_zip.read(file))
 			zip.write(f"{config['build_datapack']}/pack.mcmeta", "pack.mcmeta")
-			zip.write(f"{config['build_datapack']}/pack.png", "pack.png")
+			if os.path.exists(f"{config['build_datapack']}/pack.png"):
+				zip.write(f"{config['build_datapack']}/pack.png", "pack.png")
 	
 	# Remove temp file
 	os.remove(dest_path.replace(".zip",".temp.zip"))
@@ -77,7 +79,8 @@ def weld_resource_pack(config: dict, dest_path: str) -> None:
 				if file not in ["pack.mcmeta", "pack.png"]:
 					zip.writestr(file, temp_zip.read(file))
 			zip.write(f"{config['build_resource_pack']}/pack.mcmeta", "pack.mcmeta")
-			zip.write(f"{config['build_resource_pack']}/pack.png", "pack.png")
+			if os.path.exists(f"{config['build_resource_pack']}/pack.png"):
+				zip.write(f"{config['build_resource_pack']}/pack.png", "pack.png")
 	
 	# Remove temp file
 	os.remove(dest_path.replace(".zip",".temp.zip"))

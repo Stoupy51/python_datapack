@@ -12,6 +12,11 @@ import shutil
 
 def main(config: dict, user_code: callable):
 
+	# Copy original_icon.png to pack.png if it exists
+	if os.path.exists(f"{config['assets_folder']}/original_icon.png"):
+		super_copy(f"{config['assets_folder']}/original_icon.png", f"{config['build_resource_pack']}/pack.png")
+		super_copy(f"{config['assets_folder']}/original_icon.png", f"{config['build_datapack']}/pack.png")
+
 	# For every file in the merge folder, copy it to the build folder (with append content)
 	print()
 	for root, _, files in os.walk(config['merge_folder']):

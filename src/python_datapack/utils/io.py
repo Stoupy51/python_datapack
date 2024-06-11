@@ -40,6 +40,16 @@ def super_copy(src: str, dst: str) -> shutil.copy:
 	else:
 		return shutil.copy(src, dst)
 
+# JSON load from file path
+def super_json_load(file_path: str) -> dict:
+	""" Load a JSON file from the given path
+	Args:
+		file_path (str): The path to the JSON file
+	Returns:
+		dict: The content of the JSON file
+	"""
+	with super_open(file_path, "r") as f:
+		return json.load(f)
 
 # JSON dump with indentation for levels
 def super_json_dump(data: dict|list, file: io.TextIOWrapper = None, max_level: int = 2) -> str:
