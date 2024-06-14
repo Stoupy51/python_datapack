@@ -24,5 +24,7 @@ def main(config: dict):
 
 	# Generate items loot tables
 	loot_tables_main(config)
+
+	# Info print
 	info("Datapack successfully generated!")
 

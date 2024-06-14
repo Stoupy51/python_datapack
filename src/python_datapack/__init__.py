@@ -12,6 +12,7 @@ from .verify_database import main as verify_database_main
 from .resource_pack.main import main as resource_pack_main
 from .manual.main import main as manual_main
 from .datapack.main import main as datapack_main
+from .compatibilities.main import main as compatibilities_main
 from .finalyze import main as finalyze_main
 
 # Functions
@@ -106,6 +107,9 @@ def build_process(config: dict, setup_database: callable, setup_external_databas
 	
 	# Generate datapack
 	datapack_main(config)
+
+	# Special compatibilities with featured datapacks
+	compatibilities_main(config)
 
 	# Finalyze build process
 	finalyze_main(config, user_code)
