@@ -405,7 +405,7 @@ def get_item_component(config: dict, ingredient: dict|str, only_those_components
 			id = ingredient
 			item = config['database'][ingredient]
 		else:
-			custom_data: dict = ingredient["components"]["custom_data"]
+			custom_data: dict = ingredient["components"]["minecraft:custom_data"]
 			id = ingr_to_id(ingredient, add_namespace = False)
 			if custom_data.get(config['namespace']):
 				item = config['database'].get(id)

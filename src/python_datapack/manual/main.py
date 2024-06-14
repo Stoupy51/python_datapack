@@ -478,7 +478,7 @@ def main(config: dict):
 	# Add the model to the resource pack
 	from ..resource_pack.item_models import handle_item
 	handle_item(config, "manual", config['database']["manual"])
-	vanilla_model = {"parent": "item/handheld","textures": {"layer0": "item/written_book"},"overrides": [{ "predicate": { "custom_model_data": manual_cmd}, "model": f"{config['namespace']}:item/manual" }]}
+	vanilla_model = {"parent": "item/generated","textures": {"layer0": "item/written_book"},"overrides": [{ "predicate": { "custom_model_data": manual_cmd}, "model": f"{config['namespace']}:item/manual" }]}
 	vanilla_model = super_json_dump(vanilla_model).replace('{"','{ "').replace('"}','" }').replace(',"', ', "')
 	write_to_file(f"{config['build_resource_pack']}/assets/minecraft/models/item/written_book.json", vanilla_model)
 

@@ -128,9 +128,8 @@ def main(config: dict):
 
 		# Convert ingredients to aimed recipes
 		ingredients: dict[str, dict] = recipe["ingredients"]
-		recipes: dict[int, list[dict]] = {}
+		recipes: dict[int, list[dict]] = {0:[], 1:[], 2:[]}
 		for i, row in enumerate(recipe["shape"]):
-			recipes[i] = []
 			for slot, char in enumerate(row):
 				ingredient = ingredients.get(char)
 				if ingredient:
@@ -149,8 +148,14 @@ def main(config: dict):
 				slot: int = ingr.pop("Slot")
 				ingr = json.dumps(ingr)[1:-1]
 				dump += f'{{"Slot":{slot}b, {ingr}}},'
-			dump = dump[:-1] + "],"
-		dump = dump[:-1] + "}"
+			if dump[-1] == ',':
+				dump = dump[:-1] + "],"
+			else:
+				dump += "],"
+		if dump[-1] == ',':
+			dump = dump[:-1] + "}"
+		else:
+			dump += "}"
 		
 		# Return the line
 		return f"execute if score @s smithed.data matches 0 store result score @s smithed.data if data storage smithed.crafter:input recipe{dump} run loot replace block ~ ~ ~ container.16 loot {result_loot}\n"
@@ -323,7 +328,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 
 		# Add vanilla items in disable cooking
 		for item in sorted(furnace_nbt_vanilla_items):
-			write_to_file(f"{FURNACE_NBT_PATH}/disable_cooking.mcfunction", f"execute if score #reset furnace_nbt_recipes.data matches 0 store success score #reset furnace_nbt_recipes.data if data storage furnace_nbt_recipes:main input{{\"id\":\"minecraft:{item}\"}}\n")
+			write_to_file(f"{FURNACE_NBT_PATH}/disable_cooking.mcfunction", f"execute if score #reset furnace_nbt_recipes.data matches 0 store success score #reset furnace_nbt_recipes.data if data storage furnace_nbt_recipes:main input{{\"id\":\"{item}\"}}\n")
 
 		# Link the functions
 		for r in SMELTING:
