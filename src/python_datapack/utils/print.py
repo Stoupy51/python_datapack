@@ -9,7 +9,7 @@ def silent(func):
 	def wrapper(*args, **kwargs):
 
 		# Disable stdout
-		_original_stdout  = sys.stdout
+		_original_stdout = sys.stdout
 		sys.stdout = open(os.devnull, "w", encoding = "utf-8")
 
 		# Call the function

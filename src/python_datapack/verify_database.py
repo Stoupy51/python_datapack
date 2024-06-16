@@ -6,6 +6,7 @@ from .utils.print import *
 from .utils.io import *
 
 def main(config: dict):
+	start_time: float = time.perf_counter()
 
 	# Export database to JSON for debugging generation
 	with super_open(config['database_debug'], "w") as f:
@@ -171,7 +172,8 @@ def main(config: dict):
 	if errors:
 		error("Errors found in the database during verification:\n" + "\n".join(errors))
 	else:
-		info("No errors found in the database during verification")
+		total_time = time.perf_counter() - start_time
+		info(f"No errors found in the database during verification (took {total_time:.5f}s)")
 
 
 	# Add additional data to the custom blocks

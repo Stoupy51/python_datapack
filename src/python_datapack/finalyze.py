@@ -3,6 +3,7 @@
 from .utils.io import *
 from .utils.print import *
 from .utils.weld import weld_datapack, weld_resource_pack
+from .utils.archive import make_archive
 from .datapack.lang import main as lang_main
 from .datapack.headers import main as headers_main
 from .datapack.custom_block_ticks import custom_blocks_ticks_and_second_functions
@@ -19,6 +20,7 @@ def main(config: dict, user_code: callable):
 
 	# For every file in the merge folder, copy it to the build folder (with append content)
 	print()
+	start_time: float = time.perf_counter()
 	for root, _, files in os.walk(config['merge_folder']):
 		for file in files:
 			merge_path = f"{root}/{file}".replace("\\", "/")
@@ -49,11 +51,15 @@ def main(config: dict, user_code: callable):
 				# Else, just copy the file, such as pack.mcmeta, pack.png, ...
 				else:
 					super_copy(merge_path, build_path)
-	info(f"All content in the '{config['merge_folder']}' folder copied to '{config['build_folder']}'")
+	total_time: float = time.perf_counter() - start_time
+	info(f"All content in the '{config['merge_folder']}' folder copied to '{config['build_folder']}' in {total_time:.5f}s")
 
 	# Run user code
 	if user_code:
+		start_time: float = time.perf_counter()
 		user_code(config)
+		total_time: float = time.perf_counter() - start_time
+		info(f"User code ran in {total_time:.5f}s")
 	
 	# Second and tick functions for custom blocks
 	custom_blocks_ticks_and_second_functions(config)
@@ -69,8 +75,10 @@ def main(config: dict, user_code: callable):
 	headers_main(config)
 
 	# Write every pending files
+	start_time: float = time.perf_counter()
 	write_all_files()
-	debug("All pending files written")
+	total_time: float = time.perf_counter() - start_time
+	info(f"All pending files written in {total_time:.5f}s")
 
 	# Check not used textures
 	check_unused_textures_main(config)
@@ -83,20 +91,12 @@ def main(config: dict, user_code: callable):
 		(config['build_datapack'], f"{config['build_folder']}/{config['datapack_name_simple']}_datapack", datapack_dest),
 		(config['build_resource_pack'], f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack", resourcepack_dest)
 	]
-	for source, destination, copy_destination in processes:
+	for source, destination, copy_destinations in processes:
 		if os.path.exists(source):
-			shutil.make_archive(destination, 'zip', source)
-			debug(f"'{destination}.zip' file generated")
+			total_time: float = make_archive(source, destination, copy_destinations)
+			debug(f"'{destination}.zip' file generated and copied to destinations in {total_time:.5f}s")
 		else:
-			warning(f"'{source}' folder not found")
-		if copy_destination:
-			try:
-				file = f"{destination}.zip".split("/")[-1]
-				shutil.copy(f"{destination}.zip", f"{copy_destination}/{file}")
-				debug(f"'{destination}.zip' file copied to '{copy_destination}/{file}'")
-			except:
-				warning(f"Unable to copy '{destination}.zip' to '{copy_destination}'")
-
+			warning(f"No '{source}' folder, skipping")
 
 	# Copy datapack libraries
 	try:
@@ -121,15 +121,20 @@ def main(config: dict, user_code: callable):
 
 	# If merge libs is enabled, use weld to generate datapack and resource pack with bundled libraries
 	if config['merge_libs']:
-		time_start = time.perf_counter()
-		weld_dp = f"{config['build_folder']}/{config['datapack_name_simple']}_datapack_with_libs.zip"
-		weld_rp = f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack_with_libs.zip"
-		weld_datapack(config, weld_dp)
-		weld_resource_pack(config, weld_rp)
+
+		# Merge weld dp
+		weld_dp: str = f"{config['build_folder']}/{config['datapack_name_simple']}_datapack_with_libs.zip"
+		weld_dp_time: float = weld_datapack(config, weld_dp)
+
+		# Merge weld rp and copy to resourcepack_dest if possible
+		weld_rp: str = f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack_with_libs.zip"
+		weld_rp_time: float = weld_resource_pack(config, weld_rp)
 		try:
 			shutil.copy(weld_rp, resourcepack_dest)
 		except OSError:
 			pass
-		time_end = time.perf_counter()
-		info(f"Datapack and resource pack merged with bundled libraries in {(time_end - time_start):.3f}s")
+
+		# Debug time taken
+		total_time: float = weld_dp_time + weld_rp_time
+		info(f"Datapack and resource pack merged with bundled libraries in {total_time:.5f}s ({weld_dp_time:.5f}s + {weld_rp_time:.5f}s)")
 

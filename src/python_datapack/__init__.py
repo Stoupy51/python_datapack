@@ -84,7 +84,7 @@ def build_process(config: dict, setup_database: callable, setup_external_databas
 	config = enhance_config_main(config)
 
 	# Get start time & Enable colors in Windows 10 console
-	START_TIME = time.perf_counter()
+	START_TIME: float = time.perf_counter()
 	os.system("color")
 	info("Starting build process...")
 
@@ -115,6 +115,6 @@ def build_process(config: dict, setup_database: callable, setup_external_databas
 	finalyze_main(config, user_code)
 
 	# Total time
-	total_time = time.perf_counter() - START_TIME
-	info(f"Build finished in {total_time:.3f} seconds")
+	TOTAL_TIME: float = time.perf_counter() - START_TIME
+	info(f"Build finished in {TOTAL_TIME:.5f} seconds")
 

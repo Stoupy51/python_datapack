@@ -5,6 +5,7 @@ from .utils.print import *
 import shutil
 
 def main(config: dict):
+	start_time: float = time.perf_counter()
 
 	# Delete build folder and database_debug
 	print()
@@ -14,12 +15,10 @@ def main(config: dict):
 	# Setup pack.mcmeta for the datapack
 	pack_mcmeta = {"pack":{"pack_format": config["datapack_format"], "description": config["description"]}, "id": config["namespace"]}
 	write_to_file(f"{config['build_datapack']}/pack.mcmeta", super_json_dump(pack_mcmeta))
-	info(f"pack.mcmeta file created for datapack")
 
 	# Setup pack.mcmeta for the resource pack
 	pack_mcmeta = {"pack":{"pack_format": config["resource_pack_format"], "description": config["description"]}, "id": config["namespace"]}
 	write_to_file(f"{config['build_resource_pack']}/pack.mcmeta", super_json_dump(pack_mcmeta))
-	info(f"pack.mcmeta file created for resource pack")
 
 	# Convert textures names if needed
 	REPLACEMENTS = {
@@ -39,4 +38,8 @@ def main(config: dict):
 		if new_name != file:
 			os.rename(f"{config['textures_folder']}/{file}", f"{config['textures_folder']}/{new_name}")
 			info(f"Renamed {file} to {new_name}")
+
+	# Print total time
+	total_time: float = time.perf_counter() - start_time
+	info(f"Build initialized in {total_time:.5f}s")
 

@@ -6,14 +6,19 @@ from ..dependencies.main import OFFICIAL_LIBS, OFFICIAL_LIBS_PATH
 from smithed.weld.toolchain.cli import weld
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
+import time
 
 # Weld datapack
 @silent
-def weld_datapack(config: dict, dest_path: str) -> None:
+def weld_datapack(config: dict, dest_path: str) -> float:
 	""" Merge the datapack and libs into one file using Weld
 	Args:
 		dest_path (str): The path to the destination file
+	Returns:
+		float: The time it took to merge the datapack and libs
 	"""
+	start_time: float = time.perf_counter()
+
 	# Get all paths to merge
 	datapacks_to_merge = [
 		f"{config['build_folder']}/{config['datapack_name']}_datapack.zip",
@@ -46,13 +51,20 @@ def weld_datapack(config: dict, dest_path: str) -> None:
 	# Remove temp file
 	os.remove(dest_path.replace(".zip",".temp.zip"))
 
+	# Return the time it took to merge the datapack and libs
+	return time.perf_counter() - start_time
+
 # Weld resource pack
 @silent
-def weld_resource_pack(config: dict, dest_path: str) -> None:
+def weld_resource_pack(config: dict, dest_path: str) -> float:
 	""" Merge the resource pack and libs into one file using Weld
 	Args:
 		dest_path (str): The path to the destination file
+	Returns:
+		float: The time it took to merge the resource pack and libs
 	"""
+	start_time: float = time.perf_counter()
+
 	# Get all paths to merge
 	resource_packs_to_merge = [
 		f"{config['build_folder']}/{config['datapack_name']}_resource_pack.zip",
@@ -84,4 +96,7 @@ def weld_resource_pack(config: dict, dest_path: str) -> None:
 	
 	# Remove temp file
 	os.remove(dest_path.replace(".zip",".temp.zip"))
+
+	# Return the time it took to merge the resource pack and libs
+	return time.perf_counter() - start_time
 

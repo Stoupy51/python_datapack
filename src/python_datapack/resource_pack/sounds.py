@@ -8,6 +8,7 @@ def main(config: dict):
 	# Add the sounds folder to the resource pack
 	sounds_names = os.listdir(f"{config['assets_folder']}/sounds")
 	if sounds_names:
+		start_time: float = time.perf_counter()
 		for sound in sounds_names:
 
 			# Get sound without spaces and special characters
@@ -22,5 +23,6 @@ def main(config: dict):
 			sound_json = {sound_file: {"subtitle": sound, "sounds": [f"{config['namespace']}:{sound_file}"]}}
 			write_to_file(f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds.json", super_json_dump(sound_json))	
 
-		info(f"All sounds in '{config['assets_folder']}/sounds/' have been copied to the resource pack")
+		total_time: float = time.perf_counter() - start_time
+		info(f"All sounds in '{config['assets_folder']}/sounds/' have been copied to the resource pack in {total_time:.5f}s")
 
