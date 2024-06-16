@@ -230,15 +230,16 @@ execute store result entity @s Item.count byte 1 run scoreboard players get #ite
 
 	# Write a destroy check every 2 ticks, every second, and every 5 seconds
 	ore_vanilla_block = VANILLA_BLOCK_FOR_ORES["id"].replace(':', '_')
-	write_to_file(f"{config['datapack_functions']}/tick_2.mcfunction", f"""
+	version: str = config['version']
+	write_to_file(f"{config['datapack_functions']}/v{version}/tick_2.mcfunction", f"""
 # 2 ticks destroy detection
 execute as @e[type=item_display,tag={config['namespace']}.custom_block,tag=!{config['namespace']}.vanilla.{ore_vanilla_block},predicate=!{config['namespace']}:check_vanilla_blocks] at @s run function {config['namespace']}:custom_blocks/destroy
 """)
-	write_to_file(f"{config['datapack_functions']}/second.mcfunction", f"""
+	write_to_file(f"{config['datapack_functions']}/v{version}/second.mcfunction", f"""
 # 1 second break detection
 execute as @e[type=item_display,tag={config['namespace']}.custom_block,tag=!{config['namespace']}.vanilla.{ore_vanilla_block},predicate=!{config['namespace']}:advanced_check_vanilla_blocks] at @s run function {config['namespace']}:custom_blocks/destroy
 """)
-	write_to_file(f"{config['datapack_functions']}/second_5.mcfunction", f"""
+	write_to_file(f"{config['datapack_functions']}/v{version}/second_5.mcfunction", f"""
 # 5 seconds break detection
 execute as @e[type=item_display,tag={config['namespace']}.custom_block,predicate=!{config['namespace']}:advanced_check_vanilla_blocks] at @s run function {config['namespace']}:custom_blocks/destroy
 """)

@@ -46,8 +46,11 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] = [
 	# Copy the archive to the destination(s)
 	for dest_folder in copy_destinations:
 		try:
-			file_name = destination.split("/")[-1]
-			shutil.copy(destination, f"{dest_folder}/{file_name}")
+			if dest_folder.endswith("/"):
+				file_name = destination.split("/")[-1]
+				shutil.copy(destination, f"{dest_folder}/{file_name}")
+			else:	# Else, it's not a folder but a file path
+				shutil.copy(destination, dest_folder)
 		except Exception as e:
 			warning(f"Unable to copy '{destination}' to '{dest_folder}', reason: {e}")
 	

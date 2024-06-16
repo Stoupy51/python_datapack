@@ -153,7 +153,7 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend
 		FILES_TO_WRITE[file_path] = ""
 	
 	# If the file already exists as JSON and the content is a dict, merge both dict
-	if not overwrite and file_path in FILES_TO_WRITE and file_path.endswith(".json") and FILES_TO_WRITE[file_path] != "":
+	if not overwrite and file_path in FILES_TO_WRITE and file_path.endswith((".json",".mcmeta")) and FILES_TO_WRITE[file_path] != "":
 		dict_content = json.loads(content)
 		old_content = json.loads(FILES_TO_WRITE[file_path])
 		merged = super_merge_dict(old_content, dict_content)

@@ -37,14 +37,15 @@ def custom_blocks_ticks_and_second_functions(config: dict) -> None:
 		write_to_file(f"{custom_blocks}{custom_block}/place_secondary.mcfunction", f"\n# Add tag for loop every tick\ntag @s add {namespace}.tick")
 	
 	# Write second functions
+	version: str = config['version']
 	if custom_blocks_second:
-		write_to_file(f"{build_datapack}/data/{namespace}/function/second.mcfunction", f"\n# Custom blocks second functions\nexecute as @e[tag={namespace}.second] at @s run function {namespace}:custom_blocks/second")
+		write_to_file(f"{build_datapack}/data/{namespace}/function/v{version}/second.mcfunction", f"\n# Custom blocks second functions\nexecute as @e[tag={namespace}.second] at @s run function {namespace}:custom_blocks/second")
 		content = "\n".join(f"execute if entity @s[tag={namespace}.{custom_block}] run function {namespace}:custom_blocks/{custom_block}/second" for custom_block in custom_blocks_second)
 		write_to_file(f"{build_datapack}/data/{namespace}/function/custom_blocks/second.mcfunction", content)
 	
 	# Write tick functions
 	if custom_blocks_tick:
-		write_to_file(f"{build_datapack}/data/{namespace}/function/tick.mcfunction", f"\n# Custom blocks tick functions\nexecute as @e[tag={namespace}.tick] at @s run function {namespace}:custom_blocks/tick")
+		write_to_file(f"{build_datapack}/data/{namespace}/function/v{version}/tick.mcfunction", f"\n# Custom blocks tick functions\nexecute as @e[tag={namespace}.tick] at @s run function {namespace}:custom_blocks/tick")
 		content = "\n".join(f"execute if entity @s[tag={namespace}.{custom_block}] run function {namespace}:custom_blocks/{custom_block}/tick" for custom_block in custom_blocks_tick)
 		write_to_file(f"{build_datapack}/data/{namespace}/function/custom_blocks/tick.mcfunction", content)
 
