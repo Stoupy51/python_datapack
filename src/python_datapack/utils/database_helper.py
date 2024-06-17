@@ -219,7 +219,7 @@ def generate_everything_about_this_ore(config: dict, database: dict[str, dict], 
 		if item.endswith("nugget"):
 			for gear in SLOTS.keys():
 				if f"{material_base}_{gear}.png" in config['textures_files']:
-					database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"equipment","experience":0.8,"cookingtime":100,"ingredient":ingr_repr(f"{material_base}_{gear}", ns = config['namespace'])})
+					database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"equipment","experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"{material_base}_{gear}", ns = config['namespace'])})
 		if item.endswith("stick"):
 			database[item][RESULT_OF_CRAFTING].append({"type":"crafting_shaped","result_count":4,"category":"misc","shape":["X","X"],"ingredients":{"X":main_ingredient}})
 		if item.endswith("rod"):
@@ -367,10 +367,13 @@ def deterministic_custom_model_data(config: dict, database: dict[str, dict], sta
 			data["custom_model_data"] = cached_custom_model_data[item]
 
 	# Get maximum custom model data
-	max_cmd = starting_cmd - 1
+	max_cmd: int = starting_cmd - 1
 	for item, data in database.items():
 		if data.get("custom_model_data") and isinstance(data["custom_model_data"], int):
-			max_cmd = max(max_cmd, int(data["custom_model_data"]))
+			cmd: int = int(data["custom_model_data"])
+			if any(item in texture and "_on" in texture for texture in config['textures_files']):
+				cmd += 1
+			max_cmd = max(max_cmd, cmd)
 	
 	# For each item in the database, apply its new custom model data if it doesn't exist
 	for item, data in database.items():
@@ -403,10 +406,12 @@ def clean_up_empty_recipes(database: dict[str, dict]) -> None:
 	return
 
 # Add item name and lore
-def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict]) -> None:
+def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], is_external: bool = False) -> None:
 	""" Add item name and lore to all items in the database if they are missing.
 	Args:
+		config		(dict):				The configuration to get the source lore from.
 		database	(dict[str, dict]):	The database to add item name and lore to.
+		is_external	(bool):				Whether the database is the external one or not (meaning the namespace is in the item name).
 	"""
 	lore = json.dumps(config['source_lore']) if len(config['source_lore']) > 1 else json.dumps(config['source_lore'][0])
 	lore = lore.replace('"', "'")
@@ -414,26 +419,41 @@ def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict]) -
 
 		# Add item name if none
 		if not data.get("item_name"):
-			item_str = item.replace("_"," ").title()
+			if not is_external:
+				item_str = item.replace("_"," ").title()
+			else:
+				item_str = item.split(":")[-1].replace("_"," ").title()
 			data["item_name"] = json.dumps( {"text": item_str, "italic": False, "color":"white"} ).replace("'", "\\'").replace('"', "'")
 
 		# Apply namespaced lore if none
 		if not data.get("lore"):
-			data["lore"] = [lore]
-		if data["lore"][-1] != lore:
-			data["lore"].append(lore)
+			data["lore"] = []
+		if not is_external:
+			if not data["lore"] or data["lore"][-1] != lore:
+				data["lore"].append(lore)
+		else:
+			ns = item.split(":")[0].replace("_"," ").title()
+			ns_lore  = json.dumps(config['source_lore']).replace('"', "'").replace(config['datapack_name'], ns)
+			if not data["lore"] or data["lore"][-1] != ns_lore:
+				data["lore"].append(ns_lore)
 	return
 
 # Add private custom data for namespace ( namespace:{item:true} )
-def add_private_custom_data_for_namespace(config: dict, database: dict[str, dict]) -> None:
+def add_private_custom_data_for_namespace(config: dict, database: dict[str, dict], is_external: bool = False) -> None:
 	""" Add private custom data for namespace to all items in the database if they are missing.
 	Args:
+		config		(dict):				The configuration to get the namespace from.
 		database	(dict[str, dict]):	The database to add private custom data for namespace to.
+		is_external	(bool):				Whether the database is the external one or not (meaning the namespace is in the item name).
 	"""
 	for item, data in database.items():
 		if not data.get("custom_data"):
 			data["custom_data"] = {}
-		data["custom_data"][config['namespace']] = {item: True}
+		if not is_external:
+			data["custom_data"][config['namespace']] = {item: True}
+		else:
+			ns, id = item.split(":")
+			data["custom_data"][ns] = {id: True}
 	return
 
 # Smithed ignore convention

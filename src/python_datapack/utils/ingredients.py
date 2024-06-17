@@ -56,7 +56,7 @@ def ingr_to_id(ingredient: dict, add_namespace: bool = True) -> str:
 	""" Get the id from an ingredient dict
 	Args:
 		ingredient (dict): The ingredient dict
-			ex: {"components":{"minecraft:custom_data":{iyc:{adamantium_ingot=True}}}}
+			ex: {"components":{"minecraft:custom_data":{iyc:{adamantium_ingot:True}}}}
 			ex: {"item": "minecraft:stick"}
 	Returns:
 		str: The id of the ingredient, ex: "minecraft:stick" or "iyc:adamantium_ingot"
