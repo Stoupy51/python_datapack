@@ -44,6 +44,7 @@ def main(config: dict) -> None:
 
 	# Setup Lantern Load
 	write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/load.json", super_json_dump({"values": ["#load:_private/load"]}))
+	write_to_file(f"{config['build_datapack']}/data/load/tags/function/_private/init.json", super_json_dump({"values": ["load:_private/init"]}))
 	write_to_file(f"{config['build_datapack']}/data/load/tags/function/_private/load.json", super_json_dump({"values": ["#load:_private/init",{"id":"#load:pre_load","required":False},{"id":"#load:load","required":False},{"id":"#load:post_load","required":False}]}))
 	write_to_file(f"{config['build_datapack']}/data/load/function/_private/init.mcfunction", f"""
 # Reset scoreboards so packs can set values accurate for current load.
