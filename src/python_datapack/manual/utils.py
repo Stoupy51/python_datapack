@@ -410,8 +410,9 @@ def get_item_component(config: dict, ingredient: dict|str, only_those_components
 			if custom_data.get(config['namespace']):
 				item = config['database'].get(id)
 			else:
+				ns = list(custom_data.keys())[0] + ":"
 				for data in custom_data.values():
-					item = config['external_database'].get(list(data.keys())[0])
+					item = config['external_database'].get(ns + list(data.keys())[0])
 					if item:
 						break
 		if not item:

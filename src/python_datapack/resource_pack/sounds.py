@@ -4,6 +4,8 @@ from ..utils.io import *
 from ..utils.print import *
 
 def main(config: dict):
+	if not config.get("assets_folder") or not os.path.exists(config["assets_folder"] + "/sounds"):
+		return
 
 	# Add the sounds folder to the resource pack
 	sounds_names = os.listdir(f"{config['assets_folder']}/sounds")
