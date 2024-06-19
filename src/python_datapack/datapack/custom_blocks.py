@@ -5,6 +5,9 @@ from ..utils.print import *
 from ..constants import *
 
 def main(config: dict):
+	# Stop if not custom block
+	if not any(data.get(VANILLA_BLOCK) for data in config['database'].values()):
+		return
 
 	# Predicates
 	FACING = ["north", "east", "south", "west"]
@@ -246,13 +249,14 @@ execute as @e[type=item_display,tag={config['namespace']}.custom_block,predicate
 
 
 
-	## Custom ores break detection
-	write_to_file(f"{config['build_datapack']}/data/common_signals/tags/function/signals/on_new_item.json", super_json_dump({"values": [f"{config['namespace']}:calls/common_signals/new_item"]}))
-	write_to_file(f"{config['datapack_functions']}/calls/common_signals/new_item.mcfunction", f"""
+	## Custom ores break detection (if any custom ore)
+	if any(data.get(VANILLA_BLOCK) == VANILLA_BLOCK_FOR_ORES for data in config['database'].values()):
+		write_to_file(f"{config['build_datapack']}/data/common_signals/tags/function/signals/on_new_item.json", super_json_dump({"values": [f"{config['namespace']}:calls/common_signals/new_item"]}))
+		write_to_file(f"{config['datapack_functions']}/calls/common_signals/new_item.mcfunction", f"""
 # If the item is from a custom ore, launch the on_ore_destroyed function
 execute if data entity @s Item.components.\"minecraft:custom_data\".common_signals.temp at @s align xyz run function {config['namespace']}:calls/common_signals/on_ore_destroyed
 """)
-	write_to_file(f"{config['datapack_functions']}/calls/common_signals/on_ore_destroyed.mcfunction", f"""
+		write_to_file(f"{config['datapack_functions']}/calls/common_signals/on_ore_destroyed.mcfunction", f"""
 # Get in a score the item count and if it is a silk touch
 scoreboard players set #item_count {config['namespace']}.data 0
 scoreboard players set #is_silk_touch {config['namespace']}.data 0
