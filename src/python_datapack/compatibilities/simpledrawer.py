@@ -135,6 +135,6 @@ data modify storage simpledrawer:io material set value {{material: "{namespace}.
 					content += f"data modify storage simpledrawer:io material.{variant}.item set from storage {namespace}:items all.{item}\n"
 			write_to_file(path, content)
 
-	# Final print
-	debug("Special datapack compatibility done for SimpleDrawer's compacting drawer!")
+		# Final print
+		debug("Special datapack compatibility done for SimpleDrawer's compacting drawer!")
 
