@@ -94,6 +94,10 @@ def main(config: dict, user_code: callable):
 	# Generate zip files
 	datapack_dest: list[str] = config['build_copy_destinations'][0] if config.get('build_copy_destinations') else []
 	resourcepack_dest: list[str] = config['build_copy_destinations'][1] if config.get('build_copy_destinations') and len(config['build_copy_destinations']) > 1 else []
+	if isinstance(datapack_dest, str):
+		datapack_dest = [datapack_dest]
+	if isinstance(resourcepack_dest, str):
+		resourcepack_dest = [resourcepack_dest]
 	processes = [
 		(config['build_datapack'],			f"{config['build_folder']}/{config['datapack_name_simple']}_datapack",			datapack_dest),
 		(config['build_resource_pack'],		f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack",		resourcepack_dest)
@@ -111,15 +115,17 @@ def main(config: dict, user_code: callable):
 			for root, _, files in os.walk(config['libs_folder'] + "/datapack"):
 				for file in files:
 					if file.endswith(".zip"):
-						shutil.copy(f"{root}/{file}", datapack_dest)
-						info(f"Library '{file}' copied to '{datapack_dest}/'")
+						for dest in datapack_dest:
+							shutil.copy(f"{root}/{file}", dest)
+							info(f"Library '{file}' copied to '{dest}/'")
 		
 		# Copy official used libs
 		for data in OFFICIAL_LIBS.values():
 			if data["is_used"]:
 				name: str = data["name"]
-				shutil.copy(f"{OFFICIAL_LIBS_PATH}/datapack/{name}.zip", datapack_dest)
-				info(f"Library '{name}.zip' copied to '{datapack_dest}/'")
+				for dest in datapack_dest:
+					shutil.copy(f"{OFFICIAL_LIBS_PATH}/datapack/{name}.zip", dest)
+					info(f"Library '{name}.zip' copied to '{dest}/'")
 		
 	except OSError as e:
 		warning(f"Could not copy datapack libraries to '{datapack_dest}/': {e}")
@@ -135,11 +141,12 @@ def main(config: dict, user_code: callable):
 		# Merge weld rp and copy to resourcepack_dest if possible
 		weld_rp: str = f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack_with_libs.zip"
 		weld_rp_time: float = weld_resource_pack(config, weld_rp)
-		try:
-			for dest in resourcepack_dest:
+		for dest in resourcepack_dest:
+			try:
 				shutil.copy(weld_rp, dest)
-		except OSError:
-			pass
+			except OSError as e:
+				print(e)
+				pass
 
 		# Debug time taken
 		total_time: float = weld_dp_time + weld_rp_time
