@@ -136,7 +136,8 @@ def main(config: dict, user_code: callable):
 		weld_rp: str = f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack_with_libs.zip"
 		weld_rp_time: float = weld_resource_pack(config, weld_rp)
 		try:
-			shutil.copy(weld_rp, resourcepack_dest)
+			for dest in resourcepack_dest:
+				shutil.copy(weld_rp, dest)
 		except OSError:
 			pass
 

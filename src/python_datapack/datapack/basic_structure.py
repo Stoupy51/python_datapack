@@ -37,7 +37,7 @@ scoreboard players set #minute {namespace}.data 1
 
 	# Tick structure, tick_2 and second_5 are "offsync" for a better load distribution
 	if is_in_write_queue(tick_2) or is_in_write_queue(second) or is_in_write_queue(second_5) or is_in_write_queue(minute):
-		content: str = "#Timers\n"
+		content: str = "# Timers\n"
 		if is_in_write_queue(tick_2):
 			content += f"scoreboard players add #tick_2 {namespace}.data 1\n"
 		if is_in_write_queue(second):
