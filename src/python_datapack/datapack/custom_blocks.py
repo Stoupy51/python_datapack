@@ -227,7 +227,7 @@ execute store result entity @s Item.count byte 1 run scoreboard players get #ite
 		block_underscore = block.replace(":","_")
 		if block == "minecraft:cauldron":
 			block = "#minecraft:cauldrons"
-		predicate = {"condition": "minecraft:entity_properties", "entity": "this", "predicate": { "nbt": f"{{Tags:[\"iyc.vanilla.{block_underscore}\"]}}", "location": { "block": { "blocks": block }}}}
+		predicate = {"condition": "minecraft:entity_properties", "entity": "this", "predicate": { "nbt": f"{{Tags:[\"{config['namespace']}.vanilla.{block_underscore}\"]}}", "location": { "block": { "blocks": block }}}}
 		advanced_predicate["terms"].append(predicate)
 	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/predicate/advanced_check_vanilla_blocks.json", super_json_dump(advanced_predicate))
 
