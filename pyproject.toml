@@ -1,6 +1,6 @@
 
 [build-system]
-requires = ["hatchling", "pillow", "smithed", "model_resolver"]
+requires = ["hatchling", "pillow", "smithed", "model_resolver", "mutagen"]
 build-backend = "hatchling.build"
 
 [project]

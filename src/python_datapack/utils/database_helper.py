@@ -7,6 +7,7 @@ from .io import *
 from enum import Enum
 from PIL import Image
 import json
+from mutagen.oggvorbis import OggVorbis
 
 # Constants
 SLOTS = {"helmet": "head", "chestplate": "chest", "leggings": "legs", "boots": "feet", "sword": "mainhand", "pickaxe": "mainhand", "axe": "mainhand", "shovel": "mainhand", "hoe": "mainhand"}
@@ -310,13 +311,13 @@ def generate_everything_about_these_ores(config: dict, database: dict[str, dict]
 
 
 # Custom records
-def generate_custom_records(config: dict, database: dict[str, dict], records: dict[str, tuple[str,float]], category: str|None = None) -> None:
+def generate_custom_records(config: dict, database: dict[str, dict], records: dict[str, str], category: str|None = None) -> None:
 	""" Generate custom records by searching in config['assets_folder']/records/ for the files and copying them to the database and resource pack folder.
 	Args:
 		database	(dict[str, dict]):	The database to add the custom records items to.
 		records		(dict[str, str]):	The custom records to apply, ex: {"record_1": "My first Record.ogg", "record_2": "A second one.ogg"}
 	"""
-	for record, (sound, duration) in records.items():
+	for record, sound in records.items():
 		item_name = ".".join(sound.split(".")[:-1])	# Remove the file extension
 		database[record] = {
 			"id": CUSTOM_ITEM_VANILLA,
@@ -329,13 +330,16 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 		if category:
 			database[record][CATEGORY] = category
 		
-		# Set jukebox song
-		json_song = {"comparator_output": duration % 16, "length_in_seconds": duration + 1, "sound_event": {"sound_id":f"{config['namespace']}:{record}"}, "description": {"text": item_name}}
-		write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/jukebox_song/{record}.json", super_json_dump(json_song))
-
-		# Copy sound to resource pack
+		# Get song duration
 		file_path = f"{config['assets_folder']}/records/{sound}"
 		if os.path.exists(file_path):
+			duration: int = round(OggVorbis(file_path).info.length)
+			
+			# Set jukebox song
+			json_song = {"comparator_output": duration % 16, "length_in_seconds": duration + 1, "sound_event": {"sound_id":f"{config['namespace']}:{record}"}, "description": {"text": item_name}}
+			write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/jukebox_song/{record}.json", super_json_dump(json_song))
+
+			# Copy sound to resource pack
 			super_copy(file_path, f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds/{record}.ogg")
 
 			json_sound = {"category": "music", "sounds": [{"name": f"{config['namespace']}:{record}","stream": True}]}
