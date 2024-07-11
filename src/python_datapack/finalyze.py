@@ -19,6 +19,8 @@ def main(config: dict, user_code: callable):
 		super_copy(f"{config['assets_folder']}/original_icon.png", f"{config['build_datapack']}/pack.png")
 		if config.get('resource_pack_format'):
 			super_copy(f"{config['assets_folder']}/original_icon.png", f"{config['build_resource_pack']}/pack.png")
+	else:
+		warning(f"No 'original_icon.png' found in assets folder, no icon will be set")
 
 	# For every file in the merge folder, copy it to the build folder (with append content)
 	if config.get('merge_folder'):
@@ -48,8 +50,11 @@ def main(config: dict, user_code: callable):
 				else:
 					# Get content of .mcfunction file to correctly append headers
 					if file.endswith((".json",".mcfunction",".mcmeta")):
-						with super_open(merge_path, "r") as f:
-							write_to_file(build_path, f.read())
+						try:
+							with super_open(merge_path, "r") as f:
+								write_to_file(build_path, f.read())
+						except Exception as e:
+							warning(f"Could not read '{merge_path}': {e}")
 					
 					# Else, just copy the file, such as pack.mcmeta, pack.png, ...
 					else:
