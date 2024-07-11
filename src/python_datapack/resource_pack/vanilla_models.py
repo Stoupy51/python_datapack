@@ -23,7 +23,7 @@ def main(config: dict):
 		else:
 			content = {"parent": f"{block_or_item}/{id}"}
 		if id not in blocks:
-			content["parent"] = "item/handheld"
+			content["parent"] = "item/generated"
 			content["textures"] = {"layer0": f"item/{id}"}
 			if id in ["leather_helmet", "leather_chestplate", "leather_leggings", "leather_boots"]:
 				content["textures"]["layer1"] = f"item/{id}_overlay"

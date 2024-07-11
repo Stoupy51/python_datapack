@@ -23,6 +23,8 @@ def main(config: dict):
 		else:
 			if not isinstance(data["id"], str):
 				errors.append(f"'id' key should be a string for '{item}'")
+			elif ":" not in data["id"]:
+				errors.append(f"'id' key should be namespaced in the format 'minecraft:{data['id']}' for '{item}'")
 			elif data["id"] == "minecraft:deepslate":
 				errors.append(f"'id' key should not be 'minecraft:deepslate' for '{item}', it's a reserved ID")
 			
