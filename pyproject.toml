@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "python_datapack"
-version = "0.4.9"
+version = "0.5.0"
 authors = [
 	{ name="Stoupy51", email="stoupy51@gmail.com" },
 ]
