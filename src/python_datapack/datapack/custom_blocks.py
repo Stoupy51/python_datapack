@@ -62,6 +62,7 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 			content = ""
 			if block["apply_facing"]:
 				content += f"function {namespace}:custom_blocks/get_rotation\n"
+				content += "setblock ~ ~ ~ air\n"
 				block_states = []
 				if '[' in block_id:
 					block_states = block_id.split('[')[1][:-1].split(',')
@@ -73,6 +74,7 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 						content += f"execute if score #rotation {namespace}.data matches {i+1} run setblock ~ ~ ~ {block_id}[facing={face}]{beautify_name}\n"
 			else:
 				# Simple setblock
+				content += "setblock ~ ~ ~ air\n"
 				content += f"setblock ~ ~ ~ {block_id}{beautify_name}\n"
 			
 			# Summon item display and call secondary function

@@ -20,6 +20,8 @@ BLOCKS_WITH_INTERFACES: list[str] = [	# List of blocks that are containers and h
 	"minecraft:smoker",
 	"minecraft:blast_furnace",
 	"minecraft:brewing_stand",
+	"minecraft:trapped_chest",
+	"minecraft:crafter",
 ]
 
 # Databases
