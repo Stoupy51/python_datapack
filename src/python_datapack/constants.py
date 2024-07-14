@@ -9,6 +9,18 @@ CUSTOM_ITEM_VANILLA: str = "minecraft:command_block"	# Vanilla item used as base
 DOWNLOAD_VANILLA_ASSETS_RAW = "https://raw.githubusercontent.com/edayot/renders/renders/resourcepack/assets/minecraft/textures/render"
 DOWNLOAD_VANILLA_ASSETS_SOURCE = "https://github.com/edayot/renders/tree/renders/resourcepack/assets/minecraft/textures/render"
 CUSTOM_BLOCK_HEAD_CUBE_RADIUS: tuple[int, int, int] = (16, 16, 16)	# Size of the region to check around the player when placing a CUSTOM_BLOCK_HEAD
+BLOCKS_WITH_INTERFACES: list[str] = [	# List of blocks that are containers and have an interface
+	"minecraft:barrel",
+	"minecraft:chest",
+	"minecraft:furnace",
+	"minecraft:shulker_box",
+	"minecraft:dispenser",
+	"minecraft:hopper",
+	"minecraft:dropper",
+	"minecraft:smoker",
+	"minecraft:blast_furnace",
+	"minecraft:brewing_stand",
+]
 
 # Databases
 RESULT_OF_CRAFTING: str = "result_of_crafting"			# Key to a list of recipes to craft the item, ex: "adamantium": {RESULT_OF_CRAFTING: [...]}
@@ -21,6 +33,7 @@ NO_SILK_TOUCH_DROP: str = "no_silk_touch_drop"			# Key to an item ID that will d
 OVERRIDE_MODEL: str = "override_model"					# Key to a dictionnary that will be used to override the whole model
 VANILLA_BLOCK_FOR_ORES: dict = {"id":"minecraft:polished_deepslate", "apply_facing": False}	# Vanilla block that will be used for an optimization tip for ores, don't ask questions
 CUSTOM_ORE_GENERATION: str = "custom_ore_generation"	# Key to a list of CustomOreGeneration objects, used to generate ores in the world
+PULVERIZING: str = "simplenergy_pulverizing"			# Key to a list of pulverizing recipes, used to generate dusts from ores (used by SimplEnergy)
 NOT_COMPONENTS: list[str] = [							# Keys that should not be considered as components. Used for recipes, loot tables, etc.
 	"id",
 	"wiki",

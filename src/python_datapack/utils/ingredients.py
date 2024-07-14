@@ -66,9 +66,18 @@ def ingr_to_id(ingredient: dict, add_namespace: bool = True) -> str:
 			return ingredient["item"].split(":")[1]
 		return ingredient["item"]
 	else:
-		custom_data = ingredient["components"]["minecraft:custom_data"]
-		namespace = list(custom_data.keys())[0]
-		id = list(custom_data[namespace].keys())[0]
+		custom_data: dict = ingredient["components"]["minecraft:custom_data"]
+		namespace: str = ""
+		id: str = ""
+		for cd_ns, cd_data in custom_data.items():
+			if isinstance(cd_data, dict):
+				values: list = list(cd_data.values())
+				if isinstance(values[0], bool):
+					namespace = cd_ns
+					id = list(cd_data.keys())[0]
+					break
+		if not namespace:
+			error(f"No namespace found in custom data: {custom_data}")
 		if add_namespace:
 			return namespace + ":" + id
 		return id

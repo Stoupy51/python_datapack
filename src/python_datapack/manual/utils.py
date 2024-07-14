@@ -160,11 +160,8 @@ def generate_all_iso_renders(config: dict):
 	# Get every used vanilla items
 	used_vanilla_items = set()
 	for item, data in config['database'].items():
-		all_crafts = []
-		if data.get(RESULT_OF_CRAFTING):
-			all_crafts += data[RESULT_OF_CRAFTING]
-		if data.get(USED_FOR_CRAFTING):
-			all_crafts += data[USED_FOR_CRAFTING]
+		all_crafts: list[dict] = list(data.get(RESULT_OF_CRAFTING,[]))
+		all_crafts += list(data.get(USED_FOR_CRAFTING,[]))
 		for recipe in all_crafts:
 			ingredients = []
 			if "ingredients" in recipe:

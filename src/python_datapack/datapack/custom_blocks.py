@@ -5,6 +5,7 @@ from ..utils.print import *
 from ..constants import *
 
 def main(config: dict):
+	namespace: str = config['namespace']
 	# Stop if not custom block
 	if not any(data.get(VANILLA_BLOCK) for data in config['database'].values()):
 		return
@@ -13,33 +14,33 @@ def main(config: dict):
 	FACING = ["north", "east", "south", "west"]
 	for face in FACING:
 		predicate = {"condition":"minecraft:location_check","predicate":{"block":{"state":{"facing":face}}}}
-		write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/predicate/facing/{face}.json", super_json_dump(predicate))
+		write_to_file(f"{config['build_datapack']}/data/{namespace}/predicate/facing/{face}.json", super_json_dump(predicate))
 
 	# Get rotation function
 	write_to_file(f"{config['datapack_functions']}/custom_blocks/get_rotation.mcfunction", f"""
 # Set up score
-scoreboard players set #rotation {config['namespace']}.data 0
+scoreboard players set #rotation {namespace}.data 0
 
 # Player case
-execute if score #rotation {config['namespace']}.data matches 0 if entity @s[y_rotation=-46..45] run scoreboard players set #rotation {config['namespace']}.data 1
-execute if score #rotation {config['namespace']}.data matches 0 if entity @s[y_rotation=45..135] run scoreboard players set #rotation {config['namespace']}.data 2
-execute if score #rotation {config['namespace']}.data matches 0 if entity @s[y_rotation=135..225] run scoreboard players set #rotation {config['namespace']}.data 3
-execute if score #rotation {config['namespace']}.data matches 0 if entity @s[y_rotation=225..315] run scoreboard players set #rotation {config['namespace']}.data 4
+execute if score #rotation {namespace}.data matches 0 if entity @s[y_rotation=-46..45] run scoreboard players set #rotation {namespace}.data 1
+execute if score #rotation {namespace}.data matches 0 if entity @s[y_rotation=45..135] run scoreboard players set #rotation {namespace}.data 2
+execute if score #rotation {namespace}.data matches 0 if entity @s[y_rotation=135..225] run scoreboard players set #rotation {namespace}.data 3
+execute if score #rotation {namespace}.data matches 0 if entity @s[y_rotation=225..315] run scoreboard players set #rotation {namespace}.data 4
 
 # Predicate case
-execute if score #rotation {config['namespace']}.data matches 0 if predicate {config['namespace']}:facing/north run scoreboard players set #rotation {config['namespace']}.data 1
-execute if score #rotation {config['namespace']}.data matches 0 if predicate {config['namespace']}:facing/east run scoreboard players set #rotation {config['namespace']}.data 2
-execute if score #rotation {config['namespace']}.data matches 0 if predicate {config['namespace']}:facing/south run scoreboard players set #rotation {config['namespace']}.data 3
-execute if score #rotation {config['namespace']}.data matches 0 if predicate {config['namespace']}:facing/west run scoreboard players set #rotation {config['namespace']}.data 4
+execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:facing/north run scoreboard players set #rotation {namespace}.data 1
+execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:facing/east run scoreboard players set #rotation {namespace}.data 2
+execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:facing/south run scoreboard players set #rotation {namespace}.data 3
+execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:facing/west run scoreboard players set #rotation {namespace}.data 4
 # No more cases for now
 
 """)
 	APPLY_FACING = f"""
 # Apply rotation
-execute if score #rotation {config['namespace']}.data matches 1 run data modify entity @s Rotation[0] set value 180.0f
-execute if score #rotation {config['namespace']}.data matches 2 run data modify entity @s Rotation[0] set value 270.0f
-execute if score #rotation {config['namespace']}.data matches 3 run data modify entity @s Rotation[0] set value 0.0f
-execute if score #rotation {config['namespace']}.data matches 4 run data modify entity @s Rotation[0] set value 90.0f
+execute if score #rotation {namespace}.data matches 1 run data modify entity @s Rotation[0] set value 180.0f
+execute if score #rotation {namespace}.data matches 2 run data modify entity @s Rotation[0] set value 270.0f
+execute if score #rotation {namespace}.data matches 3 run data modify entity @s Rotation[0] set value 0.0f
+execute if score #rotation {namespace}.data matches 4 run data modify entity @s Rotation[0] set value 90.0f
 """
 
 	# For each custom block
@@ -49,28 +50,36 @@ execute if score #rotation {config['namespace']}.data matches 4 run data modify 
 		# Custom block
 		if data.get(VANILLA_BLOCK):
 			block = data[VANILLA_BLOCK]
+			block_id = block["id"]
 			path = f"{config['datapack_functions']}/custom_blocks/{item}"
+			if block_id in BLOCKS_WITH_INTERFACES:
+				beautify_name: str = item.replace("_", " ").title()
+				beautify_name = json.dumps({"CustomName":'"' + beautify_name + '"'})
+			else:
+				beautify_name: str = ""
 
 			## Place function	
 			content = ""
-			block_id = block["id"]
 			if block["apply_facing"]:
-				content += f"function {config['namespace']}:custom_blocks/get_rotation\n"
+				content += f"function {namespace}:custom_blocks/get_rotation\n"
 				block_states = []
 				if '[' in block_id:
 					block_states = block_id.split('[')[1][:-1].split(',')
 					block_id = block_id.split('[')[0]
-				for face in ["north", "east", "south", "west"]:
-					content += f"execute if predicate {config['namespace']}:facing/{face} run setblock ~ ~ ~ {block_id}[facing={face}," + ",".join(block_states) + "]\n"
+				for i, face in enumerate(FACING):
+					if block_states:
+						content += f"execute if score #rotation {namespace}.data matches {i+1} run setblock ~ ~ ~ {block_id}[facing={face}," + ",".join(block_states) + f"]{beautify_name}\n"
+					else:
+						content += f"execute if score #rotation {namespace}.data matches {i+1} run setblock ~ ~ ~ {block_id}[facing={face}]{beautify_name}\n"
 			else:
 				# Simple setblock
-				content += f"setblock ~ ~ ~ {block_id}\n"
+				content += f"setblock ~ ~ ~ {block_id}{beautify_name}\n"
 			
 			# Summon item display and call secondary function
-			content += f"execute align xyz positioned ~.5 ~.5 ~.5 summon item_display at @s run function {config['namespace']}:custom_blocks/{item}/place_secondary\n"
+			content += f"execute align xyz positioned ~.5 ~.5 ~.5 summon item_display at @s run function {namespace}:custom_blocks/{item}/place_secondary\n"
 
 			# Add temporary tags and call main function
-			content = f"tag @s add {config['namespace']}.placer\n" + content + f"tag @s remove {config['namespace']}.placer\n"
+			content = f"tag @s add {namespace}.placer\n" + content + f"tag @s remove {namespace}.placer\n"
 			write_to_file(f"{path}/place_main.mcfunction", content)
 
 			## Secondary function
@@ -86,9 +95,9 @@ tag @s add global.ignore
 tag @s add global.ignore.kill
 tag @s add smithed.entity
 tag @s add smithed.block
-tag @s add {config['namespace']}.custom_block
-tag @s add {config['namespace']}.{item}
-tag @s add {config['namespace']}.vanilla.{block_id}
+tag @s add {namespace}.custom_block
+tag @s add {namespace}.{item}
+tag @s add {namespace}.vanilla.{block_id}
 
 # Modify item display entity to match the custom block
 {set_custom_model_data}data modify entity @s transformation.scale set value [1.002f,1.008f,1.002f]
@@ -123,17 +132,17 @@ data modify entity @s brightness set value {{block:15,sky:15}}
 			debug("Found custom blocks using CUSTOM_BLOCK_VANILLA in the database, adding 'smithed.custom_block' to the dependencies")
 
 		# Write function tag to link with the library
-		write_to_file(f"{config['build_datapack']}/data/smithed.custom_block/tags/function/event/on_place.json", super_json_dump({"values": [f"{config['namespace']}:custom_blocks/on_place"]}))
+		write_to_file(f"{config['build_datapack']}/data/smithed.custom_block/tags/function/event/on_place.json", super_json_dump({"values": [f"{namespace}:custom_blocks/on_place"]}))
 
 		# Write the slot function
-		write_to_file(f"{config['datapack_functions']}/custom_blocks/on_place.mcfunction", f"execute if data storage smithed.custom_block:main blockApi.__data.Items[0].components.\"minecraft:custom_data\".smithed.block{{from:\"{config['namespace']}\"}} run function {config['namespace']}:custom_blocks/place\n")
+		write_to_file(f"{config['datapack_functions']}/custom_blocks/on_place.mcfunction", f"execute if data storage smithed.custom_block:main blockApi.__data.Items[0].components.\"minecraft:custom_data\".smithed.block{{from:\"{namespace}\"}} run function {namespace}:custom_blocks/place\n")
 
 		# Write the function that will place the custom blocks
-		content = f"tag @s add {config['namespace']}.placer\n"
+		content = f"tag @s add {namespace}.placer\n"
 		for item, data in config['database'].items():
 			if data.get("id") == CUSTOM_BLOCK_VANILLA:
-				content += f"execute if data storage smithed.custom_block:main blockApi{{id:\"{config['namespace']}:{item}\"}} run function {config['namespace']}:custom_blocks/{item}/place_main\n"
-		content += f"tag @s remove {config['namespace']}.placer\n"
+				content += f"execute if data storage smithed.custom_block:main blockApi{{id:\"{namespace}:{item}\"}} run function {namespace}:custom_blocks/{item}/place_main\n"
+		content += f"tag @s remove {namespace}.placer\n"
 		write_to_file(f"{config['datapack_functions']}/custom_blocks/place.mcfunction", content)
 
 	# Sort unique blocks
@@ -145,7 +154,7 @@ data modify entity @s brightness set value {{block:15,sky:15}}
 	for block_id in unique_blocks:
 		block_underscore = block_id.replace(":","_")
 		block_id = "#minecraft:cauldrons" if block_id == "minecraft:cauldron" else block_id
-		content += f"execute if entity @s[tag={config['namespace']}.vanilla.{block_underscore}] unless block ~ ~ ~ {block_id} run function {config['namespace']}:custom_blocks/_groups/{block_underscore}\n"
+		content += f"execute if entity @s[tag={namespace}.vanilla.{block_underscore}] unless block ~ ~ ~ {block_id} run function {namespace}:custom_blocks/_groups/{block_underscore}\n"
 	write_to_file(f"{config['datapack_functions']}/custom_blocks/destroy.mcfunction", content + "\n")
 
 	# For each unique block, make the group function
@@ -163,7 +172,7 @@ data modify entity @s brightness set value {{block:15,sky:15}}
 
 				# Add the line if it's the same vanilla block
 				if this_block == block_underscore:
-					content += f"execute if entity @s[tag={config['namespace']}.{item}] run function {config['namespace']}:custom_blocks/{item}/destroy\n"
+					content += f"execute if entity @s[tag={namespace}.{item}] run function {namespace}:custom_blocks/{item}/destroy\n"
 		write_to_file(f"{config['datapack_functions']}/custom_blocks/_groups/{block_underscore}.mcfunction", content + "\n")
 
 	# For each custom block, make it's destroy function
@@ -176,7 +185,7 @@ data modify entity @s brightness set value {{block:15,sky:15}}
 			# Destroy function
 			content = f"""
 # Replace the item with the custom one
-execute as @e[type=item,nbt={{Item:{{id:"{block_id}"}}}},limit=1,sort=nearest,distance=..1] run function {config['namespace']}:custom_blocks/{item}/replace_item
+execute as @e[type=item,nbt={{Item:{{id:"{block_id}"}}}},limit=1,sort=nearest,distance=..1] run function {namespace}:custom_blocks/{item}/replace_item
 """
 			# Add the commands on break if any
 			if COMMANDS_ON_BREAK in data:
@@ -189,26 +198,26 @@ execute as @e[type=item,nbt={{Item:{{id:"{block_id}"}}}},limit=1,sort=nearest,di
 			# Replace item function
 			if block != VANILLA_BLOCK_FOR_ORES:
 				content = f"""
-data modify entity @s Item.components set from storage {config['namespace']}:items all.{item}.components
-data modify entity @s Item.id set from storage {config['namespace']}:items all.{item}.id
+data modify entity @s Item.components set from storage {namespace}:items all.{item}.components
+data modify entity @s Item.id set from storage {namespace}:items all.{item}.id
 """
 			else:
 				no_silk_touch_drop = data[NO_SILK_TOUCH_DROP]
 				if ':' in no_silk_touch_drop:
 					silk_text = f'execute if score #is_silk_touch {config["namespace"]}.data matches 0 run data modify entity @s Item.id set value "{no_silk_touch_drop}"'
 				else:
-					silk_text = f"execute if score #is_silk_touch {config['namespace']}.data matches 0 run data modify entity @s Item.id set from storage {config['namespace']}:items all.{no_silk_touch_drop}.id"
-					silk_text += f"\nexecute if score #is_silk_touch {config['namespace']}.data matches 0 run data modify entity @s Item.components set from storage {config['namespace']}:items all.{no_silk_touch_drop}.components"
+					silk_text = f"execute if score #is_silk_touch {namespace}.data matches 0 run data modify entity @s Item.id set from storage {namespace}:items all.{no_silk_touch_drop}.id"
+					silk_text += f"\nexecute if score #is_silk_touch {namespace}.data matches 0 run data modify entity @s Item.components set from storage {namespace}:items all.{no_silk_touch_drop}.components"
 				content = f"""
 # If silk touch applied
-execute if score #is_silk_touch {config['namespace']}.data matches 1 run data modify entity @s Item.id set from storage {config['namespace']}:items all.{item}.id
-execute if score #is_silk_touch {config['namespace']}.data matches 1 run data modify entity @s Item.components set from storage {config['namespace']}:items all.{item}.components
+execute if score #is_silk_touch {namespace}.data matches 1 run data modify entity @s Item.id set from storage {namespace}:items all.{item}.id
+execute if score #is_silk_touch {namespace}.data matches 1 run data modify entity @s Item.components set from storage {namespace}:items all.{item}.components
 
 # Else, no silk touch
 {silk_text}
 
 # Get item count in every case
-execute store result entity @s Item.count byte 1 run scoreboard players get #item_count {config['namespace']}.data
+execute store result entity @s Item.count byte 1 run scoreboard players get #item_count {namespace}.data
 """
 			write_to_file(f"{path}/replace_item.mcfunction", content)
 
@@ -219,52 +228,52 @@ execute store result entity @s Item.count byte 1 run scoreboard players get #ite
 	if "minecraft:cauldron" in listed_blocks:
 		listed_blocks.remove("minecraft:cauldron")
 		listed_blocks.append("#minecraft:cauldrons")
-	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/tags/block/{VANILLA_BLOCKS_TAG}.json", super_json_dump({"values": listed_blocks}))
-	predicate = {"condition": "minecraft:location_check", "predicate": {"block": {"blocks": f"#{config['namespace']}:{VANILLA_BLOCKS_TAG}"}}}
-	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/predicate/check_vanilla_blocks.json", super_json_dump(predicate))
+	write_to_file(f"{config['build_datapack']}/data/{namespace}/tags/block/{VANILLA_BLOCKS_TAG}.json", super_json_dump({"values": listed_blocks}))
+	predicate = {"condition": "minecraft:location_check", "predicate": {"block": {"blocks": f"#{namespace}:{VANILLA_BLOCKS_TAG}"}}}
+	write_to_file(f"{config['build_datapack']}/data/{namespace}/predicate/check_vanilla_blocks.json", super_json_dump(predicate))
 	advanced_predicate = {"condition": "minecraft:any_of", "terms": []}
 	for block in unique_blocks:
 		block_underscore = block.replace(":","_")
 		if block == "minecraft:cauldron":
 			block = "#minecraft:cauldrons"
-		predicate = {"condition": "minecraft:entity_properties", "entity": "this", "predicate": { "nbt": f"{{Tags:[\"{config['namespace']}.vanilla.{block_underscore}\"]}}", "location": { "block": { "blocks": block }}}}
+		predicate = {"condition": "minecraft:entity_properties", "entity": "this", "predicate": { "nbt": f"{{Tags:[\"{namespace}.vanilla.{block_underscore}\"]}}", "location": { "block": { "blocks": block }}}}
 		advanced_predicate["terms"].append(predicate)
-	write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/predicate/advanced_check_vanilla_blocks.json", super_json_dump(advanced_predicate))
+	write_to_file(f"{config['build_datapack']}/data/{namespace}/predicate/advanced_check_vanilla_blocks.json", super_json_dump(advanced_predicate))
 
 	# Write a destroy check every 2 ticks, every second, and every 5 seconds
 	ore_vanilla_block = VANILLA_BLOCK_FOR_ORES["id"].replace(':', '_')
 	version: str = config['version']
 	write_to_file(f"{config['datapack_functions']}/v{version}/tick_2.mcfunction", f"""
 # 2 ticks destroy detection
-execute as @e[type=item_display,tag={config['namespace']}.custom_block,tag=!{config['namespace']}.vanilla.{ore_vanilla_block},predicate=!{config['namespace']}:check_vanilla_blocks] at @s run function {config['namespace']}:custom_blocks/destroy
+execute as @e[type=item_display,tag={namespace}.custom_block,tag=!{namespace}.vanilla.{ore_vanilla_block},predicate=!{namespace}:check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
 	write_to_file(f"{config['datapack_functions']}/v{version}/second.mcfunction", f"""
 # 1 second break detection
-execute as @e[type=item_display,tag={config['namespace']}.custom_block,tag=!{config['namespace']}.vanilla.{ore_vanilla_block},predicate=!{config['namespace']}:advanced_check_vanilla_blocks] at @s run function {config['namespace']}:custom_blocks/destroy
+execute as @e[type=item_display,tag={namespace}.custom_block,tag=!{namespace}.vanilla.{ore_vanilla_block},predicate=!{namespace}:advanced_check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
 	write_to_file(f"{config['datapack_functions']}/v{version}/second_5.mcfunction", f"""
 # 5 seconds break detection
-execute as @e[type=item_display,tag={config['namespace']}.custom_block,predicate=!{config['namespace']}:advanced_check_vanilla_blocks] at @s run function {config['namespace']}:custom_blocks/destroy
+execute as @e[type=item_display,tag={namespace}.custom_block,predicate=!{namespace}:advanced_check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
 
 
 
 	## Custom ores break detection (if any custom ore)
 	if any(data.get(VANILLA_BLOCK) == VANILLA_BLOCK_FOR_ORES for data in config['database'].values()):
-		write_to_file(f"{config['build_datapack']}/data/common_signals/tags/function/signals/on_new_item.json", super_json_dump({"values": [f"{config['namespace']}:calls/common_signals/new_item"]}))
+		write_to_file(f"{config['build_datapack']}/data/common_signals/tags/function/signals/on_new_item.json", super_json_dump({"values": [f"{namespace}:calls/common_signals/new_item"]}))
 		write_to_file(f"{config['datapack_functions']}/calls/common_signals/new_item.mcfunction", f"""
 # If the item is from a custom ore, launch the on_ore_destroyed function
-execute if data entity @s Item.components.\"minecraft:custom_data\".common_signals.temp at @s align xyz run function {config['namespace']}:calls/common_signals/on_ore_destroyed
+execute if data entity @s Item.components.\"minecraft:custom_data\".common_signals.temp at @s align xyz run function {namespace}:calls/common_signals/on_ore_destroyed
 """)
 		write_to_file(f"{config['datapack_functions']}/calls/common_signals/on_ore_destroyed.mcfunction", f"""
 # Get in a score the item count and if it is a silk touch
-scoreboard players set #item_count {config['namespace']}.data 0
-scoreboard players set #is_silk_touch {config['namespace']}.data 0
-execute store result score #item_count {config['namespace']}.data run data get entity @s Item.count
-execute store success score #is_silk_touch {config['namespace']}.data if data entity @s Item.components."minecraft:custom_data".common_signals.silk_touch
+scoreboard players set #item_count {namespace}.data 0
+scoreboard players set #is_silk_touch {namespace}.data 0
+execute store result score #item_count {namespace}.data run data get entity @s Item.count
+execute store success score #is_silk_touch {namespace}.data if data entity @s Item.components."minecraft:custom_data".common_signals.silk_touch
 
 # Try to destroy the block
-execute as @e[tag={config['namespace']}.custom_block,dx=0,dy=0,dz=0] at @s run function {config['namespace']}:custom_blocks/destroy
+execute as @e[tag={namespace}.custom_block,dx=0,dy=0,dz=0] at @s run function {namespace}:custom_blocks/destroy
 """)
 	
 
@@ -276,8 +285,8 @@ execute as @e[tag={config['namespace']}.custom_block,dx=0,dy=0,dz=0] at @s run f
 			# Make advancement
 			predicate = {"criteria":{"requirement":{"trigger":"minecraft:placed_block","conditions":{"location": [{"condition": "minecraft:location_check","predicate": {"block": {}}}]}}},"requirements":[["requirement"]],"rewards":{}}
 			predicate["criteria"]["requirement"]["conditions"]["location"][0]["predicate"]["block"]["nbt"] = json.dumps({"components":{"minecraft:custom_data":data.get("custom_data", {})}})
-			predicate["rewards"]["function"] = f"{config['namespace']}:custom_blocks/_player_head/search_{item}"
-			write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/advancement/custom_block_head/{item}.json", super_json_dump(predicate, max_level = -1))
+			predicate["rewards"]["function"] = f"{namespace}:custom_blocks/_player_head/search_{item}"
+			write_to_file(f"{config['build_datapack']}/data/{namespace}/advancement/custom_block_head/{item}.json", super_json_dump(predicate, max_level = -1))
 
 			# Make search function
 			content = "# Search where the head has been placed\n"
@@ -285,8 +294,8 @@ execute as @e[tag={config['namespace']}.custom_block,dx=0,dy=0,dz=0] at @s run f
 			for x in range(-mid_x, mid_x + 1):
 				for y in range(-mid_y, mid_y + 1):
 					for z in range(-mid_z, mid_z + 1):
-						content += f"execute positioned ~{x} ~{y} ~{z} if data block ~ ~ ~ components.\"minecraft:custom_data\".{config['namespace']}.{item} run function {config['namespace']}:custom_blocks/{item}/place_main\n"
-			content += f"\n# Advancement\nadvancement revoke @s only {config['namespace']}:custom_block_head/{item}\n\n"
+						content += f"execute positioned ~{x} ~{y} ~{z} if data block ~ ~ ~ components.\"minecraft:custom_data\".{namespace}.{item} run function {namespace}:custom_blocks/{item}/place_main\n"
+			content += f"\n# Advancement\nadvancement revoke @s only {namespace}:custom_block_head/{item}\n\n"
 			write_to_file(f"{config['datapack_functions']}/custom_blocks/_player_head/search_{item}.mcfunction", content)
 
 	info("All customs blocks are now placeable and destroyable!")

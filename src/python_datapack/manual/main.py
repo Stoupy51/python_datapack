@@ -208,11 +208,8 @@ def main(config: dict):
 					wiki_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data["wiki"]}})
 				
 				# For each craft (except smelting dupes),
-				crafts = []
-				if raw_data.get(RESULT_OF_CRAFTING):
-					crafts += raw_data[RESULT_OF_CRAFTING]
-				if raw_data.get(USED_FOR_CRAFTING):
-					crafts += raw_data[USED_FOR_CRAFTING]
+				crafts: list[dict] = list(raw_data.get(RESULT_OF_CRAFTING,[]))
+				crafts += list(raw_data.get(USED_FOR_CRAFTING,[]))
 				crafts += generate_otherside_crafts(config, name)
 				crafts = [craft for craft in crafts if craft["type"] not in ["blasting", "smoking", "campfire_cooking"]]	# Remove smelting dupes
 				crafts = unique_crafts(crafts)

@@ -40,6 +40,7 @@ def loot_table_from_ingredient(config: dict, result_ingredient: dict, result_cou
 def main(config: dict):
 	SMITHED_SHAPELESS_PATH: str = f"{config['build_datapack']}/data/{config['namespace']}/function/calls/smithed_crafter/shapeless_recipes.mcfunction"
 	SMITHED_SHAPED_PATH: str = f"{config['build_datapack']}/data/{config['namespace']}/function/calls/smithed_crafter/shaped_recipes.mcfunction"
+	SIMPLENERGY_PULVERIZER_PATH: str = f"{config['build_datapack']}/data/{config['namespace']}/function/calls/simplenergy/pulverizer_recipes.mcfunction"
 	FURNACE_NBT_PATH: str = f"{config['build_datapack']}/data/{config['namespace']}/function/calls/furnace_nbt_recipes"
 	SMELTING: list[str] = ["smelting", "blasting", "smoking"]
 
@@ -161,6 +162,22 @@ def main(config: dict):
 		return f"execute if score @s smithed.data matches 0 store result score @s smithed.data if data storage smithed.crafter:input recipe{dump} run loot replace block ~ ~ ~ container.16 loot {result_loot}\n"
 
 	@simple_cache
+	def simplenergy_pulverizer_recipe(recipe: dict, item: str) -> str:
+		""" Generate the line for the recipe of the Pulverizer
+		Args:
+			recipe	(dict):	The recipe to generate
+			item	(str):	The item to generate the recipe for
+		Returns:
+			str: The line for the recipe
+		"""
+		ingredient: dict = item_to_id_ingr_repr(recipe["ingredient"])
+		result: dict = item_to_id_ingr_repr(get_item_from_ingredient(config, recipe["result"])) if recipe.get("result") else ingr_repr(item, config['namespace'])
+		line: str = f"execute if score #found simplenergy.data matches 0 store result score #found simplenergy.data if data storage simplenergy:main pulverizer.input"
+		line += json.dumps(ingredient)
+		line += f" run loot replace entity @s contents loot {loot_table_from_ingredient(config, result, recipe['result_count'])}"
+		return line + "\n"
+
+	@simple_cache
 	def furnace_nbt_recipe(recipe: dict, result_loot: str, result_ingr: dict) -> str:
 		ingredient: dict = recipe["ingredient"]
 		result: dict = item_to_id_ingr_repr(get_item_from_ingredient(config, result_ingr))
@@ -211,8 +228,8 @@ scoreboard players reset #count furnace_nbt_recipes.data
 	furnace_nbt_vanilla_items: set[str] = set()
 	items: list[tuple[str, dict]] = list(config['database'].items())
 	for item, data in items:
-		crafts: list[dict] = data.get(RESULT_OF_CRAFTING, [])
-		crafts += data.get(USED_FOR_CRAFTING, [])
+		crafts: list[dict] = list(data.get(RESULT_OF_CRAFTING, []))
+		crafts += list(data.get(USED_FOR_CRAFTING, []))
 		for recipe in crafts:
 
 			# Transform ingr to a list of dicts
@@ -244,8 +261,8 @@ scoreboard players reset #count furnace_nbt_recipes.data
 	# Generate recipes with vanilla input (no components)
 	vanilla_generated_recipes = []
 	for item, data in items:
-		crafts: list[dict] = data.get(RESULT_OF_CRAFTING, [])
-		crafts += data.get(USED_FOR_CRAFTING, [])
+		crafts: list[dict] = list(data.get(RESULT_OF_CRAFTING, []))
+		crafts += list(data.get(USED_FOR_CRAFTING, []))
 				
 		i = 1
 		for recipe in crafts:
@@ -319,6 +336,11 @@ scoreboard players reset #count furnace_nbt_recipes.data
 						path = f"{FURNACE_NBT_PATH}/recipes_used.mcfunction"
 						if line not in FILES_TO_WRITE.get(path, ""):
 							write_to_file(path, line)
+
+			# Pulverizer
+			elif recipe["type"] == PULVERIZING:
+				write_to_file(SIMPLENERGY_PULVERIZER_PATH, simplenergy_pulverizer_recipe(recipe, item))
+				write_to_file(f"{config['build_datapack']}/data/simplenergy/tags/function/calls/pulverizer_recipes.json", super_json_dump({"values": [f"{config['namespace']}:calls/simplenergy/pulverizer_recipes"]}))
 
 		pass
 

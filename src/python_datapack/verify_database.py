@@ -15,7 +15,8 @@ def main(config: dict):
 
 	# Check every single thing in the database
 	errors = []
-	for item, data in config['database'].items():
+	database: dict[str, dict] = config['database']
+	for item, data in database.items():
 
 		# Check for a proper ID
 		if not data.get("id"):
@@ -71,81 +72,76 @@ def main(config: dict):
 		if data.get(RESULT_OF_CRAFTING) or data.get(USED_FOR_CRAFTING):
 
 			# Get a list of recipes
-			crafts_to_check = data.get(RESULT_OF_CRAFTING)
-			crafts_to_check = [] if not crafts_to_check else crafts_to_check
-			if data.get(USED_FOR_CRAFTING):
-				crafts_to_check += data[USED_FOR_CRAFTING]
+			crafts_to_check: list[dict] = list(data.get(RESULT_OF_CRAFTING, []))
+			crafts_to_check += list(data.get(USED_FOR_CRAFTING,[]))
 
 			# Check each recipe
-			if not isinstance(crafts_to_check, list):
-				errors.append(f"RESULT_OF_CRAFTING key should be a list of recipes for '{item}'")
-			else:
-				for i, recipe in enumerate(crafts_to_check):
+			for i, recipe in enumerate(crafts_to_check):
 
-					# A recipe is always a dictionnary
-					if not isinstance(recipe, dict):
-						errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should be a dictionary for '{item}'")
+				# A recipe is always a dictionnary
+				if not isinstance(recipe, dict):
+					errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should be a dictionary for '{item}'")
+				else:
+
+					# Verify "type" key
+					if not recipe.get("type") or not isinstance(recipe["type"], str):
+						errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a string 'type' key for '{item}'")
 					else:
 
-						# Verify "type" key
-						if not recipe.get("type") or not isinstance(recipe["type"], str):
-							errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a string 'type' key for '{item}'")
-						else:
-
-							# Check the crafting_shaped type
-							if recipe["type"] == "crafting_shaped":
-								if not recipe.get("shape") or not isinstance(recipe["shape"], list):
-									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a list[str] 'shape' key for '{item}'")
-								elif len(recipe["shape"]) > 3 or len(recipe["shape"][0]) > 3:
-									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a maximum of 3 rows and 3 columns for '{item}'")
-								else:
-									row_size = len(recipe["shape"][0])
-									if any(len(row) != row_size for row in recipe["shape"]):
-										errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have the same number of columns for each row for '{item}'")
-									
-								if not recipe.get("ingredients") or not isinstance(recipe["ingredients"], dict):
-									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'ingredients' key for '{item}'")
-								else:
-									for symbol, ingredient in recipe["ingredients"].items():
-										if not isinstance(ingredient, dict):
-											errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict ingredient for symbol '{symbol}' for '{item}'")
-										elif not ingredient.get("item") and not ingredient.get("components"):
-											errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an 'item' or 'components' key for ingredient of symbol '{symbol}' for '{item}', please use 'ingr_repr' function")
-										elif ingredient.get("components") and not isinstance(ingredient["components"], dict):
-											errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'components' key for ingredient of symbol '{symbol}' for '{item}', please use 'ingr_repr' function")
-										if not any(symbol in line for line in recipe["shape"]):
-											errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a symbol '{symbol}' in the shape for '{item}'")
-
-							# Check the crafting_shapeless type
-							elif recipe["type"] == "crafting_shapeless":
-								if not recipe.get("ingredients") or not isinstance(recipe["ingredients"], list):
-									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a list 'ingredients' key for '{item}'")
-								else:
-									for ingredient in recipe["ingredients"]:
-										if not isinstance(ingredient, dict):
-											errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict ingredient for '{item}'")
-										elif not ingredient.get("item") and not ingredient.get("components"):
-											errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an 'item' or 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
-										elif ingredient.get("components") and not isinstance(ingredient["components"], dict):
-											errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
-							
-							# Check the furnaces recipes
-							elif recipe["type"] in FURNACES_RECIPES_TYPES:
-								if not recipe.get("ingredient") or not isinstance(recipe["ingredient"], dict):
-									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'ingredient' key for '{item}'")
-								elif not recipe["ingredient"].get("item") and not recipe["ingredient"].get("components"):
-									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an 'item' or 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
-								elif recipe["ingredient"].get("components") and not isinstance(recipe["ingredient"]["components"], dict):
-									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
+						# Check the crafting_shaped type
+						if recipe["type"] == "crafting_shaped":
+							if not recipe.get("shape") or not isinstance(recipe["shape"], list):
+								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a list[str] 'shape' key for '{item}'")
+							elif len(recipe["shape"]) > 3 or len(recipe["shape"][0]) > 3:
+								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a maximum of 3 rows and 3 columns for '{item}'")
+							else:
+								row_size = len(recipe["shape"][0])
+								if any(len(row) != row_size for row in recipe["shape"]):
+									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have the same number of columns for each row for '{item}'")
 								
-								if not recipe.get("experience") or not isinstance(recipe["experience"], (float, int)):
-									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a float 'experience' key for '{item}'")
-								if not recipe.get("cookingtime") or not isinstance(recipe["cookingtime"], int):
-									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an int 'cookingtime' key for '{item}'")
+							if not recipe.get("ingredients") or not isinstance(recipe["ingredients"], dict):
+								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'ingredients' key for '{item}'")
+							else:
+								for symbol, ingredient in recipe["ingredients"].items():
+									if not isinstance(ingredient, dict):
+										errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict ingredient for symbol '{symbol}' for '{item}'")
+									elif not ingredient.get("item") and not ingredient.get("components"):
+										errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an 'item' or 'components' key for ingredient of symbol '{symbol}' for '{item}', please use 'ingr_repr' function")
+									elif ingredient.get("components") and not isinstance(ingredient["components"], dict):
+										errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'components' key for ingredient of symbol '{symbol}' for '{item}', please use 'ingr_repr' function")
+									if not any(symbol in line for line in recipe["shape"]):
+										errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a symbol '{symbol}' in the shape for '{item}'")
 
-						# Check the result count
-						if not recipe.get("result_count") or not isinstance(recipe["result_count"], int):
-							errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an int 'result_count' key for '{item}'")
+						# Check the crafting_shapeless type
+						elif recipe["type"] == "crafting_shapeless":
+							if not recipe.get("ingredients") or not isinstance(recipe["ingredients"], list):
+								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a list 'ingredients' key for '{item}'")
+							else:
+								for ingredient in recipe["ingredients"]:
+									if not isinstance(ingredient, dict):
+										errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict ingredient for '{item}'")
+									elif not ingredient.get("item") and not ingredient.get("components"):
+										errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an 'item' or 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
+									elif ingredient.get("components") and not isinstance(ingredient["components"], dict):
+										errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
+						
+						# Check the furnaces recipes
+						elif recipe["type"] in FURNACES_RECIPES_TYPES:
+							if not recipe.get("ingredient") or not isinstance(recipe["ingredient"], dict):
+								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'ingredient' key for '{item}'")
+							elif not recipe["ingredient"].get("item") and not recipe["ingredient"].get("components"):
+								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an 'item' or 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
+							elif recipe["ingredient"].get("components") and not isinstance(recipe["ingredient"]["components"], dict):
+								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
+							
+							if not recipe.get("experience") or not isinstance(recipe["experience"], (float, int)):
+								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a float 'experience' key for '{item}'")
+							if not recipe.get("cookingtime") or not isinstance(recipe["cookingtime"], int):
+								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an int 'cookingtime' key for '{item}'")
+
+					# Check the result count
+					if not recipe.get("result_count") or not isinstance(recipe["result_count"], int):
+						errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an int 'result_count' key for '{item}'")
 
 		# Commands on custom block placement
 		if data.get(COMMANDS_ON_PLACEMENT) and data.get("id"):
