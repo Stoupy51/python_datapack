@@ -121,7 +121,10 @@ def main(config: dict):
 			item.update(ingr)
 			r["recipe"].append(item_to_id_ingr_repr(item))
 		line += json.dumps(r)
-		line += f" run loot replace block ~ ~ ~ container.16 loot {result_loot}"
+		if recipe.get(SMITHED_CRAFTER_COMMAND):
+			line += f" run {recipe[SMITHED_CRAFTER_COMMAND]}"
+		else:
+			line += f" run loot replace block ~ ~ ~ container.16 loot {result_loot}"
 		return line + "\n"
 	
 	@simple_cache
@@ -159,7 +162,12 @@ def main(config: dict):
 			dump += "}"
 		
 		# Return the line
-		return f"execute if score @s smithed.data matches 0 store result score @s smithed.data if data storage smithed.crafter:input recipe{dump} run loot replace block ~ ~ ~ container.16 loot {result_loot}\n"
+		line = f"execute if score @s smithed.data matches 0 store result score @s smithed.data if data storage smithed.crafter:input recipe{dump}"
+		if recipe.get(SMITHED_CRAFTER_COMMAND):
+			line += f" run {recipe[SMITHED_CRAFTER_COMMAND]}"
+		else:
+			line += f" run loot replace block ~ ~ ~ container.16 loot {result_loot}\n"
+		return line
 
 	@simple_cache
 	def simplenergy_pulverizer_recipe(recipe: dict, item: str) -> str:
