@@ -1,4 +1,5 @@
 
+from .print import *
 import shutil
 import json
 import os
@@ -144,7 +145,14 @@ def sort_override_model(json_content: dict) -> None:
 				json_content["overrides"] = sorted(value, key=lambda x: x["predicate"]["custom_model_data"])
 
 def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
-
+	""" Write the content to the file at the given path\n
+	If you wish to write to the load/tick files or other versioned files, use the dedicated function instead (write_to_versioned_file)\n
+	Args:
+		file_path	(str):	The path to the file
+		content		(str):	The content to write
+		overwrite	(bool):	If the file should be overwritten (default: Append the content)
+		prepend		(bool):	If the content should be prepended instead of appended (not used if overwrite is True)
+	"""
 	# Clean path
 	file_path = file_path.replace("\\", "/")
 
@@ -167,7 +175,27 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend
 	else:
 		FILES_TO_WRITE[file_path] += str(content)
 
+def write_to_versioned_file(config: dict, relative_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
+	""" Write the content to the versioned file at the given path\n
+	This function should be used to write to the confirm_load/tick mcfunction files or other versioned files such as tick_2, second, ...\n
+	Args:
+		config			(dict):	The main configuration
+		relative_path	(str):	The path to the file relative to the versioned folder (ex: "load" refers to "data/namespace/function/vX/load.mcfunction")
+		content			(str):	The content to write
+		overwrite		(bool):	If the file should be overwritten (default: Append the content)
+		prepend			(bool):	If the content should be prepended instead of appended (not used if overwrite is True)
+	"""
+	if relative_path in ["load","confirm_load"]:
+		warning(f"You tried to write to the '{relative_path}' file, did you mean to write to the 'load/confirm_load' file instead?")
+	functions_path: str = f"{config['build_datapack']}/data/{config['namespace']}/function/v{config['version']}"
+	write_to_file(f"{functions_path}/{relative_path}.mcfunction", content, overwrite, prepend)
+
+
 def write_all_files(contains: str = ""):
+	""" Write all the files in the write queue to their respective files\n
+	Args:
+		contains (str): If set, only write the files that contains this string in their path
+	"""
 	contains = contains.replace("\\", "/")
 	for file_path, content in FILES_TO_WRITE.items():
 		if contains not in file_path:
