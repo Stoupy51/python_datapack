@@ -8,7 +8,8 @@ def main(config: dict):
 		return
 
 	# Add the sounds folder to the resource pack
-	sounds_names = os.listdir(f"{config['assets_folder']}/sounds")
+	sounds_names: list[str] = os.listdir(f"{config['assets_folder']}/sounds")
+	sounds_names = [sound for sound in sounds_names if sound.endswith(".ogg") or sound.endswith(".wav")]
 	if sounds_names:
 		start_time: float = time.perf_counter()
 		for sound in sounds_names:

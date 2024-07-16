@@ -252,11 +252,10 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					debug(f"Found a furnace recipe using custom item in ingredient, adding 'furnace_nbt_recipes' dependency")
 	
 	# If smithed crafter is used, link the functions
-	if smithed_crafter_used:
-		shapeless_func_tag: str = f"{config['build_datapack']}/data/smithed.crafter/tags/function/event/shapeless_recipes.json"
-		shaped_func_tag: str = f"{config['build_datapack']}/data/smithed.crafter/tags/function/event/recipes.json"
-		write_to_file(shapeless_func_tag, super_json_dump({"values": [f"{config['namespace']}:calls/smithed_crafter/shapeless_recipes"]}))
-		write_to_file(shaped_func_tag, super_json_dump({"values": [f"{config['namespace']}:calls/smithed_crafter/shaped_recipes"]}))
+	shapeless_func_tag: str = f"{config['build_datapack']}/data/smithed.crafter/tags/function/event/shapeless_recipes.json"
+	shaped_func_tag: str = f"{config['build_datapack']}/data/smithed.crafter/tags/function/event/recipes.json"
+	write_to_file(shapeless_func_tag, super_json_dump({"values": [f"{config['namespace']}:calls/smithed_crafter/shapeless_recipes"]}))
+	write_to_file(shaped_func_tag, super_json_dump({"values": [f"{config['namespace']}:calls/smithed_crafter/shaped_recipes"]}))
 
 	# Generate recipes with vanilla input (no components)
 	vanilla_generated_recipes = []
@@ -290,8 +289,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					vanilla_generated_recipes.append(name)
 				
 				# Custom ingredients recipe
-				if smithed_crafter_used:
-					write_to_file(SMITHED_SHAPELESS_PATH, smithed_shapeless_recipe(recipe, result_loot_table))
+				write_to_file(SMITHED_SHAPELESS_PATH, smithed_shapeless_recipe(recipe, result_loot_table))
 			
 			# Shaped
 			elif recipe["type"] == "crafting_shaped":
@@ -304,8 +302,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					vanilla_generated_recipes.append(name)
 				
 				# Custom ingredients recipe
-				if smithed_crafter_used:
-					write_to_file(SMITHED_SHAPED_PATH, smithed_shaped_recipe(recipe, result_loot_table))
+				write_to_file(SMITHED_SHAPED_PATH, smithed_shaped_recipe(recipe, result_loot_table))
 			
 			# Furnace
 			elif recipe["type"] in SMELTING + ["campfire_cooking"]:

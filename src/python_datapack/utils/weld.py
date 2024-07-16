@@ -35,11 +35,11 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 
 	# Weld all datapacks
 	output_dir = os.path.dirname(dest_path)
-	output = os.path.basename(dest_path.replace(".zip", ".temp.zip"))
+	output = os.path.basename(dest_path.replace(".zip", "_temporary.zip"))
 	weld(datapacks_to_merge, Path(output_dir), Path(output), log = "error")
 
 	# Make the new zip file with fixes pack.mcmeta and pack.png
-	with ZipFile(dest_path.replace(".zip",".temp.zip"), "r") as temp_zip:
+	with ZipFile(dest_path.replace(".zip","_temporary.zip"), "r") as temp_zip:
 		with ZipFile(dest_path, "w", compression = ZIP_DEFLATED) as zip:
 			for file in temp_zip.namelist():
 				if file not in ["pack.mcmeta", "pack.png"]:
@@ -49,7 +49,7 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 				zip.write(f"{config['build_datapack']}/pack.png", "pack.png")
 	
 	# Remove temp file
-	os.remove(dest_path.replace(".zip",".temp.zip"))
+	os.remove(dest_path.replace(".zip","_temporary.zip"))
 
 	# Return the time it took to merge the datapack and libs
 	return time.perf_counter() - start_time
@@ -81,11 +81,11 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 	
 	# Weld all resource packs
 	output_dir = os.path.dirname(dest_path)
-	output = os.path.basename(dest_path.replace(".zip", ".temp.zip"))
+	output = os.path.basename(dest_path.replace(".zip", "_temporary.zip"))
 	weld(resource_packs_to_merge, Path(output_dir), Path(output), log = "error")
 
 	# Make the new zip file with fixes pack.mcmeta and pack.png
-	with ZipFile(dest_path.replace(".zip",".temp.zip"), "r") as temp_zip:
+	with ZipFile(dest_path.replace(".zip","_temporary.zip"), "r") as temp_zip:
 		with ZipFile(dest_path, "w", compression = ZIP_DEFLATED) as zip:
 			for file in temp_zip.namelist():
 				if file not in ["pack.mcmeta", "pack.png"]:
@@ -95,7 +95,7 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 				zip.write(f"{config['build_resource_pack']}/pack.png", "pack.png")
 	
 	# Remove temp file
-	os.remove(dest_path.replace(".zip",".temp.zip"))
+	os.remove(dest_path.replace(".zip","_temporary.zip"))
 
 	# Return the time it took to merge the resource pack and libs
 	return time.perf_counter() - start_time

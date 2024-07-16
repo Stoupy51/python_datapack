@@ -376,7 +376,7 @@ def main(config: dict):
 			content += line + ["\n"]
 		
 		# Add the 2 pixels border
-		is_rectangle_shape = len(raw_data) % config['max_items_per_row'] == 0
+		is_rectangle_shape = len(categories_pages) % config['max_items_per_row'] == 0
 		page_image = add_border(page_image, BORDER_COLOR, BORDER_SIZE, is_rectangle_shape)
 		
 		# Save the image and add the page to the book

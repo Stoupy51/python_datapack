@@ -7,6 +7,12 @@ from .utils.io import *
 
 def main(config: dict):
 	start_time: float = time.perf_counter()
+	database: dict[str, dict] = config['database']
+
+	# Remove empty lists of recipes
+	for data in database.values():
+		if data.get(RESULT_OF_CRAFTING) == []:
+			data.pop(RESULT_OF_CRAFTING)
 
 	# Export database to JSON for debugging generation
 	with super_open(config['database_debug'], "w") as f:
@@ -15,7 +21,6 @@ def main(config: dict):
 
 	# Check every single thing in the database
 	errors = []
-	database: dict[str, dict] = config['database']
 	for item, data in database.items():
 
 		# Check for a proper ID
@@ -35,6 +40,8 @@ def main(config: dict):
 					errors.append(f"VANILLA_BLOCK key missing for '{item}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
 				elif not isinstance(data[VANILLA_BLOCK], dict):
 					errors.append(f"VANILLA_BLOCK key should be a dictionary for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
+				elif data[VANILLA_BLOCK].get("id", None) == None:
+					errors.append(f"VANILLA_BLOCK key should have an 'id' key for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
 				elif data[VANILLA_BLOCK].get("apply_facing", None) == None:
 					errors.append(f"VANILLA_BLOCK key should have a 'apply_facing' key to boolean for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
 

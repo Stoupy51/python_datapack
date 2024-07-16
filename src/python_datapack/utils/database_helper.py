@@ -150,7 +150,7 @@ def generate_everything_about_this_ore(config: dict, database: dict[str, dict], 
 		list[str]:		The list of generated items (ex: ["adamantium_helmet", "raw_adamantium", "adamantium_block", ...])
 	"""
 	# Constants
-	material_base = material.split(":")[-1].split("_")[0]				# Get the base material name (ex: "adamantium" from "adamantium_fragment")
+	material_base = "_".join(material.split(":")[-1].split("_")[:-1])				# Get the base material name (ex: "adamantium" from "adamantium_fragment")
 	main_ingredient = ingr_repr(material, ns = config['namespace'])		# Get the main ingredient for recipes
 	if equipments_config:
 		equivalent_to = equipments_config.equivalent_to
@@ -311,13 +311,24 @@ def generate_everything_about_these_ores(config: dict, database: dict[str, dict]
 
 
 # Custom records
-def generate_custom_records(config: dict, database: dict[str, dict], records: dict[str, str], category: str|None = None) -> None:
+def generate_custom_records(config: dict, database: dict[str, dict], records: dict[str, str]|str|None, category: str|None = None) -> None:
 	""" Generate custom records by searching in config['assets_folder']/records/ for the files and copying them to the database and resource pack folder.
 	Args:
-		database	(dict[str, dict]):	The database to add the custom records items to.
+		database	(dict[str, dict]):	The database to add the custom records items to, ex: {"record_1": "song.ogg", "record_2": "another_song.ogg"}
 		records		(dict[str, str]):	The custom records to apply, ex: {"record_1": "My first Record.ogg", "record_2": "A second one.ogg"}
+		category	(str):				The category to apply to the custom records (ex: "music").
 	"""
+	# If no records specified, search in the records folder
+	if not records or records in ["auto", "all"]:
+		songs: list[str] = [x for x in os.listdir(config["assets_folder"] + "/records") if x.endswith((".ogg",".wav"))]
+		records = { file.replace(".ogg","").replace("-","_").replace(" ","_").replace("___","_").lower(): file for file in songs }
+		debug(f"No records specified, searching in '{config['assets_folder']}/records' folder. Found {len(records)} records.")
+
+	# For each record, add it to the database
 	for record, sound in records.items():
+		if not sound.endswith(".ogg"):
+			warning(f"Error during custom record generation: sound '{sound}' is not an ogg file")
+			continue
 		item_name = ".".join(sound.split(".")[:-1])	# Remove the file extension
 		database[record] = {
 			"id": CUSTOM_ITEM_VANILLA,
@@ -396,17 +407,6 @@ def deterministic_custom_model_data(config: dict, database: dict[str, dict], sta
 			cached_custom_model_data[item] = data["custom_model_data"]
 	with open(config['cmd_cache'], "w") as f:
 		super_json_dump(cached_custom_model_data, f)
-	return
-
-# Clean up empty recipes
-def clean_up_empty_recipes(database: dict[str, dict]) -> None:
-	""" Remove empty recipes from the database.
-	Args:
-		database	(dict[str, dict]):	The database to clean up.
-	"""
-	for data in database.values():
-		if data.get(RESULT_OF_CRAFTING) == []:
-			data.pop(RESULT_OF_CRAFTING)
 	return
 
 # Add item name and lore
