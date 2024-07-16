@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "python_datapack"
-version = "0.5.2"
+version = "0.6.0"
 authors = [
 	{ name="Stoupy51", email="stoupy51@gmail.com" },
 ]
@@ -16,6 +16,12 @@ classifiers = [
 	"Programming Language :: Python :: 3",
 	"License :: OSI Approved :: MIT License",
 	"Operating System :: OS Independent",
+]
+dependencies = [
+	"pillow",
+	"smithed",
+	"model_resolver",
+	"mutagen",
 ]
 
 [project.urls]
