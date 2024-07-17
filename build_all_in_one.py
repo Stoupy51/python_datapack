@@ -1,9 +1,10 @@
 
 import os
+import sys
 commands = [
-	"py 1_upgrades.py",
-	"py 2_build.py",
-	"py 3_upload.py",
+	f"{sys.executable} 1_upgrades.py",
+	f"{sys.executable} 2_build.py",
+	f"{sys.executable} 3_upload.py",
 ]
 
 for command in commands:

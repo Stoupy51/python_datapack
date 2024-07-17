@@ -1,11 +1,11 @@
 
 [build-system]
-requires = ["hatchling", "pillow", "smithed", "model_resolver", "mutagen"]
+requires = ["hatchling", "requests", "pillow", "smithed", "model_resolver", "mutagen"]
 build-backend = "hatchling.build"
 
 [project]
 name = "python_datapack"
-version = "1.21.0.4"
+version = "1.21.0.5"
 authors = [
 	{ name="Stoupy51", email="stoupy51@gmail.com" },
 ]
@@ -18,9 +18,10 @@ classifiers = [
 	"Operating System :: OS Independent",
 ]
 dependencies = [
+	"requests>=2.32.3",
 	"pillow>=10.4.0",
-	"smithed>=0.18.4",
-	"model_resolver>=0.9.0",
+	"smithed==0.18.4",
+	"model_resolver==0.10.0",
 	"mutagen>=1.47.0",
 ]
 
