@@ -1,13 +1,15 @@
 
 # Imports
+from __future__ import annotations
+from enum import Enum
+from PIL import Image
+from mutagen.oggvorbis import OggVorbis
+
+# Import utils
 from ..constants import *
 from .ingredients import *
 from .print import *
 from .io import *
-from enum import Enum
-from PIL import Image
-import json
-from mutagen.oggvorbis import OggVorbis
 
 # Constants
 SLOTS = {"helmet": "head", "chestplate": "chest", "leggings": "legs", "boots": "feet", "sword": "mainhand", "pickaxe": "mainhand", "axe": "mainhand", "shovel": "mainhand", "hoe": "mainhand"}
@@ -138,7 +140,7 @@ def format_attributes(config: dict, attributes: str, slot: str, attr_config: dic
 	return attribute_modifiers
 
 # Generate everything related to the ore
-def generate_everything_about_this_ore(config: dict, database: dict[str, dict], material: str = "adamantium_fragment", equipments_config: EquipmentsConfig|None = EquipmentsConfig(DEFAULT_ORE.NETHERITE, 1873, {"attack_damage": 1.2, "player.mining_efficiency": 0.2})) -> list[str]:
+def generate_everything_about_this_material(config: dict, database: dict[str, dict], material: str = "adamantium_fragment", equipments_config: EquipmentsConfig|None = EquipmentsConfig(DEFAULT_ORE.NETHERITE, 1873, {"attack_damage": 1.2, "player.mining_efficiency": 0.2})) -> list[str]:
 	""" Generate everything related to the ore (armor, tools, weapons, ore, and ingredients (raw, nuggets, blocks)).
 		The function will try to find textures in the assets folder to each item
 		And return a list of generated items if you want to do something with it.
@@ -295,8 +297,8 @@ def generate_everything_about_this_ore(config: dict, database: dict[str, dict], 
 	pass
 
 # Generate everything about these ores
-def generate_everything_about_these_ores(config: dict, database: dict[str, dict], ores: dict[str, EquipmentsConfig|None]) -> dict[str, list[str]]:
-	""" Uses function 'generate_everything_about_this_ore' for each ore in the ores dictionary.
+def generate_everything_about_these_materials(config: dict, database: dict[str, dict], ores: dict[str, EquipmentsConfig|None]) -> dict[str, list[str]]:
+	""" Uses function 'generate_everything_about_this_material' for each ore in the ores dictionary.
 	Args:
 		database	(dict[str, dict]):	The database to apply the ores to.
 		ores		(dict[str, EquipmentsConfig|None]):	The ores to apply.
@@ -305,7 +307,7 @@ def generate_everything_about_these_ores(config: dict, database: dict[str, dict]
 	"""
 	generated_items = {}
 	for material, ore_config in ores.items():
-		generated_items[material] = generate_everything_about_this_ore(config, database, material, ore_config)
+		generated_items[material] = generate_everything_about_this_material(config, database, material, ore_config)
 	return generated_items
 
 
@@ -591,7 +593,45 @@ execute at @s if block ~ ~ ~ {self.provider} {self.placer_command}
 		
 		# Write file
 		write_to_file(path, content)
-		
 
+	@staticmethod
+	def all_with_config(config: dict, ore_configs: dict[str, list[CustomOreGeneration]]) -> None:
+		""" Generate all custom ore generation files with the configurations provided\n
+		Args:
+			config (dict):										The configuration dictionary\n
+			ore_configs (dict[str, list[CustomOreGeneration]]):	The custom ore generation configurations, ex:\n
+				{
+					"super_iron_ore": [
+						CustomOreGeneration(
+							dimensions = ["minecraft:overworld","stardust:cavern","some_other:dimension"],
+							maximum_height = 50,
+							minimum_height = 0,
+							veins_per_region = 2,
+							vein_size_logic = 0.4,
+						)
+					],
+					"deepslate_super_iron_ore": [
+						CustomOreGeneration(
+							dimensions = ["minecraft:overworld"],
+							maximum_height = 0,
+							veins_per_region = 2,
+							vein_size_logic = 0.4,
+						),
+						CustomOreGeneration(
+							dimensions = ["stardust:cavern"],
+							maximum_height = 0,
+							veins_per_region = 8,
+							vein_size_logic = 0.8,
+						)
+					], ...
+				}
+		"""
+		for ore, config_list in ore_configs.items():
+			for i, gen_config in enumerate(config_list):
+				if len(config_list) > 1:
+					gen_config.generate_files(config, ore, i)
+				else:
+					gen_config.generate_files(config, ore)
+		return
 
 

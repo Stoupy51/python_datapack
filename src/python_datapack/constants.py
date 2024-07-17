@@ -34,7 +34,6 @@ VANILLA_BLOCK: str = "vanilla_block"					# Key to a vanilla block that will be p
 NO_SILK_TOUCH_DROP: str = "no_silk_touch_drop"			# Key to an item ID that will drop when silk touch is not used. Must be used only when using the vanilla block for ores, ex: "adamantium_fragment" or "minecraft:raw_iron"
 OVERRIDE_MODEL: str = "override_model"					# Key to a dictionnary that will be used to override the whole model
 VANILLA_BLOCK_FOR_ORES: dict = {"id":"minecraft:polished_deepslate", "apply_facing": False}	# Vanilla block that will be used for an optimization tip for ores, don't ask questions
-CUSTOM_ORE_GENERATION: str = "custom_ore_generation"	# Key to a list of CustomOreGeneration objects, used to generate ores in the world
 PULVERIZING: str = "simplenergy_pulverizing"			# Key to a list of pulverizing recipes, used to generate dusts from ores (used by SimplEnergy)
 SMITHED_CRAFTER_COMMAND: str = "smithed_crafter_command"	# Key to a command that will be used in a recipe in the Smithed Crafter library. If not present, the command will be defaulted to a loot table
 NOT_COMPONENTS: list[str] = [							# Keys that should not be considered as components. Used for recipes, loot tables, etc.
