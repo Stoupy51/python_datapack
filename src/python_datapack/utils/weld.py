@@ -22,7 +22,7 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 	# Get all paths to merge
 	datapacks_to_merge = [
 		f"{config['build_folder']}/{config['datapack_name']}_datapack.zip",
-		config['libs_folder'] + "/datapack/*",
+		config['libs_folder'] + "/datapack/*.zip",
 	]
 
 	# Add the used official libs
@@ -68,7 +68,7 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 	# Get all paths to merge
 	resource_packs_to_merge = [
 		f"{config['build_folder']}/{config['datapack_name']}_resource_pack.zip",
-		config['libs_folder'] + "/resource_pack/*",
+		config['libs_folder'] + "/resource_pack/*.zip",
 	]
 
 	# Add the used official libs
