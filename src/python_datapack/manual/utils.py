@@ -606,6 +606,19 @@ def unique_crafts(crafts: list[dict]) -> list[dict]:
 			strings.append(str(craft))
 	return unique
 
+def remove_unknown_crafts(crafts: list[dict]) -> list[dict]:
+	""" Remove crafts that are not recognized by the program
+	Args:
+		crafts (list[dict]): The list of crafts
+	Returns:
+		list[dict]: The list of crafts without unknown crafts
+	"""
+	supported_crafts = []
+	for craft in crafts:
+		if craft["type"] in CRAFTING_RECIPES_TYPES or craft["type"] in FURNACES_RECIPES_TYPES:
+			supported_crafts.append(craft)
+	return supported_crafts
+
 # Generate USED_FOR_CRAFTING key like
 def generate_otherside_crafts(config: dict, item: str) -> list[dict]:
 	""" Generate the USED_FOR_CRAFTING key like

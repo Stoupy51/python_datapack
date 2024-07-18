@@ -178,10 +178,17 @@ def main(config: dict):
 
 			# Encode items
 			else:
+				# Get all crafts
+				crafts: list[dict] = list(raw_data.get(RESULT_OF_CRAFTING,[]))
+				crafts += list(raw_data.get(USED_FOR_CRAFTING,[]))
+				crafts += generate_otherside_crafts(config, name)
+				crafts = [craft for craft in crafts if craft["type"] not in ["blasting", "smoking", "campfire_cooking"]]	# Remove smelting dupes
+				crafts = remove_unknown_crafts(crafts)
+				crafts = unique_crafts(crafts)
 
 				# If there are crafts, generate the content for the first craft
-				if raw_data.get(RESULT_OF_CRAFTING):
-					first_craft = raw_data[RESULT_OF_CRAFTING][0]
+				if crafts:
+					first_craft = crafts[0]
 					l = generate_craft_content(config, first_craft, name, page_font)
 					if l:
 						content += l
@@ -208,12 +215,6 @@ def main(config: dict):
 					wiki_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data["wiki"]}})
 				
 				# For each craft (except smelting dupes),
-				crafts: list[dict] = list(raw_data.get(RESULT_OF_CRAFTING,[]))
-				crafts += list(raw_data.get(USED_FOR_CRAFTING,[]))
-				crafts += generate_otherside_crafts(config, name)
-				crafts = [craft for craft in crafts if craft["type"] not in ["blasting", "smoking", "campfire_cooking"]]	# Remove smelting dupes
-				crafts = unique_crafts(crafts)
-
 				for i, craft in enumerate(crafts):
 					if craft["type"] == "crafting_shapeless":
 						craft = convert_shapeless_to_shaped(craft)
@@ -232,8 +233,7 @@ def main(config: dict):
 						l = generate_craft_content(config, craft, name, "")
 						l = [l[0]] + l[2:]	# Remove craft title
 						remove_events(l)
-						replaces = {SHAPED_2X2_FONT: HOVER_SHAPED_2X2_FONT, SHAPED_3X3_FONT: HOVER_SHAPED_3X3_FONT, FURNACE_FONT: HOVER_FURNACE_FONT}
-						for k, v in replaces.items():
+						for k, v in HOVER_EQUIVALENTS.items():
 							l[1] = l[1].replace(k, v)
 						hover_text = ["", l]
 

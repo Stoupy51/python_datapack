@@ -13,6 +13,8 @@ def main(config: dict):
 	for data in database.values():
 		if data.get(RESULT_OF_CRAFTING) == []:
 			data.pop(RESULT_OF_CRAFTING)
+		if data.get(USED_FOR_CRAFTING) == []:
+			data.pop(USED_FOR_CRAFTING)
 
 	# Export database to JSON for debugging generation
 	with super_open(config['database_debug'], "w") as f:
