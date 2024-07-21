@@ -92,33 +92,46 @@ def build_process(config: dict, setup_database: callable = None, setup_external_
 	os.system("color")
 	info("Starting build process...")
 
-	# Initialize build process
-	initialize_main(config)
+	# Try to build the datapack
+	try:
 
-	# Generate items/blocks database and verify the format
-	config["database"] = setup_database(config) if setup_database else {}
-	config["external_database"] = setup_external_database(config) if setup_external_database else {}
-	if config.get("database"):
-		verify_database_main(config)
+		# Initialize build process
+		initialize_main(config)
 
-	# Generate resource pack
-	if config.get("resource_pack_format"):
-		resource_pack_main(config)
+		# Generate items/blocks database and verify the format
+		config["database"] = setup_database(config) if setup_database else {}
+		config["external_database"] = setup_external_database(config) if setup_external_database else {}
+		if config.get("database"):
+			verify_database_main(config)
 
-	# Generate manual
-	if config.get("has_manual") == True:
-		manual_main(config)
-	
-	# Generate datapack
-	datapack_main(config)
+		# Generate resource pack
+		if config.get("resource_pack_format"):
+			resource_pack_main(config)
 
-	# Special compatibilities with featured datapacks
-	compatibilities_main(config)
+		# Generate manual
+		if config.get("has_manual") == True:
+			manual_main(config)
+		
+		# Generate datapack
+		datapack_main(config)
 
-	# Finalyze build process
-	finalyze_main(config, user_code)
+		# Special compatibilities with featured datapacks
+		compatibilities_main(config)
 
-	# Total time
-	TOTAL_TIME: float = time.perf_counter() - START_TIME
-	info(f"Build finished in {TOTAL_TIME:.5f} seconds")
+		# Finalyze build process
+		finalyze_main(config, user_code)
+
+		# Total time
+		TOTAL_TIME: float = time.perf_counter() - START_TIME
+		info(f"Build finished in {TOTAL_TIME:.5f} seconds")
+
+	# Catch any exception
+	except Exception as e:
+		
+		# Write all files to debug
+		from .utils.io import write_all_files
+		write_all_files()
+
+		# Re-raise the exception
+		raise e
 
