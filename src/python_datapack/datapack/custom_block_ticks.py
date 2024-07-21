@@ -13,14 +13,15 @@ def custom_blocks_ticks_and_second_functions(config: dict) -> None:
 	"""
 	namespace: str = config['namespace']
 	build_datapack: str = config['build_datapack']
-	custom_blocks = f"{build_datapack}/data/{namespace}/function/custom_blocks/"
+	functions: str = f"{build_datapack}/data/{namespace}/function"
+	custom_blocks = f"{functions}/custom_blocks"
 	
 	# Get second and ticks functions
 	custom_blocks_second = []
 	custom_blocks_tick = []
 	for path in FILES_TO_WRITE:
 		if custom_blocks in path:
-			custom_block = path.split(custom_blocks)[1]
+			custom_block = path.split(custom_blocks + "/")[1]
 			if custom_block.count("/") == 1:
 				splitted = custom_block.split("/")
 				function_name = splitted[1].replace(".mcfunction", "")
@@ -32,20 +33,39 @@ def custom_blocks_ticks_and_second_functions(config: dict) -> None:
 	
 	# For each custom block, add tags when placed
 	for custom_block in custom_blocks_second:
-		write_to_file(f"{custom_blocks}{custom_block}/place_secondary.mcfunction", f"\n# Add tag for loop every second\ntag @s add {namespace}.second")
+		write_to_file(f"{custom_blocks}/{custom_block}/place_secondary.mcfunction", f"\n# Add tag for loop every second\ntag @s add {namespace}.second\nscoreboard players add #second_entities {namespace}.data 1\n")
+		write_to_file(f"{custom_blocks}/{custom_block}/destroy.mcfunction", f"\n# Decrease the number of entities with second tag\nscoreboard players remove #second_entities {namespace}.data 1\n")
 	for custom_block in custom_blocks_tick:
-		write_to_file(f"{custom_blocks}{custom_block}/place_secondary.mcfunction", f"\n# Add tag for loop every tick\ntag @s add {namespace}.tick")
+		write_to_file(f"{custom_blocks}/{custom_block}/place_secondary.mcfunction", f"\n# Add tag for loop every tick\ntag @s add {namespace}.tick\nscoreboard players add #tick_entities {namespace}.data 1\n")
+		write_to_file(f"{custom_blocks}/{custom_block}/destroy.mcfunction", f"\n# Decrease the number of entities with tick tag\nscoreboard players remove #tick_entities {namespace}.data 1\n")
 	
 	# Write second functions
 	version: str = config['version']
 	if custom_blocks_second:
-		write_to_file(f"{build_datapack}/data/{namespace}/function/v{version}/second.mcfunction", f"\n# Custom blocks second functions\nexecute as @e[tag={namespace}.second] at @s run function {namespace}:custom_blocks/second")
+		score_check: str = f"score #second_entities {namespace}.data matches 1.."
+		write_to_file(f"{functions}/v{version}/second.mcfunction", f"\n# Custom blocks second functions\nexecute if {score_check} as @e[tag={namespace}.second] at @s run function {namespace}:custom_blocks/second")
 		content = "\n".join(f"execute if entity @s[tag={namespace}.{custom_block}] run function {namespace}:custom_blocks/{custom_block}/second" for custom_block in custom_blocks_second)
-		write_to_file(f"{build_datapack}/data/{namespace}/function/custom_blocks/second.mcfunction", content)
+		write_to_file(f"{custom_blocks}/second.mcfunction", content)
+
+		# Write in stats_custom_blocks
+		write_to_file(f"{functions}/_stats_custom_blocks.mcfunction",f'scoreboard players add #second_entities {namespace}.data 0\n', prepend = True)
+		write_to_file(
+			f"{functions}/_stats_custom_blocks.mcfunction",
+			f'tellraw @s [{{"text":"- \'second\' tag function: ","color":"green"}},{{"score":{{"name":"#second_entities","objective":"{namespace}.data"}},"color":"dark_green"}}]\n'
+		)
+
 	
 	# Write tick functions
 	if custom_blocks_tick:
-		write_to_file(f"{build_datapack}/data/{namespace}/function/v{version}/tick.mcfunction", f"\n# Custom blocks tick functions\nexecute as @e[tag={namespace}.tick] at @s run function {namespace}:custom_blocks/tick")
+		score_check: str = f"score #tick_entities {namespace}.data matches 1.."
+		write_to_file(f"{functions}/v{version}/tick.mcfunction", f"\n# Custom blocks tick functions\nexecute if {score_check} as @e[tag={namespace}.tick] at @s run function {namespace}:custom_blocks/tick")
 		content = "\n".join(f"execute if entity @s[tag={namespace}.{custom_block}] run function {namespace}:custom_blocks/{custom_block}/tick" for custom_block in custom_blocks_tick)
-		write_to_file(f"{build_datapack}/data/{namespace}/function/custom_blocks/tick.mcfunction", content)
+		write_to_file(f"{custom_blocks}/tick.mcfunction", content)
+
+		# Write in stats_custom_blocks
+		write_to_file(f"{functions}/_stats_custom_blocks.mcfunction",f'scoreboard players add #tick_entities {namespace}.data 0\n', prepend = True)
+		write_to_file(
+			f"{functions}/_stats_custom_blocks.mcfunction",
+			f'tellraw @s [{{"text":"- \'tick\' tag function: ","color":"green"}},{{"score":{{"name":"#tick_entities","objective":"{namespace}.data"}},"color":"dark_green"}}]\n'
+		)
 
