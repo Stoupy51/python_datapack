@@ -34,10 +34,19 @@ def main(config: dict) -> None:
 	if namespace != "common_signals":
 		for file_content in FILES_TO_WRITE.values():
 			if "common_signals" in file_content:
-				OFFICIAL_LIBS["common_signals"]["is_used"] = True
 				if not official_lib_used("common_signals"):
 					info("Found the use of official supported library 'common_signals', adding it to the datapack")
 				break
+	
+	# Find if itemio is used
+	if namespace != "itemio":
+		for file_content in FILES_TO_WRITE.values():
+			if "itemio" in file_content:
+				if not official_lib_used("itemio"):
+					info("Found the use of official supported library 'itemio', adding it to the datapack")
+				break
+
+	# Get all dependencies (official and custom)
 	dependencies: list[tuple] = [(ns, data) for ns, data in OFFICIAL_LIBS.items() if data["is_used"]]
 	if config.get("dependencies"):
 		dependencies += list(config['dependencies'].items())
