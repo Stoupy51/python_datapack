@@ -6,42 +6,14 @@ from ..utils.ingredients import *
 from ..utils.cache import simple_cache
 from ..constants import *
 
-# Make a loot table
-@simple_cache
-def loot_table_from_ingredient(config: dict, result_ingredient: dict, result_count: int) -> str:
-
-	# If item from this datapack
-	item: str = ingr_to_id(result_ingredient)
-	if item.startswith(config['namespace']):
-		item = item.split(":")[1]
-		loot_table = f"{config['namespace']}:i/{item}"
-		if result_count > 1:
-			loot_table += f"_x{result_count}"
-		return loot_table
-	
-	namespace, item = item.split(":")
-	loot_table = f"{config['namespace']}:recipes/{namespace}/{item}"
-	if result_count > 1:
-		loot_table += f"_x{result_count}"
-
-	# If item from another datapack, generate the loot table
-	path: str = f"{config['build_datapack']}/data/{config['namespace']}/loot_table/recipes/{namespace}/{item}.json"
-	if namespace != "minecraft":
-		file: dict = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:loot_table","value": f"{config['namespace']}:external/{namespace}/{item}"}] }] }
-	else:
-		file: dict = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":f"{namespace}:{item}"}] }] }
-	if result_count > 1:
-		file["pools"][0]["entries"][0]["functions"] = [{"function": "minecraft:set_count","count": result_count}]
-	write_to_file(path, super_json_dump(file, max_level = 9))
-	return loot_table
-
-
 # Generate recipes
 def main(config: dict):
-	SMITHED_SHAPELESS_PATH: str = f"{config['build_datapack']}/data/{config['namespace']}/function/calls/smithed_crafter/shapeless_recipes.mcfunction"
-	SMITHED_SHAPED_PATH: str = f"{config['build_datapack']}/data/{config['namespace']}/function/calls/smithed_crafter/shaped_recipes.mcfunction"
-	SIMPLENERGY_PULVERIZER_PATH: str = f"{config['build_datapack']}/data/{config['namespace']}/function/calls/simplenergy/pulverizer_recipes.mcfunction"
-	FURNACE_NBT_PATH: str = f"{config['build_datapack']}/data/{config['namespace']}/function/calls/furnace_nbt_recipes"
+	namespace: str = config['namespace']
+	build_datapack: str = config['build_datapack']
+	SMITHED_SHAPELESS_PATH: str = f"{build_datapack}/data/{namespace}/function/calls/smithed_crafter/shapeless_recipes.mcfunction"
+	SMITHED_SHAPED_PATH: str = f"{build_datapack}/data/{namespace}/function/calls/smithed_crafter/shaped_recipes.mcfunction"
+	SIMPLENERGY_PULVERIZER_PATH: str = f"{build_datapack}/data/{namespace}/function/calls/simplenergy/pulverizer_recipes.mcfunction"
+	FURNACE_NBT_PATH: str = f"{build_datapack}/data/{namespace}/function/calls/furnace_nbt_recipes"
 	SMELTING: list[str] = ["smelting", "blasting", "smoking"]
 
 	# Functions for recipes
@@ -54,7 +26,7 @@ def main(config: dict):
 		Returns:
 			dict: The generated recipe
 		"""
-		result_ingr = ingr_repr(item, config['namespace']) if not recipe.get("result") else recipe["result"]
+		result_ingr = ingr_repr(item, namespace) if not recipe.get("result") else recipe["result"]
 		to_return = {
 			"type": "minecraft:" + recipe["type"],
 			"category": recipe[CATEGORY],
@@ -69,7 +41,7 @@ def main(config: dict):
 
 	@simple_cache
 	def vanilla_shaped_recipe(recipe: dict, item: str) -> dict:
-		result_ingr = ingr_repr(item, config['namespace']) if not recipe.get("result") else recipe["result"]
+		result_ingr = ingr_repr(item, namespace) if not recipe.get("result") else recipe["result"]
 		to_return = {
 			"type": "minecraft:" + recipe["type"],
 			"category": recipe[CATEGORY],
@@ -85,7 +57,7 @@ def main(config: dict):
 	
 	@simple_cache
 	def vanilla_furnace_recipe(recipe: dict, item: str) -> dict:
-		result_ingr = ingr_repr(item, config['namespace']) if not recipe.get("result") else recipe["result"]
+		result_ingr = ingr_repr(item, namespace) if not recipe.get("result") else recipe["result"]
 		to_return = {
 			"type": "minecraft:" + recipe["type"],
 			"category": recipe[CATEGORY],
@@ -179,7 +151,7 @@ def main(config: dict):
 			str: The line for the recipe
 		"""
 		ingredient: dict = item_to_id_ingr_repr(recipe["ingredient"])
-		result: dict = item_to_id_ingr_repr(get_item_from_ingredient(config, recipe["result"])) if recipe.get("result") else ingr_repr(item, config['namespace'])
+		result: dict = item_to_id_ingr_repr(get_item_from_ingredient(config, recipe["result"])) if recipe.get("result") else ingr_repr(item, namespace)
 		line: str = f"execute if score #found simplenergy.data matches 0 store result score #found simplenergy.data if data storage simplenergy:main pulverizer.input"
 		line += json.dumps(ingredient)
 		line += f" run loot replace entity @s contents loot {loot_table_from_ingredient(config, result, recipe['result_count'])}"
@@ -194,7 +166,7 @@ def main(config: dict):
 		type: str = recipe["type"]
 		ingredient_vanilla: str = get_vanilla_item_id_from_ingredient(config, ingredient)
 		result_item: str = ingr_to_id(result_ingr).replace(':','_')
-		path: str = f"{config['build_datapack']}/data/furnace_nbt_recipes/recipe/vanilla_items/{type}__{ingredient_vanilla.split(':')[1]}__{result_item}.json"
+		path: str = f"{build_datapack}/data/furnace_nbt_recipes/recipe/vanilla_items/{type}__{ingredient_vanilla.split(':')[1]}__{result_item}.json"
 		type = f"minecraft:{type}" if ":" not in type else type
 		json_file: dict = {"type":type,"ingredient":{"item": ingredient_vanilla},"result":result,"experience":recipe.get("experience", 0),"cookingtime":recipe.get("cookingtime", 200)}
 		write_to_file(path, super_json_dump(json_file, max_level = -1), overwrite = True)
@@ -221,13 +193,13 @@ scoreboard players reset #count furnace_nbt_recipes.data
 
 		# Create the recipe for the reward
 		json_file: dict = {"type":"minecraft:smelting","ingredient":{"item":"minecraft:command_block"},"result":{"id":"minecraft:command_block"},"experience":experience,"cookingtime":200}
-		write_to_file(f"{config['build_datapack']}/data/furnace_nbt_recipes/recipe/xp/{experience}.json", super_json_dump(json_file, max_level = -1), overwrite = True)
+		write_to_file(f"{build_datapack}/data/furnace_nbt_recipes/recipe/xp/{experience}.json", super_json_dump(json_file, max_level = -1), overwrite = True)
 
 		# Prepare line and return
 		line: str = f"execute if score #found furnace_nbt_recipes.data matches 0 store result score #found furnace_nbt_recipes.data if data storage furnace_nbt_recipes:main input"
 		ingredient: dict = recipe["ingredient"]
 		line += json.dumps(ingredient)
-		line += f" run function {config['namespace']}:calls/furnace_nbt_recipes/xp_reward/{experience}\n"
+		line += f" run function {namespace}:calls/furnace_nbt_recipes/xp_reward/{experience}\n"
 		return line
 
 	# Check if smithed crafter and Furnace NBT Recipes will be used
@@ -264,10 +236,10 @@ scoreboard players reset #count furnace_nbt_recipes.data
 	
 	# If there is any shaped or shapeless recipe, link the functions
 	if any_recipe:
-		shapeless_func_tag: str = f"{config['build_datapack']}/data/smithed.crafter/tags/function/event/shapeless_recipes.json"
-		shaped_func_tag: str = f"{config['build_datapack']}/data/smithed.crafter/tags/function/event/recipes.json"
-		write_to_file(shapeless_func_tag, super_json_dump({"values": [f"{config['namespace']}:calls/smithed_crafter/shapeless_recipes"]}))
-		write_to_file(shaped_func_tag, super_json_dump({"values": [f"{config['namespace']}:calls/smithed_crafter/shaped_recipes"]}))
+		shapeless_func_tag: str = f"{build_datapack}/data/smithed.crafter/tags/function/event/shapeless_recipes.json"
+		shaped_func_tag: str = f"{build_datapack}/data/smithed.crafter/tags/function/event/recipes.json"
+		write_to_file(shapeless_func_tag, super_json_dump({"values": [f"{namespace}:calls/smithed_crafter/shapeless_recipes"]}))
+		write_to_file(shaped_func_tag, super_json_dump({"values": [f"{namespace}:calls/smithed_crafter/shaped_recipes"]}))
 
 	# Generate recipes with vanilla input (no components)
 	vanilla_generated_recipes = []
@@ -286,7 +258,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 			
 			# Get possible result item
 			if not recipe.get("result"):
-				result_loot_table = loot_table_from_ingredient(config, ingr_repr(item, config['namespace']), recipe["result_count"])
+				result_loot_table = loot_table_from_ingredient(config, ingr_repr(item, namespace), recipe["result_count"])
 			else:
 				result_loot_table = loot_table_from_ingredient(config, recipe["result"], recipe["result_count"])
 
@@ -296,7 +268,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 				# Vanilla recipe
 				if all(i.get("item") for i in ingr):
 					r = vanilla_shapeless_recipe(recipe, item)
-					write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/recipe/{name}.json", super_json_dump(r, max_level = 5))
+					write_to_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", super_json_dump(r, max_level = 5))
 					i += 1
 					vanilla_generated_recipes.append(name)
 				
@@ -309,7 +281,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 				# Vanilla recipe
 				if all(i.get("item") for i in ingr.values()):
 					r = vanilla_shaped_recipe(recipe, item)
-					write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/recipe/{name}.json", super_json_dump(r, max_level = 5))
+					write_to_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", super_json_dump(r, max_level = 5))
 					i += 1
 					vanilla_generated_recipes.append(name)
 				
@@ -322,7 +294,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 				# Vanilla recipe
 				if ingr.get("item"):
 					r = vanilla_furnace_recipe(recipe, item)
-					write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/recipe/{name}.json", super_json_dump(r, max_level = 5))
+					write_to_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", super_json_dump(r, max_level = 5))
 					i += 1
 					vanilla_generated_recipes.append(name)
 				
@@ -330,7 +302,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					if recipe.get("result"):
 						line: str = furnace_nbt_recipe(recipe, result_loot_table, recipe["result"])
 					else:
-						line: str = furnace_nbt_recipe(recipe, result_loot_table, ingr_repr(item, config['namespace']))
+						line: str = furnace_nbt_recipe(recipe, result_loot_table, ingr_repr(item, namespace))
 					type: str = recipe["type"]
 					path: str = f"{FURNACE_NBT_PATH}/{type}_recipes.mcfunction"
 					write_to_file(path, line)
@@ -349,7 +321,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 			# Pulverizer
 			elif recipe["type"] == PULVERIZING:
 				write_to_file(SIMPLENERGY_PULVERIZER_PATH, simplenergy_pulverizer_recipe(recipe, item))
-				write_to_file(f"{config['build_datapack']}/data/simplenergy/tags/function/calls/pulverizer_recipes.json", super_json_dump({"values": [f"{config['namespace']}:calls/simplenergy/pulverizer_recipes"]}))
+				write_to_file(f"{build_datapack}/data/simplenergy/tags/function/calls/pulverizer_recipes.json", super_json_dump({"values": [f"{namespace}:calls/simplenergy/pulverizer_recipes"]}))
 
 		pass
 
@@ -364,16 +336,52 @@ scoreboard players reset #count furnace_nbt_recipes.data
 		# Link the functions
 		for r in SMELTING:
 			if FILES_TO_WRITE.get(f"{FURNACE_NBT_PATH}/{r}_recipes.mcfunction"):
-				write_to_file(f"{config['build_datapack']}/data/furnace_nbt_recipes/tags/function/v1/{r}_recipes.json", super_json_dump({"values": [f"{config['namespace']}:calls/furnace_nbt_recipes/{r}_recipes"]}))
+				write_to_file(f"{build_datapack}/data/furnace_nbt_recipes/tags/function/v1/{r}_recipes.json", super_json_dump({"values": [f"{namespace}:calls/furnace_nbt_recipes/{r}_recipes"]}))
 		if FILES_TO_WRITE.get(f"{FURNACE_NBT_PATH}/disable_cooking.mcfunction"):
-			write_to_file(f"{config['build_datapack']}/data/furnace_nbt_recipes/tags/function/v1/disable_cooking.json", super_json_dump({"values": [f"{config['namespace']}:calls/furnace_nbt_recipes/disable_cooking"]}))
+			write_to_file(f"{build_datapack}/data/furnace_nbt_recipes/tags/function/v1/disable_cooking.json", super_json_dump({"values": [f"{namespace}:calls/furnace_nbt_recipes/disable_cooking"]}))
 		if FILES_TO_WRITE.get(f"{FURNACE_NBT_PATH}/recipes_used.mcfunction"):
-			write_to_file(f"{config['build_datapack']}/data/furnace_nbt_recipes/tags/function/v1/recipes_used.json", super_json_dump({"values": [f"{config['namespace']}:calls/furnace_nbt_recipes/recipes_used"]}))
+			write_to_file(f"{build_datapack}/data/furnace_nbt_recipes/tags/function/v1/recipes_used.json", super_json_dump({"values": [f"{namespace}:calls/furnace_nbt_recipes/recipes_used"]}))
 
 	# Create a function that will give all recipes
 	content = "\n# Get all recipes\n"
 	for recipe in vanilla_generated_recipes:
-		content += f"recipe give @s {config['namespace']}:{recipe}\n"
+		content += f"recipe give @s {namespace}:{recipe}\n"
 	write_to_file(f"{config['datapack_functions']}/utils/get_all_recipes.mcfunction", content + "\n")
+
+
+	# Unlock vanilla recipes when at least one of the ingredient is in inventory
+	if vanilla_generated_recipes:
+		ingredients: dict[str, set[str]] = {}
+
+		# For each recipe, get the ingredients and link them to the recipe
+		for recipe_name in vanilla_generated_recipes:
+			recipe_path: str = f"{build_datapack}/data/{namespace}/recipe/{recipe_name}.json"
+			recipe: dict = json.loads(read_file(recipe_path))
+			for ingr in get_ingredients_from_recipe(recipe):
+				if ingr not in ingredients:
+					ingredients[ingr] = set()
+				ingredients[ingr].add(recipe_name)
+		
+		# Write an inventory_changed advancement
+		adv_path: str = f"{build_datapack}/data/{namespace}/advancement/unlock_recipes.json"
+		adv_json: dict = {"criteria":{"requirement":{"trigger":"minecraft:inventory_changed"}},"rewards":{"function":f"{namespace}:advancements/unlock_recipes"}}
+		write_to_file(adv_path, super_json_dump(adv_json, max_level = -1))
+
+		# Write the function that will unlock the recipes
+		func_path: str = f"{build_datapack}/data/{namespace}/function/advancements/unlock_recipes.mcfunction"
+		content = f"""
+# Revoke advancement
+advancement revoke @s only {namespace}:unlock_recipes
+
+## For each ingredient in inventory, unlock the recipes
+"""
+		for ingr, recipes in ingredients.items():
+			content += f"# {ingr}\nscoreboard players set #success {namespace}.data 0\nexecute store success score #success {namespace}.data if items entity @s container.* {ingr}\n"
+			for recipe in recipes:
+				content += f"execute if score #success {namespace}.data matches 1 run recipe give @s {namespace}:{recipe}\n"
+			content += "\n"
+		write_to_file(func_path, content)
+
+	# Final print
 	info("Recipes generated")
 

@@ -14,6 +14,7 @@ def main(config: dict):
 	loading_main(config)
 
 	if config.get("database"):
+
 		# Generate custom recipes
 		recipes_main(config)
 

@@ -126,10 +126,36 @@ def super_merge_dict(dict1: dict, dict2: dict) -> dict:
 	# Return the new dict
 	return new_dict
 
+# Utility function to clean the path
+def clean_path(file_path: str) -> str:
+	""" Clean the path by replacing backslashes with forward slashes and simplifying the path\n
+	Args:
+		file_path (str): The path to clean
+	Returns:
+		str: The cleaned path
+	"""
+	# Replace backslashes with forward slashes
+	file_path = file_path.replace("\\", "/")
+
+	# If the path contains "../", simplify it
+	if "../" in file_path:
+		file_path = file_path.split("/")
+		for i in range(len(file_path)):
+			if file_path[i] == ".." and i > 0:
+				file_path[i] = ""
+				file_path[i-1] = ""
+		file_path = "/".join(file_path)
+
+	# Replace "./" with nothing since it's useless
+	file_path = file_path.replace("./", "")
+
+	# Return the cleaned path
+	return file_path
+
 # The majority of files will be written at the end of the program to prevent excessive disk access (reading + appending + writing)
 FILES_TO_WRITE: dict[str, str] = {}
 def is_in_write_queue(file_path: str) -> bool:
-	return file_path.replace("\\", "/") in FILES_TO_WRITE
+	return clean_path(file_path) in FILES_TO_WRITE
 
 def sort_override_model(json_content: dict) -> None:
 	for key, value in json_content.items():
@@ -144,6 +170,28 @@ def sort_override_model(json_content: dict) -> None:
 			):
 				json_content["overrides"] = sorted(value, key=lambda x: x["predicate"]["custom_model_data"])
 
+def read_file(file_path: str) -> str:
+	""" Read the file at the given path\n
+	Args:
+		file_path (str): The path to the file
+	Returns:
+		str: The content of the file
+	"""
+	# Clean path
+	file_path = clean_path(file_path)
+
+	# If the file is in the write queue, return it
+	if file_path in FILES_TO_WRITE:
+		return FILES_TO_WRITE[file_path]
+
+	# If the file exists, read it
+	if os.path.exists(file_path):
+		with super_open(file_path, "r") as f:
+			return f.read()
+	
+	# Else, return an empty string
+	return ""
+
 def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
 	""" Write the content to the file at the given path\n
 	If you wish to write to the load/tick files or other versioned files, use the dedicated function instead (write_to_versioned_file)\n
@@ -154,7 +202,7 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend
 		prepend		(bool):	If the content should be prepended instead of appended (not used if overwrite is True)
 	"""
 	# Clean path
-	file_path = file_path.replace("\\", "/")
+	file_path = clean_path(file_path)
 
 	# If file doesn't exists or overwrite is true, made it empty
 	if file_path not in FILES_TO_WRITE or overwrite:

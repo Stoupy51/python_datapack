@@ -1,5 +1,6 @@
 
 # Imports
+from .io import *
 from .print import *
 from .cache import simple_cache
 from ..constants import *
@@ -155,4 +156,61 @@ def get_item_from_ingredient(config: dict, ingredient: dict) -> dict:
 	if ns == "minecraft":
 		return {"id": id, "count": 1}
 	error(f"External item '{ingr_id}' not found in the external database")
+
+# Make a loot table
+@simple_cache
+def loot_table_from_ingredient(config: dict, result_ingredient: dict, result_count: int) -> str:
+
+	# If item from this datapack
+	item: str = ingr_to_id(result_ingredient)
+	if item.startswith(config['namespace']):
+		item = item.split(":")[1]
+		loot_table = f"{config['namespace']}:i/{item}"
+		if result_count > 1:
+			loot_table += f"_x{result_count}"
+		return loot_table
+	
+	namespace, item = item.split(":")
+	loot_table = f"{config['namespace']}:recipes/{namespace}/{item}"
+	if result_count > 1:
+		loot_table += f"_x{result_count}"
+
+	# If item from another datapack, generate the loot table
+	path: str = f"{config['build_datapack']}/data/{config['namespace']}/loot_table/recipes/{namespace}/{item}.json"
+	if namespace != "minecraft":
+		file: dict = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:loot_table","value": f"{config['namespace']}:external/{namespace}/{item}"}] }] }
+	else:
+		file: dict = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":f"{namespace}:{item}"}] }] }
+	if result_count > 1:
+		file["pools"][0]["entries"][0]["functions"] = [{"function": "minecraft:set_count","count": result_count}]
+	write_to_file(path, super_json_dump(file, max_level = 9))
+	return loot_table
+
+@simple_cache
+def get_ingredients_from_recipe(recipe: dict) -> list[str]:
+	""" Get the ingredients from a recipe dict
+	Args:
+		recipe (dict): The final recipe JSON dict, ex:\n
+		{
+			"type": "minecraft:crafting_shaped",
+			"pattern": [...],
+			"key": {...},
+			"result": {...}
+		}
+	Returns:
+		list[str]: The ingredients ids
+	"""
+	ingredients: list[str] = []
+	if recipe.get("key"):
+		for value in recipe["key"].values():
+			ingredients.append(value["item"])
+	elif recipe.get("ingredients"):
+		for ingr in recipe["ingredients"]:
+			ingredients.append(ingr["item"])
+	elif recipe.get("ingredient"):
+		ingredients.append(recipe["ingredient"]["item"])
+	elif recipe.get("template"):
+		ingredients.append(recipe["template"]["item"])
+	return ingredients
+
 

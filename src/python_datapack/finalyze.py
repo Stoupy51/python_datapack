@@ -144,14 +144,17 @@ def main(config: dict, user_code: callable):
 		weld_dp_time: float = weld_datapack(config, weld_dp)
 
 		# Merge weld rp and copy to resourcepack_dest if possible
-		weld_rp: str = f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack_with_libs.zip"
-		weld_rp_time: float = weld_resource_pack(config, weld_rp)
-		for dest in resourcepack_dest:
-			try:
-				shutil.copy(weld_rp, dest)
-			except OSError as e:
-				print(e)
-				pass
+		if config.get('resource_pack_format'):
+			weld_rp: str = f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack_with_libs.zip"
+			weld_rp_time: float = weld_resource_pack(config, weld_rp)
+			for dest in resourcepack_dest:
+				try:
+					shutil.copy(weld_rp, dest)
+				except OSError as e:
+					print(e)
+					pass
+		else:
+			weld_rp_time = 0.0
 
 		# Debug time taken
 		total_time: float = weld_dp_time + weld_rp_time
