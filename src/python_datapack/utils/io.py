@@ -239,6 +239,28 @@ def write_to_versioned_file(config: dict, relative_path: str, content: str, over
 	write_to_file(f"{functions_path}/{relative_path}.mcfunction", content, overwrite, prepend)
 
 
+def write_to_load_file(config: dict, content: str, overwrite: bool = False, prepend: bool = False) -> None:
+	""" Write the content to the load file\n
+	Args:
+		config		(dict):	The main configuration
+		content		(str):	The content to write
+		overwrite	(bool):	If the file should be overwritten (default: Append the content)
+		prepend		(bool):	If the content should be prepended instead of appended (not used if overwrite is True)
+	"""
+	write_to_versioned_file(config, "load/confirm_load", content, overwrite, prepend)
+
+
+def write_to_tick_file(config: dict, content: str, overwrite: bool = False, prepend: bool = False) -> None:
+	""" Write the content to the tick file\n
+	Args:
+		config		(dict):	The main configuration
+		content		(str):	The content to write
+		overwrite	(bool):	If the file should be overwritten (default: Append the content)
+		prepend		(bool):	If the content should be prepended instead of appended (not used if overwrite is True)
+	"""
+	write_to_versioned_file(config, "tick", content, overwrite, prepend)
+
+
 def write_all_files(contains: str = ""):
 	""" Write all the files in the write queue to their respective files\n
 	Args:
