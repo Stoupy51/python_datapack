@@ -233,10 +233,23 @@ def write_to_versioned_file(config: dict, relative_path: str, content: str, over
 		overwrite		(bool):	If the file should be overwritten (default: Append the content)
 		prepend			(bool):	If the content should be prepended instead of appended (not used if overwrite is True)
 	"""
+	# Force the path to be .mcfunction
+	if relative_path.endswith((".json",".mcmeta")):
+		error(f"Writing to a {relative_path.split('.')[-1]} file is not allowed using write_to_versioned_file(), use write_to_file() instead.")
+	
+	# Make sure the path is correct for load/confirm_load
 	if relative_path in ["load","confirm_load"]:
 		warning(f"You tried to write to the '{relative_path}' file, did you mean to write to the 'load/confirm_load' file instead?")
+
+	# Add .mcfunction to the path
+	if relative_path.endswith(".mcfunction"):
+		warning(f"The method write_to_versioned_file() already adds the '.mcfunction' extension to the path, you don't need to add it yourself.")
+	else:
+		relative_path += ".mcfunction"
+	
+	# Write to the file
 	functions_path: str = f"{config['build_datapack']}/data/{config['namespace']}/function/v{config['version']}"
-	write_to_file(f"{functions_path}/{relative_path}.mcfunction", content, overwrite, prepend)
+	write_to_file(f"{functions_path}/{relative_path}", content, overwrite, prepend)
 
 
 def write_to_load_file(config: dict, content: str, overwrite: bool = False, prepend: bool = False) -> None:
