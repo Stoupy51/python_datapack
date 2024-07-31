@@ -27,7 +27,9 @@ def model_in_variants(models: list[str], variants: list[str]) -> bool:
 
 # Function to handle item
 def handle_item(config: dict, item: str, data: dict, used_textures: set|None = None):
-	block_or_item = "block" if data.get("id") == CUSTOM_BLOCK_VANILLA else "item"
+	block_or_item: str = "item"
+	if data.get("id") == CUSTOM_BLOCK_VANILLA or any("block" in x for x in data.get(OVERRIDE_MODEL, {}).values()):
+		block_or_item = "block"
 	dest_base_textu = f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/{block_or_item}"
 
 	# Get powered states (if any)
@@ -41,76 +43,80 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 	# Generate its model file(s)
 	for on_off in powered:
 		dest_base_model = f"{config['build_resource_pack']}/assets/{config['namespace']}/models/{block_or_item}"
-		content = {}
-		if data.get(OVERRIDE_MODEL):
-			content = data[OVERRIDE_MODEL]
-			if not content.get("textures"):
-				new_content = {"textures": {"layer0": f"{config['namespace']}:{block_or_item}/{item}{on_off}"}}
-				new_content.update(content)
-				content = new_content
-			if on_off:	# Check if the override model has the on/off texture
-				for key, texture in content["textures"].items():
-					on_off_path = "/".join(texture.split("/")[1:]) + on_off + ".png"
-					if on_off_path in config["textures_files"]:
-						content["textures"][key] = texture + on_off
 
-		else:
-			# If it's a block
-			if block_or_item == "block":
+		# If it's a block
+		if block_or_item == "block":
 
-				# Get parent
-				content = {"parent": "block/cube_all", "textures": {}}
+			# Get parent
+			content = {"parent": "block/cube_all", "textures": {}}
 
-				# Get all variants
-				variants = [x.replace(".png", "") for x in config['textures_files'] if "gui/" not in x and x.split("/")[-1].startswith(item)]
-				
-				## Check in which variants state we are
-				# If one texture, apply on all faces
-				variants_without_on = [x for x in variants if "_on" not in x]
-				if len(variants_without_on) == 1:
-					content["textures"]["all"] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, "", on_off)
-				else:
-					# Prepare models to check
-					cube_bottom_top = ["bottom", "side", "top"]
-					orientable = ["front", "side", "top"]
-					cube_column = ["end", "side"]
-
-					# Check cube_bottom_top model
-					if model_in_variants(cube_bottom_top, variants):
-						content["parent"] = "block/cube_bottom_top"
-						for side in cube_bottom_top:
-							content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
-					
-					# Check orientable model
-					elif model_in_variants(orientable, variants):
-						content["parent"] = "block/orientable"
-						for side in orientable:
-							content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
-					
-					# Check cube_column model
-					elif model_in_variants(cube_column, variants):
-						content["parent"] = "block/cube_column"
-						for side in cube_column:
-							content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
-					
-					else:
-						error(f"Block '{item}' has invalid variants: {variants}, consider adding missing textures or override the model")
-
-			# Else, it's an item
+			# Get all variants
+			variants = [x.replace(".png", "") for x in config['textures_files'] if "gui/" not in x and x.split("/")[-1].startswith(item)]
+			
+			## Check in which variants state we are
+			# If one texture, apply on all faces
+			variants_without_on = [x for x in variants if "_on" not in x]
+			if len(variants_without_on) == 1:
+				content["textures"]["all"] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, "", on_off)
 			else:
+				# Prepare models to check
+				cake = ["bottom", "side", "top", "inner"]
+				cube_bottom_top = ["bottom", "side", "top"]
+				orientable = ["front", "side", "top"]
+				cube_column = ["end", "side"]
 
-				# Get parent
-				parent = "item/generated"
-				if data["id"] != CUSTOM_ITEM_VANILLA:
-					parent = data["id"].replace(':', ":item/")
+				# Check cake model
+				if model_in_variants(cake, variants):
+					content["parent"] = "block/cake"
+					for side in cake:
+						content["textures"][side.replace("inner","inside")] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
+					
+					# Generate 6 models for each cake slice
+					for i in range(1, 7):
+						name: str = f"{item}_slice{i}"
+						slice_content = {"parent": f"block/cake_slice{i}", "textures": content["textures"]}
+						write_to_file(f"{dest_base_model}/{name}{on_off}.json", super_json_dump(slice_content, max_level = 4))
+
+				# Check cube_bottom_top model
+				elif model_in_variants(cube_bottom_top, variants):
+					content["parent"] = "block/cube_bottom_top"
+					for side in cube_bottom_top:
+						content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
 				
-				# Get textures
-				textures = {"layer0": f"{config['namespace']}:{block_or_item}/{item}{on_off}"}
-				if "leather_" in data["id"]:
-					textures["layer1"] = textures["layer0"]
+				# Check orientable model
+				elif model_in_variants(orientable, variants):
+					content["parent"] = "block/orientable"
+					for side in orientable:
+						content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
+				
+				# Check cube_column model
+				elif model_in_variants(cube_column, variants):
+					content["parent"] = "block/cube_column"
+					for side in cube_column:
+						content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
+				
+				else:
+					error(f"Block '{item}' has invalid variants: {variants}, consider adding missing textures or override the model")
 
-				# Setup content
-				content = {"parent": parent, "textures": textures}
+		# Else, it's an item
+		else:
+
+			# Get parent
+			parent = "item/generated"
+			if data["id"] != CUSTOM_ITEM_VANILLA:
+				parent = data["id"].replace(':', ":item/")
+			
+			# Get textures
+			textures = {"layer0": f"{config['namespace']}:{block_or_item}/{item}{on_off}"}
+			if "leather_" in data["id"]:
+				textures["layer1"] = textures["layer0"]
+
+			# Setup content
+			content = {"parent": parent, "textures": textures}
+		
+		# Add overrides
+		for key, value in data.get(OVERRIDE_MODEL, {}).items():
+			content[key] = value
 		
 		# Add used textures
 		if used_textures is not None and content.get("textures"):

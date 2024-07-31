@@ -48,6 +48,8 @@ def simpledrawer(config: dict):
 
 			# Get material base
 			smithed_dict: dict = data.get("custom_data", {}).get("smithed", {}).get("dict", {})
+			if not smithed_dict:
+				continue
 			material_base: str = list(list(smithed_dict.values())[0].keys())[0]
 
 			# If raw material block, add the ingot raw item if available

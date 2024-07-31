@@ -152,7 +152,10 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 		list[str]:		The list of generated items (ex: ["adamantium_helmet", "raw_adamantium", "adamantium_block", ...])
 	"""
 	# Constants
-	material_base = "_".join(material.split(":")[-1].split("_")[:-1])				# Get the base material name (ex: "adamantium" from "adamantium_fragment")
+	if '_' in material:
+		material_base = "_".join(material.split(":")[-1].split("_")[:-1])			# Get the base material name (ex: "adamantium" from "adamantium_fragment")
+	else:
+		material_base = material.split(":")[-1]										# Get the base material name (ex: "adamantium" from "adamantium_fragment")
 	main_ingredient = ingr_repr(material, config['namespace']) 						# Get the main ingredient for recipes
 	if equipments_config:
 		equivalent_to = equipments_config.equivalent_to
@@ -374,7 +377,17 @@ def add_recipes_for_all_dusts(config: dict, database: dict[str, dict], dusts_con
 		add_recipes_for_dust(config, database, dust, pulverize, smelt_to)
 	return
 
-
+# Clean record name
+A_Z = "abcdefghijklmnopqrstuvwxyz"
+ZERO_NINE = "0123456789"
+UNDERSCORE = "_"
+def clean_record_name(name: str) -> str:
+	name = name.replace(".ogg","").lower()
+	to_replace = [" ", "-", "___"]
+	for r in to_replace:
+		name = name.replace(r, "_")
+	return "".join([c for c in name if c in A_Z + ZERO_NINE + UNDERSCORE])
+			
 # Custom records
 def generate_custom_records(config: dict, database: dict[str, dict], records: dict[str, str]|str|None, category: str|None = None) -> None:
 	""" Generate custom records by searching in config['assets_folder']/records/ for the files and copying them to the database and resource pack folder.
@@ -383,14 +396,21 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 		records		(dict[str, str]):	The custom records to apply, ex: {"record_1": "My first Record.ogg", "record_2": "A second one.ogg"}
 		category	(str):				The category to apply to the custom records (ex: "music").
 	"""
+	# Check records format,
+	if records and not (isinstance(records, dict) or records in ["auto", "all"]):
+		error(f"Error during custom record generation: records must be a dictionary, 'auto', or 'all' (got {type(records).__name__})")
+
 	# If no records specified, search in the records folder
 	if not records or records in ["auto", "all"]:
+		
 		songs: list[str] = [x for x in os.listdir(config["assets_folder"] + "/records") if x.endswith((".ogg",".wav"))]
-		records = { file.replace(".ogg","").replace("-","_").replace(" ","_").replace("___","_").lower(): file for file in songs }
+		records = { clean_record_name(file): file for file in songs }
 		debug(f"No records specified, searching in '{config['assets_folder']}/records' folder. Found {len(records)} records.")
 
 	# For each record, add it to the database
 	for record, sound in records.items():
+		if not isinstance(sound, str):
+			error(f"Error during custom record generation: sound '{sound}' is not a string, got {type(sound).__name__}")
 		if not sound.endswith(".ogg"):
 			warning(f"Error during custom record generation: sound '{sound}' is not an ogg file")
 			continue
@@ -451,8 +471,17 @@ def deterministic_custom_model_data(config: dict, database: dict[str, dict], sta
 	for item, data in database.items():
 		if data.get("custom_model_data") and isinstance(data["custom_model_data"], int):
 			cmd: int = int(data["custom_model_data"])
+
+			# Add two custom model data if the item has an on/off texture
+			warning(item)
 			if any(item in texture and "_on" in texture for texture in config['textures_files']):
 				cmd += 1
+
+			# If it is a cake, add 6 custom model data for each slice
+			elif item.endswith("cake") and all(f"{item}_{face}.png" in config['textures_files'] for face in ["top","bottom","side","inner"]):
+				cmd += 7
+
+			# Increment the maximum custom model data
 			max_cmd = max(max_cmd, cmd)
 	
 	# For each item in the database, apply its new custom model data if it doesn't exist
@@ -463,6 +492,12 @@ def deterministic_custom_model_data(config: dict, database: dict[str, dict], sta
 			# Add two custom model data if the item has an on/off texture
 			if any(item in texture and "_on" in texture for texture in config['textures_files']):
 				max_cmd += 2
+			
+			# If it is a cake, add 6 custom model data for each slice
+			elif item.endswith("cake") and all(f"{item}_{face}.png" in config['textures_files'] for face in ["top","bottom","side","inner"]):
+				max_cmd += 7
+			
+			# Else, add one custom model data
 			else:
 				max_cmd += 1
 	
