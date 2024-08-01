@@ -376,6 +376,8 @@ advancement revoke @s only {namespace}:unlock_recipes
 ## For each ingredient in inventory, unlock the recipes
 """
 		for ingr, recipes in ingredients.items():
+			recipes: list = sorted(recipes)
+			
 			content += f"# {ingr}\nscoreboard players set #success {namespace}.data 0\nexecute store success score #success {namespace}.data if items entity @s container.* {ingr}\n"
 			for recipe in recipes:
 				content += f"execute if score #success {namespace}.data matches 1 run recipe give @s {namespace}:{recipe}\n"
