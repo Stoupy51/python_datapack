@@ -95,8 +95,14 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 					for side in cube_column:
 						content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
 				
-				else:
-					error(f"Block '{item}' has invalid variants: {variants}, consider adding missing textures or override the model")
+				elif not data.get(OVERRIDE_MODEL,{}).get("textures"):
+					patterns = super_json_dump({
+						"cake": cake,
+						"cube_bottom_top": cube_bottom_top,
+						"orientable": orientable,
+						"cube_column": cube_column
+					}, max_level = 1)
+					error(f"Block '{item}' has invalid variants: {variants},\nconsider overriding the model or adding missing textures to match up one of the following patterns:\n{patterns}")
 
 		# Else, it's an item
 		else:

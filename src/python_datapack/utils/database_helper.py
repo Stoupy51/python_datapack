@@ -473,7 +473,6 @@ def deterministic_custom_model_data(config: dict, database: dict[str, dict], sta
 			cmd: int = int(data["custom_model_data"])
 
 			# Add two custom model data if the item has an on/off texture
-			warning(item)
 			if any(item in texture and "_on" in texture for texture in config['textures_files']):
 				cmd += 1
 
