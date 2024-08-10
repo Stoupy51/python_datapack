@@ -129,13 +129,6 @@ execute if score #rotation {namespace}.data matches 2 run data modify entity @s 
 execute if score #rotation {namespace}.data matches 3 run data modify entity @s Rotation[0] set value 0.0f
 execute if score #rotation {namespace}.data matches 4 run data modify entity @s Rotation[0] set value 90.0f
 """
-
-			# Add the commands on placement if any
-			if COMMANDS_ON_PLACEMENT in data:
-				if isinstance(data[COMMANDS_ON_PLACEMENT], list):
-					content += "\n".join(data[COMMANDS_ON_PLACEMENT]) + "\n"
-				else:
-					content += f"{data[COMMANDS_ON_PLACEMENT]}\n"
 			
 			# If Furnace NBT Recipes is enabled and the block is a furnace, summon the marker
 			if OFFICIAL_LIBS["furnace_nbt_recipes"]["is_used"] and block_id.endswith(("_furnace", "_smoker")):
@@ -226,12 +219,6 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 # Replace the item with the custom one
 execute as @e[type=item,nbt={{Item:{{id:"{block_id}"}}}},limit=1,sort=nearest,distance=..1] run function {namespace}:custom_blocks/{item}/replace_item
 """
-			# Add the commands on break if any
-			if COMMANDS_ON_BREAK in data:
-				if isinstance(data[COMMANDS_ON_BREAK], list):
-					content += "\n".join(data[COMMANDS_ON_BREAK]) + "\n"
-				else:
-					content += f"{data[COMMANDS_ON_BREAK]}\n"
 			
 			# Decrease count scores for stats and optimization
 			content += f"""

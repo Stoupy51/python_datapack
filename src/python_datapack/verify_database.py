@@ -49,7 +49,7 @@ def main(config: dict):
 
 			# Prevent the use of "container" key for custom blocks
 			elif data["id"] == CUSTOM_BLOCK_VANILLA and data.get("container"):
-				errors.append(f"'container' key should not be used for '{item}', it's a reserved key for custom blocks, prefer using COMMANDS_ON_PLACEMENT key to fill in the container")
+				errors.append(f"'container' key should not be used for '{item}', it's a reserved key for custom blocks, prefer writing to the place function to fill in the container")
 
 		# If a category is present but wrong format, log an error
 		if data.get(CATEGORY) and not isinstance(data[CATEGORY], str):
@@ -151,29 +151,6 @@ def main(config: dict):
 					# Check the result count
 					if not recipe.get("result_count") or not isinstance(recipe["result_count"], int):
 						errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an int 'result_count' key for '{item}'")
-
-		# Commands on custom block placement
-		if data.get(COMMANDS_ON_PLACEMENT) and data.get("id"):
-			if data["id"] not in [CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE, CUSTOM_BLOCK_HEAD]:
-				errors.append(f"COMMANDS_ON_PLACEMENT key should only be used for custom blocks for '{item}'")
-			elif not isinstance(data[COMMANDS_ON_PLACEMENT], (list, str)):
-				errors.append(f"COMMANDS_ON_PLACEMENT key should be a list of string or a string for '{item}'")
-			elif isinstance(data[COMMANDS_ON_PLACEMENT], list):
-				for i, command in enumerate(data[COMMANDS_ON_PLACEMENT]):
-					if not isinstance(command, str):
-						errors.append(f"Command #{i} in COMMANDS_ON_PLACEMENT should be a string for '{item}'")
-		
-		# Commands on custom block break
-		if data.get(COMMANDS_ON_BREAK) and data.get("id"):
-			if data["id"] not in [CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE, CUSTOM_BLOCK_HEAD]:
-				errors.append(f"COMMANDS_ON_BREAK key should only be used for custom blocks for '{item}'")
-			elif not isinstance(data[COMMANDS_ON_BREAK], (list, str)):
-				errors.append(f"COMMANDS_ON_BREAK key should be a list of string or a string for '{item}'")
-			elif isinstance(data[COMMANDS_ON_BREAK], list):
-				for i, command in enumerate(data[COMMANDS_ON_BREAK]):
-					if not isinstance(command, str):
-						errors.append(f"Command #{i} in COMMANDS_ON_BREAK should be a string for '{item}'")
-
 
 	# Log errors if any
 	if errors:
