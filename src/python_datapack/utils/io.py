@@ -204,6 +204,10 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend
 	# Clean path
 	file_path = clean_path(file_path)
 
+	# If content is a dictionnary, dump it
+	if isinstance(content, dict):
+		content = super_json_dump(content)
+
 	# If file doesn't exists or overwrite is true, made it empty
 	if file_path not in FILES_TO_WRITE or overwrite:
 		FILES_TO_WRITE[file_path] = ""

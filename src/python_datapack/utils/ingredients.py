@@ -26,7 +26,7 @@ def ingr_repr(id: str, ns: str|None = None, count: int|None = None) -> dict:
 		to_return = {"item": id}
 	else:
 		if ns is None:
-			error(f"Namespace must be specified for custom ingredient '{id}'")
+			error(f"Namespace must be specified for custom ingredient '{id}', or you may be missing 'minecraft:'")
 		to_return = {"components":{"minecraft:custom_data":{ns:{id:True}}}}
 	if count is not None:
 		to_return["count"] = count
