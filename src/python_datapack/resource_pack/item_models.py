@@ -142,8 +142,12 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 				except FileNotFoundError:
 					error(f"Texture '{source}' not found")
 			
-		# Write content
-		write_to_file(f"{dest_base_model}/{item}{on_off}.json", super_json_dump(content, max_level = 4))
+		# Write content if not empty
+		if data.get(OVERRIDE_MODEL, {}) != {}:
+			dump: str = super_json_dump(content, max_level = 4)
+		else:
+			dump: str = "{}\n"
+		write_to_file(f"{dest_base_model}/{item}{on_off}.json", dump)
 
 
 
