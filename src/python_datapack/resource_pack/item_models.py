@@ -95,7 +95,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 					for side in cube_column:
 						content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
 				
-				elif not data.get(OVERRIDE_MODEL,{}).get("textures"):
+				elif data.get(OVERRIDE_MODEL,{}).get("textures") != {}:
 					patterns = super_json_dump({
 						"cake": cake,
 						"cube_bottom_top": cube_bottom_top,
