@@ -143,7 +143,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 					error(f"Texture '{source}' not found")
 			
 		# Write content if not empty
-		if data.get(OVERRIDE_MODEL, {}) != {}:
+		if data.get(OVERRIDE_MODEL, None) != {}:
 			dump: str = super_json_dump(content, max_level = 4)
 		else:
 			dump: str = "{}\n"
