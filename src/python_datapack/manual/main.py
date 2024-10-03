@@ -433,7 +433,7 @@ def main(config: dict):
 				
 		# Debug book_content
 		with super_open(config['manual_debug'], "w") as f:
-			f.write(super_json_dump(book_content).replace("\\\\", "\\"))
+			f.write(super_json_dump(book_content))
 			debug(f"Debug book_content at '{config['manual_debug']}'")
 
 

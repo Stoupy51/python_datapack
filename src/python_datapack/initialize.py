@@ -7,11 +7,13 @@ import shutil
 def main(config: dict):
 	start_time: float = time.perf_counter()
 
-	# Delete build folder and database_debug
+	# Delete database_debug
 	print()
-	shutil.rmtree(config["build_folder"], ignore_errors=True)
 	if config.get("database_debug"):
 		shutil.rmtree(config["database_debug"], ignore_errors=True)
+
+	# Read initial files in build folder
+	read_initial_files([config["build_datapack"], config["build_resource_pack"]])
 
 	# Setup pack.mcmeta for the datapack
 	pack_mcmeta = {"pack":{"pack_format": config["datapack_format"], "description": config["description"]}, "id": config["namespace"]}

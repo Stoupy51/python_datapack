@@ -85,9 +85,10 @@ def main(config: dict, user_code: callable):
 	# Add a small header for each .mcfunction file
 	headers_main(config)
 
-	# Write every pending files
+	# Write every pending files and delete old ones
 	start_time: float = time.perf_counter()
 	write_all_files()
+	delete_old_files()
 	total_time: float = time.perf_counter() - start_time
 	info(f"All pending files written in {total_time:.5f}s")
 

@@ -6,11 +6,12 @@ import os
 import io
 
 # For easy file management
-def super_open(file_path: str, mode: str) -> io.TextIOWrapper:
+def super_open(file_path: str, mode: str, encoding = "utf-8") -> io.TextIOWrapper:
 	""" Open a file with the given mode, creating the directory if it doesn't exist
 	Args:
 		file_path	(str): The path to the file
 		mode		(str): The mode to open the file with, ex: "w", "r", "a", "wb", "rb", "ab"
+		enconding	(str): The encoding to use when opening the file (default: "utf-8")
 	Returns:
 		open: The file object, ready to be used
 	"""
@@ -22,7 +23,7 @@ def super_open(file_path: str, mode: str) -> io.TextIOWrapper:
 	if "b" in mode:
 		return open(file_path, mode)
 	else:
-		return open(file_path, mode, encoding = "utf-8") # Always use utf-8 encoding to avoid issues
+		return open(file_path, mode, encoding = encoding) # Always use utf-8 encoding to avoid issues
 
 
 # For easy file copy
@@ -39,6 +40,12 @@ def super_copy(src: str, dst: str) -> shutil.copy:
 	if os.path.isdir(src):
 		return shutil.copytree(src, dst, dirs_exist_ok = True)
 	else:
+		# Remove destination path from old files
+		cleaned_dst = clean_path(dst)
+		if cleaned_dst in INITIAL_FILES:
+			del INITIAL_FILES[cleaned_dst]
+
+		# Copy file
 		return shutil.copy(src, dst)
 
 # JSON load from file path
@@ -151,6 +158,24 @@ def clean_path(file_path: str) -> str:
 
 	# Return the cleaned path
 	return file_path
+
+# Keeping track of the files that have been present before running the program
+INITIAL_FILES: dict[str, str] = {}
+def read_initial_files(folders: list[str]) -> None:
+	""" Read all the files in the given folders and store them in INITIAL_FILES\n
+	Args:
+		folders (list[str]): The list of folders to read the files from
+	"""
+	for folder in folders:
+		for root, _, files in os.walk(folder):
+			for file in files:
+				path: str = clean_path(os.path.join(root, file))
+				try:
+					with super_open(path, "r") as f:
+						INITIAL_FILES[path] = f.read()
+				except:
+					pass
+
 
 # The majority of files will be written at the end of the program to prevent excessive disk access (reading + appending + writing)
 FILES_TO_WRITE: dict[str, str] = {}
@@ -280,6 +305,7 @@ def write_to_tick_file(config: dict, content: str, overwrite: bool = False, prep
 
 def write_all_files(contains: str = ""):
 	""" Write all the files in the write queue to their respective files\n
+	If a file content didn't change, it won't be written\n
 	Args:
 		contains (str): If set, only write the files that contains this string in their path
 	"""
@@ -295,6 +321,25 @@ def write_all_files(contains: str = ""):
 			else:
 				content += "\n\n"
 
+		# If the file already exists and the content didn't change, skip it
+		if file_path in INITIAL_FILES and content == INITIAL_FILES[file_path]:
+			continue
+
+		# Write the content to the file
 		with super_open(file_path, "w") as f:
 			f.write(content)
+
+def delete_old_files(contains: str = ""):
+	""" Delete all the files that are not in the write queue and contains the given string\n
+	Args:
+		contains (str): If set, only delete the files that contains this string in their path
+	"""
+	contains = contains.replace("\\", "/")
+	for file_path in INITIAL_FILES.keys():
+		if contains not in file_path:
+			continue
+
+		# If the file is not in the write queue, delete it
+		if file_path not in FILES_TO_WRITE:
+			os.remove(file_path)
 

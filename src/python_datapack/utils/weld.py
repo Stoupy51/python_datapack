@@ -5,7 +5,7 @@ from .print import *
 from ..dependencies.main import OFFICIAL_LIBS, OFFICIAL_LIBS_PATH
 from smithed.weld.toolchain.cli import weld
 from pathlib import Path
-from zipfile import ZipFile, ZIP_DEFLATED
+from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 import time
 
 # Weld datapack
@@ -38,15 +38,35 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 	output = os.path.basename(dest_path.replace(".zip", "_temporary.zip"))
 	weld(datapacks_to_merge, Path(output_dir), Path(output), log = "error")
 
-	# Make the new zip file with fixes pack.mcmeta and pack.png
-	with ZipFile(dest_path.replace(".zip","_temporary.zip"), "r") as temp_zip:
-		with ZipFile(dest_path, "w", compression = ZIP_DEFLATED) as zip:
+	# Get the constant time for the archive
+	constant_time: tuple = (2024, 1, 1, 0, 0, 0)	# default time: 2024-01-01 00:00:00
+	if os.path.exists(f"{config['build_datapack']}/pack.mcmeta"):
+		time_float = os.path.getmtime(f"{config['build_datapack']}/pack.mcmeta")
+		constant_time = time.localtime(time_float)[:6]
+
+	# Make the new zip file with fixed pack.mcmeta and pack.png
+	with ZipFile(dest_path.replace(".zip", "_temporary.zip"), "r") as temp_zip:
+		# Open the final destination zip file for writing
+		with ZipFile(dest_path, "w", compression=ZIP_DEFLATED) as zip:
+			# Iterate through all files in the temporary zip, and exclude pack.mcmeta and pack.png
 			for file in temp_zip.namelist():
 				if file not in ["pack.mcmeta", "pack.png"]:
-					zip.writestr(file, temp_zip.read(file))
+					info: ZipInfo = ZipInfo(file)
+					info.date_time = constant_time
+					zip.writestr(info, temp_zip.read(file))
+
+			# Add the fixed pack.mcmeta to the final zip
 			zip.write(f"{config['build_datapack']}/pack.mcmeta", "pack.mcmeta")
+
+			# Check if pack.png exists and add it to the final zip if it does
 			if os.path.exists(f"{config['build_datapack']}/pack.png"):
-				zip.write(f"{config['build_datapack']}/pack.png", "pack.png")
+				pack_png_path = f"{config['build_datapack']}/pack.png"
+				
+				# Copy the file with the same timestamp as mcmeta
+				info: ZipInfo = ZipInfo("pack.png")
+				info.date_time = constant_time
+				with open(pack_png_path, "rb") as f:
+					zip.writestr(info, f.read())
 	
 	# Remove temp file
 	os.remove(dest_path.replace(".zip","_temporary.zip"))
@@ -84,15 +104,35 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 	output = os.path.basename(dest_path.replace(".zip", "_temporary.zip"))
 	weld(resource_packs_to_merge, Path(output_dir), Path(output), log = "error")
 
-	# Make the new zip file with fixes pack.mcmeta and pack.png
-	with ZipFile(dest_path.replace(".zip","_temporary.zip"), "r") as temp_zip:
-		with ZipFile(dest_path, "w", compression = ZIP_DEFLATED) as zip:
+	# Get the constant time for the archive
+	constant_time: tuple = (2024, 1, 1, 0, 0, 0)	# default time: 2024-01-01 00:00:00
+	if os.path.exists(f"{config['build_resource_pack']}/pack.mcmeta"):
+		time_float = os.path.getmtime(f"{config['build_resource_pack']}/pack.mcmeta")
+		constant_time = time.localtime(time_float)[:6]
+
+	# Make the new zip file with fixed pack.mcmeta and pack.png
+	with ZipFile(dest_path.replace(".zip", "_temporary.zip"), "r") as temp_zip:
+		# Open the final destination zip file for writing
+		with ZipFile(dest_path, "w", compression=ZIP_DEFLATED) as zip:
+			# Iterate through all files in the temporary zip, and exclude pack.mcmeta and pack.png
 			for file in temp_zip.namelist():
 				if file not in ["pack.mcmeta", "pack.png"]:
-					zip.writestr(file, temp_zip.read(file))
+					info: ZipInfo = ZipInfo(file)
+					info.date_time = constant_time
+					zip.writestr(info, temp_zip.read(file))
+
+			# Add the fixed pack.mcmeta to the final zip
 			zip.write(f"{config['build_resource_pack']}/pack.mcmeta", "pack.mcmeta")
+
+			# Check if pack.png exists and add it to the final zip if it does
 			if os.path.exists(f"{config['build_resource_pack']}/pack.png"):
-				zip.write(f"{config['build_resource_pack']}/pack.png", "pack.png")
+				pack_png_path = f"{config['build_resource_pack']}/pack.png"
+				
+				# Copy the file with the same timestamp as mcmeta
+				info: ZipInfo = ZipInfo("pack.png")
+				info.date_time = constant_time
+				with open(pack_png_path, "rb") as f:
+					zip.writestr(info, f.read())
 	
 	# Remove temp file
 	os.remove(dest_path.replace(".zip","_temporary.zip"))
