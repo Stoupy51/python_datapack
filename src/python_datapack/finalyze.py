@@ -28,7 +28,7 @@ def main(config: dict, user_code: callable):
 		start_time: float = time.perf_counter()
 		for root, _, files in os.walk(config['merge_folder']):
 			for file in files:
-				merge_path = f"{root}/{file}".replace("\\", "/")
+				merge_path = clean_path(f"{root}/{file}")
 				build_path = merge_path.replace(config['merge_folder'], config['build_folder'])
 				
 				# Append content to the build file is any

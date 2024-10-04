@@ -5,7 +5,7 @@ from ..utils.print import *
 from ..utils.io import *
 
 # This folder path
-OFFICIAL_LIBS_PATH = os.path.dirname(os.path.realpath(__file__)).replace("\\","/")
+OFFICIAL_LIBS_PATH = clean_path(os.path.dirname(os.path.realpath(__file__)))
 
 # Util function for checking version
 def check_version(config: dict, lib_ns: str, data: dict, run_command: str) -> str:

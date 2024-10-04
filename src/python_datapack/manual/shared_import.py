@@ -1,7 +1,7 @@
 
 # Imports
-import os
 from ..utils.print import *
+from ..utils.io import *
 
 # Utils functions for fonts (item start at 0x0000, pages at 0xa000)
 # Return the character that will be used for font, ex: "\u0002" with i = 2
@@ -20,7 +20,7 @@ def get_next_font() -> str:	# Returns an incrementing value for each craft
 
 # Constants
 SQUARE_SIZE = 32
-MANUAL_ASSETS_PATH = os.path.dirname(os.path.realpath(__file__)).replace("\\","/") + "/"
+MANUAL_ASSETS_PATH = clean_path(os.path.dirname(os.path.realpath(__file__)) + "/")
 TEMPLATES_PATH = MANUAL_ASSETS_PATH + "assets"
 FONT_FILE = "manual"
 BORDER_COLOR = 0xB64E2F

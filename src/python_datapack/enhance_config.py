@@ -1,10 +1,13 @@
 
-import os
+# Imports
+from .utils.io import *
+
+# Main function
 def main(config: dict) -> dict:
 
 	# Assets files
 	if config.get('assets_folder'):
-		config['assets_files'] = [f"{root}/{f}".replace("\\","/") for root, _, files in os.walk(config['assets_folder']) for f in files]
+		config['assets_files'] = [clean_path(f"{root}/{f}") for root, _, files in os.walk(config['assets_folder']) for f in files]
 		if config.get('textures_folder'):
 			config['textures_files'] = [path.split(f"{config['textures_folder']}/")[1] for path in config['assets_files'] if path.startswith(config['textures_folder']) and path.endswith(".png")]
 
