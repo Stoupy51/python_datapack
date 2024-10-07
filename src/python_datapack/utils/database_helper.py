@@ -389,7 +389,7 @@ def clean_record_name(name: str) -> str:
 	return "".join([c for c in name if c in A_Z + ZERO_NINE + UNDERSCORE])
 			
 # Custom records
-def generate_custom_records(config: dict, database: dict[str, dict], records: dict[str, str]|str|None, category: str|None = None) -> None:
+def generate_custom_records(config: dict, database: dict[str, dict], records: dict[str, str]|str|None = "auto", category: str|None = None) -> None:
 	""" Generate custom records by searching in config['assets_folder']/records/ for the files and copying them to the database and resource pack folder.
 	Args:
 		database	(dict[str, dict]):	The database to add the custom records items to, ex: {"record_1": "song.ogg", "record_2": "another_song.ogg"}
