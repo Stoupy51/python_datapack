@@ -252,6 +252,23 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend
 	else:
 		FILES_TO_WRITE[file_path] += str(content)
 
+def delete_file(file_path: str, clean_on_disk: bool = False) -> None:
+	""" Delete the file at the given path\n
+	Args:
+		file_path		(str):	The path to the file
+		clean_on_disk	(bool):	If the file should be deleted on disk (default: False)
+	"""
+	# Clean path
+	file_path = clean_path(file_path)
+
+	# If the file is in the write queue, delete it
+	if file_path in FILES_TO_WRITE:
+		del FILES_TO_WRITE[file_path]
+
+	# If the file exists, delete it
+	if clean_on_disk and os.path.exists(file_path):
+		os.remove(file_path)
+
 def write_to_versioned_file(config: dict, relative_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
 	""" Write the content to the versioned file at the given path\n
 	This function should be used to write to the confirm_load/tick mcfunction files or other versioned files such as tick_2, second, ...\n
