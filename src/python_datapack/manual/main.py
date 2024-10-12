@@ -18,7 +18,7 @@ def main(config: dict):
 	shutil.copytree(MANUAL_ASSETS_PATH + "assets", TEMPLATES_PATH, dirs_exist_ok = True)
 
 	# Copy the manual_overrides folder to the templates folder
-	if config.get("manual_overrides"):
+	if config.get("manual_overrides") and os.path.exists(config["manual_overrides"]):
 		shutil.copytree(config["manual_overrides"], TEMPLATES_PATH, dirs_exist_ok = True)
 
 	# Launch the routine

@@ -39,6 +39,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 	if data.get("id") == CUSTOM_BLOCK_VANILLA or any("block" in x for x in data.get(OVERRIDE_MODEL, {}).values()):
 		block_or_item = "block"
 	dest_base_textu = f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/{block_or_item}"
+	overrides: dict = data.get(OVERRIDE_MODEL, {})
 
 	# Get powered states (if any)
 	powered = [""]
@@ -54,7 +55,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		dest_base_model = f"{config['build_resource_pack']}/assets/{config['namespace']}/models/{block_or_item}"
 		content: dict[str, str|dict] = {}
 
-		if not ignore_textures:
+		if not ignore_textures and data.get(OVERRIDE_MODEL, None) != {}:
 			# If it's a block
 			if block_or_item == "block":
 
@@ -106,7 +107,8 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 						for side in cube_column:
 							content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
 					
-					elif data.get(OVERRIDE_MODEL,{}).get("textures") != {}:
+					# Else, if there are no textures override, show error
+					elif not data.get(OVERRIDE_MODEL,{}).get("textures"):
 						patterns = super_json_dump({
 							"cake": cake,
 							"cube_bottom_top": cube_bottom_top,
@@ -132,7 +134,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 				content = {"parent": parent, "textures": textures}
 		
 		# Add overrides
-		for key, value in data.get(OVERRIDE_MODEL, {}).items():
+		for key, value in overrides.items():
 			content[key] = value
 		
 		# Add used textures

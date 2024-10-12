@@ -20,8 +20,12 @@ def main(config: dict):
 				# Check if the texture is in power of 2 resolution
 				image: Image.Image = Image.open(file_path)
 				width, height = image.size
-				if bin(width).count("1") != 1 or bin(height).count("1") != 1:
-					wrongs.append((file_path, width, height))
+				if bin(width).count("1") != 1 or bin(height).count("1") != 1:	# At least one of them is not a power of 2
+
+					# If width can't divide height, add it to the wrongs list (else it's probably a GUI or animation texture)
+					print(height%width)
+					if height % width != 0:
+						wrongs.append((file_path, width, height))
 
 	# Print all wrong textures
 	if wrongs:

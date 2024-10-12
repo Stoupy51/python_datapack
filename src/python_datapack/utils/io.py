@@ -364,6 +364,6 @@ def delete_old_files(contains: str = ""):
 			continue
 
 		# If the file is not in the write queue, delete it
-		if file_path not in FILES_TO_WRITE:
+		if file_path not in FILES_TO_WRITE and os.path.exists(file_path):
 			os.remove(file_path)
 
