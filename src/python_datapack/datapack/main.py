@@ -3,7 +3,6 @@
 from .loading import main as loading_main
 from .custom_blocks import main as custom_blocks_main
 from .loot_tables import main as loot_tables_main
-from .recipes import main as recipes_main
 from ..utils.print import *
 
 def main(config: dict):
@@ -14,9 +13,6 @@ def main(config: dict):
 	loading_main(config)
 
 	if config.get("database"):
-
-		# Generate custom recipes
-		recipes_main(config)
 
 		# Custom Blocks (place + destroy)
 		custom_blocks_main(config)

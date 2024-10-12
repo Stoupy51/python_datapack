@@ -252,22 +252,29 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend
 	else:
 		FILES_TO_WRITE[file_path] += str(content)
 
-def delete_file(file_path: str, clean_on_disk: bool = False) -> None:
+def delete_file(file_path: str, clean_on_disk: bool = True) -> None:
 	""" Delete the file at the given path\n
 	Args:
 		file_path		(str):	The path to the file
-		clean_on_disk	(bool):	If the file should be deleted on disk (default: False)
+		clean_on_disk	(bool):	If the file should be deleted on disk (default: True)
 	"""
 	# Clean path
 	file_path = clean_path(file_path)
+	deleted: bool = False
 
 	# If the file is in the write queue, delete it
 	if file_path in FILES_TO_WRITE:
 		del FILES_TO_WRITE[file_path]
+		deleted = True
 
 	# If the file exists, delete it
 	if clean_on_disk and os.path.exists(file_path):
 		os.remove(file_path)
+		deleted = True
+	
+	# If the file wasn't deleted, print a warning
+	if not deleted:
+		warning(f"Couldn't delete the file '{file_path}', it doesn't exists")
 
 def write_to_versioned_file(config: dict, relative_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
 	""" Write the content to the versioned file at the given path\n
@@ -326,7 +333,7 @@ def write_all_files(contains: str = ""):
 	Args:
 		contains (str): If set, only write the files that contains this string in their path
 	"""
-	contains = contains.replace("\\", "/")
+	contains = clean_path(contains)
 	for file_path, content in FILES_TO_WRITE.items():
 		if contains not in file_path:
 			continue
@@ -351,7 +358,7 @@ def delete_old_files(contains: str = ""):
 	Args:
 		contains (str): If set, only delete the files that contains this string in their path
 	"""
-	contains = contains.replace("\\", "/")
+	contains = clean_path(contains)
 	for file_path in INITIAL_FILES.keys():
 		if contains not in file_path:
 			continue

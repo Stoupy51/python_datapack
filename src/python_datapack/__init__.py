@@ -12,6 +12,7 @@ from .enhance_config import main as enhance_config_main
 from .initialize import main as initialize_main
 from .verify_database import main as verify_database_main
 from .resource_pack.main import main as resource_pack_main
+from .datapack.recipes import main as recipes_main
 from .manual.main import main as manual_main
 from .datapack.main import main as datapack_main
 from .compatibilities.main import main as compatibilities_main
@@ -107,6 +108,10 @@ def build_process(config: dict, setup_database: callable = None, setup_external_
 		# Generate resource pack
 		if config.get("resource_pack_format"):
 			resource_pack_main(config)
+
+		# Generate custom recipes if any
+		if config.get("database"):
+			recipes_main(config)
 
 		# Generate manual
 		if config.get("has_manual") == True:

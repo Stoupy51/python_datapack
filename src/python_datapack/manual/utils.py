@@ -118,28 +118,34 @@ def image_count(count: int) -> Image.Image:
 	draw.text(pos_2, str(count), (255, 255, 255), font = font)
 	return img
 
-# Generate iso renders for every item in the config['database']
+# Generate iso renders for every item in the database
 def generate_all_iso_renders(config: dict):
+	database: dict = config['database']
+	namespace: str = config['namespace']
+
+	# Create the items folder
 	path = config['manual_path'] + "/items"
-	os.makedirs(f"{path}/{config['namespace']}", exist_ok = True)
-	for_model_resolver = {}
-	for item, data in config['database'].items():
+	os.makedirs(f"{path}/{namespace}", exist_ok = True)
+
+	# For every item, get the model path and the destination path
+	for_model_resolver: dict[str, str] = {}
+	for item, data in database.items():
 		
 		# If it's not a block, simply copy the texture
 		try:
 			if data["id"] == CUSTOM_BLOCK_VANILLA:
-				raise Exception()
-			if not os.path.exists(f"{path}/{config['namespace']}/{item}.png") or not config['cache_manual_assets']:
-				super_copy(f"{config['textures_folder']}/{item}.png", f"{path}/{config['namespace']}/{item}.png")
-		except:
+				raise ValueError()
+			if not os.path.exists(f"{path}/{namespace}/{item}.png") or not config['cache_manual_assets']:
+				super_copy(f"{config['textures_folder']}/{item}.png", f"{path}/{namespace}/{item}.png")
+		except ValueError:
 			# Else, add the block to the model resolver list
-			# Skip if item is already generated (to prevent launcher OpenGL for nothing)
-			if os.path.exists(f"{path}/{config['namespace']}/{item}.png") and config['cache_manual_assets']:
+			# Skip if item is already generated (to prevent OpenGL launching for nothing)
+			if os.path.exists(f"{path}/{namespace}/{item}.png") and config['cache_manual_assets']:
 				continue
 
 			# Add to the model resolver queue
-			rp_path = f"{config['namespace']}:block/{item}"
-			dst_path = f"{path}/{config['namespace']}/{item}.png"
+			rp_path = f"{namespace}:block/{item}"
+			dst_path = f"{path}/{namespace}/{item}.png"
 			for_model_resolver[rp_path] = dst_path
 
 	# Launch model resolvers for remaining blocks
@@ -159,7 +165,7 @@ def generate_all_iso_renders(config: dict):
 	## Copy every used vanilla items
 	# Get every used vanilla items
 	used_vanilla_items = set()
-	for item, data in config['database'].items():
+	for item, data in database.items():
 		all_crafts: list[dict] = list(data.get(RESULT_OF_CRAFTING,[]))
 		all_crafts += list(data.get(USED_FOR_CRAFTING,[]))
 		for recipe in all_crafts:
@@ -268,7 +274,7 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 			template.paste(result_texture, coords, result_mask)
 
 			# Place count if the result is greater than 1
-			if craft["result_count"] > 1:
+			if craft.get("result_count", 1) > 1:
 				count_img = image_count(craft["result_count"])
 				template.paste(count_img, [x + 2 for x in coords], count_img)
 

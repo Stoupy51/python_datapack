@@ -6,9 +6,36 @@ from .utils import *
 from .shared_import import *
 from .book_optimizer import *
 from ..constants import *
-from copy import deepcopy
+from ..resource_pack.item_models import handle_item		# Handle new items models (used for the manual and the heavy workbench)
+
+# Utility functions
+def deepcopy(x: list|dict) -> list|dict:
+	return json.loads(json.dumps(x))
 
 def main(config: dict):
+	database: dict = config['database']
+	namespace: str = config['namespace']
+
+	# If smithed crafter is used, add it to the manual (last page that we will move to the second page)
+	if OFFICIAL_LIBS["smithed.crafter"]["is_used"]:
+		super_copy(f"{TEMPLATES_PATH}/heavy_workbench.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/block/heavy_workbench.png")
+		database["heavy_workbench"] = {
+			"id": CUSTOM_BLOCK_VANILLA,
+			"item_name": "'Heavy Workbench'",
+			"category": HEAVY_WORKBENCH_CATEGORY,
+			OVERRIDE_MODEL: {
+				"parent":"minecraft:block/cube",
+				"texture_size":[64,32],
+				"textures":{"0":f"{namespace}:block/heavy_workbench"},
+				"elements":[{"from":[0,0,0],"to":[16,16,16],"faces":{"north":{"uv":[4,8,8,16],"texture":"#0"},"east":{"uv":[0,8,4,16],"texture":"#0"},"south":{"uv":[12,8,16,16],"texture":"#0"},"west":{"uv":[8,8,12,16],"texture":"#0"},"up":{"uv":[4,0,8,8],"texture":"#0"},"down":{"uv":[8,0,12,8],"texture":"#0"}}}],
+				"display":{"thirdperson_righthand":{"rotation":[75,45,0],"translation":[0,2.5,0],"scale":[0.375,0.375,0.375]},"thirdperson_lefthand":{"rotation":[75,45,0],"translation":[0,2.5,0],"scale":[0.375,0.375,0.375]},"firstperson_righthand":{"rotation":[0,45,0],"scale":[0.4,0.4,0.4]},"firstperson_lefthand":{"rotation":[0,225,0],"scale":[0.4,0.4,0.4]},"ground":{"translation":[0,3,0],"scale":[0.25,0.25,0.25]},"gui":{"rotation":[30,225,0],"scale":[0.625,0.625,0.625]},"head":{"translation":[0,-30.43,0],"scale":[1.601,1.601,1.601]},"fixed":{"scale":[0.5,0.5,0.5]}}
+			},
+			RESULT_OF_CRAFTING: [
+				{"type":"crafting_shaped","shape":["###","#C#","SSS"],"ingredients":{"#":ingr_repr("minecraft:oak_log"),"C":ingr_repr("minecraft:crafting_table"),"S":ingr_repr("minecraft:smooth_stone")}}
+			]
+		}
+		handle_item(config, "heavy_workbench", database["heavy_workbench"], set(), ignore_textures = True)
+		write_all_files(contains="block/heavy_workbench")
 
 	# Prework
 	os.makedirs(f"{config['manual_path']}/font/page", exist_ok=True)
@@ -17,7 +44,7 @@ def main(config: dict):
 	generate_all_iso_renders(config)
 
 	# Constants
-	FONT = config['namespace'] + ':' + FONT_FILE
+	FONT = namespace + ':' + FONT_FILE
 	MAX_ITEMS_PER_PAGE = config['max_items_per_row'] * config['max_rows_per_page'] # (for showing up all items in the categories pages)
 
 	# Calculate left padding for categories pages depending on config['max_items_per_row']: higher the value, lower the padding
@@ -25,18 +52,18 @@ def main(config: dict):
 
 	# Copy assets in the resource pack
 	if not config['debug_mode']:
-		super_copy(f"{TEMPLATES_PATH}/none_release.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/none.png")
-		super_copy(f"{TEMPLATES_PATH}/invisible_item_release.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/invisible_item.png")
+		super_copy(f"{TEMPLATES_PATH}/none_release.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/none.png")
+		super_copy(f"{TEMPLATES_PATH}/invisible_item_release.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/invisible_item.png")
 	else:
-		super_copy(f"{TEMPLATES_PATH}/none.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/none.png")
-		super_copy(f"{TEMPLATES_PATH}/invisible_item.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/invisible_item.png")
-	super_copy(f"{TEMPLATES_PATH}/wiki_information.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_information.png")
-	super_copy(f"{TEMPLATES_PATH}/wiki_result_of_craft.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_result_of_craft.png")
-	super_copy(f"{TEMPLATES_PATH}/wiki_ingredient_of_craft.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_ingredient_of_craft.png")
+		super_copy(f"{TEMPLATES_PATH}/none.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/none.png")
+		super_copy(f"{TEMPLATES_PATH}/invisible_item.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/invisible_item.png")
+	super_copy(f"{TEMPLATES_PATH}/wiki_information.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_information.png")
+	super_copy(f"{TEMPLATES_PATH}/wiki_result_of_craft.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_result_of_craft.png")
+	super_copy(f"{TEMPLATES_PATH}/wiki_ingredient_of_craft.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_ingredient_of_craft.png")
 	if config['manual_high_resolution']:
-		super_copy(f"{TEMPLATES_PATH}/furnace.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/furnace.png")
-		super_copy(f"{TEMPLATES_PATH}/shaped_2x2.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/shaped_2x2.png")
-		super_copy(f"{TEMPLATES_PATH}/shaped_3x3.png", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/shaped_3x3.png")
+		super_copy(f"{TEMPLATES_PATH}/furnace.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/furnace.png")
+		super_copy(f"{TEMPLATES_PATH}/shaped_2x2.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/shaped_2x2.png")
+		super_copy(f"{TEMPLATES_PATH}/shaped_3x3.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/shaped_3x3.png")
 
 	# If the manual cache is enabled and we have a cache file, load it
 	if config['cache_manual_pages'] and os.path.exists(config['manual_debug']) and os.path.exists(f"{config['manual_path']}/font/manual.json"):
@@ -47,8 +74,8 @@ def main(config: dict):
 	else:
 
 		# Generate categories list
-		categories = {}
-		for item, data in config['database'].items():
+		categories: dict[str, list] = {}
+		for item, data in database.items():
 
 			if CATEGORY not in data:
 				warning(f"Item '{item}' has no category key. Skipping.")
@@ -74,22 +101,27 @@ def main(config: dict):
 		# Split up categories into pages
 		categories_pages = {}
 		for category, items in categories.items():
-			i = 0
-			while i < len(items):
-				page_name = category.title()
-				if len(items) > MAX_ITEMS_PER_PAGE:
-					number = i // MAX_ITEMS_PER_PAGE + 1
-					page_name += f" #{number}"
-				new_items = items[i:i + MAX_ITEMS_PER_PAGE]
-				categories_pages[page_name] = new_items
-				i += MAX_ITEMS_PER_PAGE
+			if category != HEAVY_WORKBENCH_CATEGORY:
+				i = 0
+				while i < len(items):
+					page_name = category.title()
+					if len(items) > MAX_ITEMS_PER_PAGE:
+						number = i // MAX_ITEMS_PER_PAGE + 1
+						page_name += f" #{number}"
+					new_items = items[i:i + MAX_ITEMS_PER_PAGE]
+					categories_pages[page_name] = new_items
+					i += MAX_ITEMS_PER_PAGE
 
-		# Prepare pages (append categories first, then items depending on categories order
+		## Prepare pages (append categories first, then items depending on categories order)
 		i = 2 # Skip first two pages (introduction + categories)
+		
+		# Append categories
 		for page_name, items in categories_pages.items():
 			i += 1
 			manual_pages.append({"number": i, "name": page_name, "raw_data": items, "type": CATEGORY})
-		items_with_category = [(item, data) for item, data in config['database'].items() if CATEGORY in data]
+		
+		# Append items (sorted by category)
+		items_with_category = [(item, data) for item, data in database.items() if CATEGORY in data]
 		category_list = list(categories.keys())
 		sorted_database_on_category = sorted(items_with_category, key = lambda x: category_list.index(x[1][CATEGORY]))
 		for item, data in sorted_database_on_category:
@@ -114,7 +146,7 @@ def main(config: dict):
 			if page["type"] == CATEGORY:
 				file_name = name.replace(" ", "_").replace("#", "").lower()
 				page_font = get_page_font(number)
-				font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/category/{file_name}.png", "ascent": 0, "height": 130, "chars": [page_font]})
+				font_providers.append({"type":"bitmap","file":f"{namespace}:font/category/{file_name}.png", "ascent": 0, "height": 130, "chars": [page_font]})
 				content.append({"text": "", "font": FONT, "color": "white"})	# Make default font for every next component
 				content.append({"text": "➤ ", "font": "minecraft:default", "color": "black"})
 				content.append({"text": titled, "font": "minecraft:default", "color": "black", "underlined": True})
@@ -129,7 +161,7 @@ def main(config: dict):
 				for item in raw_data:
 
 					# Get item texture
-					texture_path = f"{config['manual_path']}/items/{config['namespace']}/{item}.png"
+					texture_path = f"{config['manual_path']}/items/{namespace}/{item}.png"
 					if os.path.exists(texture_path):
 						item_image = Image.open(texture_path)
 					else:
@@ -211,68 +243,75 @@ def main(config: dict):
 
 				## Add wiki information if any
 				wiki_buttons = []
-				if raw_data.get("wiki"):
-					wiki_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data["wiki"]}})
-				
-				# For each craft (except smelting dupes),
-				for i, craft in enumerate(crafts):
-					if craft["type"] == "crafting_shapeless":
-						craft = convert_shapeless_to_shaped(craft)
+				if name == "heavy_workbench":
+					content.append([
+						{"text":"\nEvery recipe that uses custom items ", "font":"minecraft:default","color":"black"},
+						{"text":"must","color":"red","underlined":True},
+						{"text":" be crafted using the Heavy Workbench."}
+					])
+				else:
+					if raw_data.get("wiki"):
+						wiki_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data["wiki"]}})
+					
+					# For each craft (except smelting dupes),
+					for i, craft in enumerate(crafts):
+						if craft["type"] == "crafting_shapeless":
+							craft = convert_shapeless_to_shaped(craft)
 
-					# Get breaklines
-					breaklines = 3
-					if "shape" in craft:
-						breaklines = max(2, max(len(craft["shape"]), len(craft["shape"][0])))
+						# Get breaklines
+						breaklines = 3
+						if "shape" in craft:
+							breaklines = max(2, max(len(craft["shape"]), len(craft["shape"][0])))
 
-					if not config['manual_high_resolution']:
-						craft_font = get_next_font()	# Unique used font for the craft
-						generate_page_font(config, name, craft_font, craft, output_name = f"{name}_{i+1}")
-						hover_text = [""]
-						hover_text.append({"text": craft_font + "\n\n" * breaklines, "font": FONT, "color": "white"})
-					else:
-						l = generate_craft_content(config, craft, name, "")
-						l = [l[0]] + l[2:]	# Remove craft title
-						remove_events(l)
-						for k, v in HOVER_EQUIVALENTS.items():
-							l[1] = l[1].replace(k, v)
-						hover_text = ["", l]
+						if not config['manual_high_resolution']:
+							craft_font = get_next_font()	# Unique used font for the craft
+							generate_page_font(config, name, craft_font, craft, output_name = f"{name}_{i+1}")
+							hover_text = [""]
+							hover_text.append({"text": craft_font + "\n\n" * breaklines, "font": FONT, "color": "white"})
+						else:
+							l = generate_craft_content(config, craft, name, "")
+							l = [l[0]] + l[2:]	# Remove craft title
+							remove_events(l)
+							for k, v in HOVER_EQUIVALENTS.items():
+								l[1] = l[1].replace(k, v)
+							hover_text = ["", l]
 
-					# Append ingredients
-					if craft.get("ingredient"):
-						id = ingr_to_id(craft["ingredient"], False).replace("_", " ").title()
-						hover_text.append({"text": f"\n- x1 ", "color": "gray"})
-						hover_text.append({"text": id, "color": "gray"})
-					elif craft.get("ingredients"):
+						# Append ingredients
+						if craft.get("ingredient"):
+							id = ingr_to_id(craft["ingredient"], False).replace("_", " ").title()
+							hover_text.append({"text": f"\n- x1 ", "color": "gray"})
+							hover_text.append({"text": id, "color": "gray"})
+						elif craft.get("ingredients"):
 
-						# If it's a shaped crafting
-						if isinstance(craft["ingredients"], dict):
-							for k, v in craft["ingredients"].items():
-								id = ingr_to_id(v, False).replace("_", " ").title()
-								count = sum([line.count(k) for line in craft["shape"]])
-								hover_text.append({"text": f"\n- x{count} ", "color": "gray"})
-								hover_text.append({"text": id, "color": "gray"})
-						
-						# If it's shapeless
-						elif isinstance(craft["ingredients"], list):
-							ids = {}	# {id: count}
-							for ingr in craft["ingredients"]:
-								id = ingr_to_id(ingr, False).replace("_", " ").title()
-								if id not in ids:
-									ids[id] = 0
-								ids[id] += 1
-							for id, count in ids.items():
-								hover_text.append({"text": f"\n- x{count} ", "color": "gray"})
-								hover_text.append({"text": id, "color": "gray"})
+							# If it's a shaped crafting
+							if isinstance(craft["ingredients"], dict):
+								for k, v in craft["ingredients"].items():
+									id = ingr_to_id(v, False).replace("_", " ").title()
+									count = sum([line.count(k) for line in craft["shape"]])
+									hover_text.append({"text": f"\n- x{count} ", "color": "gray"})
+									hover_text.append({"text": id, "color": "gray"})
+							
+							# If it's shapeless
+							elif isinstance(craft["ingredients"], list):
+								ids = {}	# {id: count}
+								for ingr in craft["ingredients"]:
+									id = ingr_to_id(ingr, False).replace("_", " ").title()
+									if id not in ids:
+										ids[id] = 0
+									ids[id] += 1
+								for id, count in ids.items():
+									hover_text.append({"text": f"\n- x{count} ", "color": "gray"})
+									hover_text.append({"text": id, "color": "gray"})
 
-					# Add the craft to the content
-					result_or_ingredient = WIKI_RESULT_OF_CRAFT_FONT if "result" not in craft else generate_wiki_font_for_ingr(config, name, craft)
-					wiki_buttons.append({"text": result_or_ingredient + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": hover_text}})
+						# Add the craft to the content
+						result_or_ingredient = WIKI_RESULT_OF_CRAFT_FONT if "result" not in craft else generate_wiki_font_for_ingr(config, name, craft)
+						wiki_buttons.append({"text": result_or_ingredient + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": hover_text}})
 
-					# If there is a result to the craft, try to add the clickEvent that change to that page
-					if "result" in craft:
-						result_item = ingr_to_id(craft["result"], False)
-						if result_item in config['database']:
-							wiki_buttons[-1]["clickEvent"] = {"action": "change_page", "value": str(get_page_number(result_item))}
+						# If there is a result to the craft, try to add the clickEvent that change to that page
+						if "result" in craft:
+							result_item = ingr_to_id(craft["result"], False)
+							if result_item in database:
+								wiki_buttons[-1]["clickEvent"] = {"action": "change_page", "value": str(get_page_number(result_item))}
 				
 				# Add wiki buttons 5 by 5
 				if wiki_buttons:
@@ -313,7 +352,7 @@ def main(config: dict):
 		content = []
 		file_name = "categories_page"
 		page_font = get_page_font(1)
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/category/{file_name}.png", "ascent": 0, "height": 130, "chars": [page_font]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/category/{file_name}.png", "ascent": 0, "height": 130, "chars": [page_font]})
 		content.append({"text": "", "font": FONT, "color": "white"})	# Make default font for every next component
 		content.append({"text": "➤ ", "font": "minecraft:default", "color": "black"})
 		content.append({"text": "Category browser\n", "font": "minecraft:default", "color": "black", "underlined": True})
@@ -330,7 +369,7 @@ def main(config: dict):
 				item = page["raw_data"][0]
 
 				# Get item texture TODO
-				texture_path = f"{config['manual_path']}/items/{config['namespace']}/{item}.png"
+				texture_path = f"{config['manual_path']}/items/{namespace}/{item}.png"
 				if os.path.exists(texture_path):
 					item_image = Image.open(texture_path)
 				else:
@@ -387,7 +426,7 @@ def main(config: dict):
 		## Append introduction page
 		content = [""]
 		page_font = get_page_font(0)
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/page/_logo.png", "ascent": 0, "height": 40, "chars": [page_font]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/page/_logo.png", "ascent": 0, "height": 40, "chars": [page_font]})
 		content.append({"text": config['manual_name'] + "\n", "underlined": True})
 		content.append({"text": MEDIUM_NONE_FONT * 2 + page_font, "font": FONT, "color": "white"})
 		
@@ -407,26 +446,39 @@ def main(config: dict):
 		book_content.insert(0, content)
 
 		## Optimize the book size
-		book_content = optimize_book(book_content)
+		book_content_deepcopy = json.loads(json.dumps(book_content))	# Deepcopy to avoid sharing same components (such as clickEvent)
+		book_content = optimize_book(book_content_deepcopy)
+
+		## Insert at 2nd page the heavy workbench
+		if "heavy_workbench" in database:
+			heavy_workbench_page = book_content.pop(-1)
+			book_content.insert(1, heavy_workbench_page)
+
+			# Increase every change_page click event by 1
+			for page in book_content:
+				for component in page:
+					if isinstance(component, dict) and "clickEvent" in component and component["clickEvent"].get("action") == "change_page":
+						current_value: int = int(component["clickEvent"]["value"])
+						component["clickEvent"]["value"] = str(current_value + 1)
 
 		# Add fonts
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 8, "height": 20, "chars": [NONE_FONT]})
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 8, "height": 18, "chars": [MEDIUM_NONE_FONT]})
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 7, "height": 7, "chars": [SMALL_NONE_FONT]})
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 0, "height": 2, "chars": [VERY_SMALL_NONE_FONT]})
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 0, "height": 1, "chars": [MICRO_NONE_FONT]})
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/none.png", "ascent": 7, "height": 16, "chars": [WIKI_NONE_FONT]})
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/invisible_item.png", "ascent": 7, "height": 16, "chars": [INVISIBLE_ITEM_FONT]})
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/wiki_information.png", "ascent": 8, "height": 16, "chars": [WIKI_INFO_FONT]})
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/wiki_result_of_craft.png", "ascent": 8, "height": 16, "chars": [WIKI_RESULT_OF_CRAFT_FONT]})
-		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/wiki_ingredient_of_craft.png", "ascent": 8, "height": 16, "chars": [WIKI_INGR_OF_CRAFT_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/none.png", "ascent": 8, "height": 20, "chars": [NONE_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/none.png", "ascent": 8, "height": 18, "chars": [MEDIUM_NONE_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/none.png", "ascent": 7, "height": 7, "chars": [SMALL_NONE_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/none.png", "ascent": 0, "height": 2, "chars": [VERY_SMALL_NONE_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/none.png", "ascent": 0, "height": 1, "chars": [MICRO_NONE_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/none.png", "ascent": 7, "height": 16, "chars": [WIKI_NONE_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/invisible_item.png", "ascent": 7, "height": 16, "chars": [INVISIBLE_ITEM_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/wiki_information.png", "ascent": 8, "height": 16, "chars": [WIKI_INFO_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/wiki_result_of_craft.png", "ascent": 8, "height": 16, "chars": [WIKI_RESULT_OF_CRAFT_FONT]})
+		font_providers.append({"type":"bitmap","file":f"{namespace}:font/wiki_ingredient_of_craft.png", "ascent": 8, "height": 16, "chars": [WIKI_INGR_OF_CRAFT_FONT]})
 		if config['manual_high_resolution']:
-			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_3x3.png", "ascent": 1, "height": 58, "chars": [SHAPED_3X3_FONT]})
-			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_2x2.png", "ascent": 1, "height": 58, "chars": [SHAPED_2X2_FONT]})
-			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/furnace.png", "ascent": 1, "height": 58, "chars": [FURNACE_FONT]})
-			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_3x3.png", "ascent": -4, "height": 58, "chars": [HOVER_SHAPED_3X3_FONT]})
-			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/shaped_2x2.png", "ascent": -2, "height": 58, "chars": [HOVER_SHAPED_2X2_FONT]})
-			font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/furnace.png", "ascent": -3, "height": 58, "chars": [HOVER_FURNACE_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{namespace}:font/shaped_3x3.png", "ascent": 1, "height": 58, "chars": [SHAPED_3X3_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{namespace}:font/shaped_2x2.png", "ascent": 1, "height": 58, "chars": [SHAPED_2X2_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{namespace}:font/furnace.png", "ascent": 1, "height": 58, "chars": [FURNACE_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{namespace}:font/shaped_3x3.png", "ascent": -4, "height": 58, "chars": [HOVER_SHAPED_3X3_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{namespace}:font/shaped_2x2.png", "ascent": -2, "height": 58, "chars": [HOVER_SHAPED_2X2_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{namespace}:font/furnace.png", "ascent": -3, "height": 58, "chars": [HOVER_FURNACE_FONT]})
 		fonts = {"providers": font_providers}
 		with super_open(f"{config['manual_path']}/font/manual.json", "w") as f:
 			f.write(super_json_dump(fonts).replace("\\\\", "\\"))
@@ -438,46 +490,53 @@ def main(config: dict):
 
 
 	# Copy the font provider and the generated textures to the resource pack
-	super_copy(f"{config['manual_path']}/font/manual.json", f"{config['build_resource_pack']}/assets/{config['namespace']}/font/manual.json")
-	super_copy(f"{config['manual_path']}/font/category/", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/category/")
-	super_copy(f"{config['manual_path']}/font/page/", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/page/")
-	super_copy(f"{config['manual_path']}/font/wiki_icons/", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/wiki_icons/")
+	super_copy(f"{config['manual_path']}/font/manual.json", f"{config['build_resource_pack']}/assets/{namespace}/font/manual.json")
+	super_copy(f"{config['manual_path']}/font/category/", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/category/")
+	super_copy(f"{config['manual_path']}/font/page/", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/page/")
+	super_copy(f"{config['manual_path']}/font/wiki_icons/", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_icons/")
 	if config['manual_high_resolution']:
-		super_copy(f"{config['manual_path']}/font/high_res/", f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/font/high_res/")
+		super_copy(f"{config['manual_path']}/font/high_res/", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/high_res/")
 
 	# Verify font providers and textures
 	for fp in font_providers:
 		if "file" in fp:
 			path: str = fp["file"]
-			path = path.replace(config['namespace'] + ':', f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/")
+			path = path.replace(namespace + ':', f"{config['build_resource_pack']}/assets/{namespace}/textures/")
 			if not os.path.exists(path):
 				error(f"Missing font provider at '{path}' for {fp})")
 			if len(fp["chars"]) < 1 or (len(fp["chars"]) == 1 and not fp["chars"][0]):
 				error(f"Font provider '{path}' has no chars")
 
 	# Finally, prepend the manual to the database
-	manual_cmd = min(x["custom_model_data"] for x in config['database'].values() if x.get("custom_model_data")) - 1		# First custom_model_data minus 1
-	manual_database = {"manual":
-		{
+	manual_cmd = min(x["custom_model_data"] for x in database.values() if x.get("custom_model_data")) - 1		# First custom_model_data minus 1
+	manual_already_exists: bool = "manual" in database
+	manual_database = {
+		"manual": {
 			"id": "minecraft:written_book",
 			"written_book_content": {
-				"title": config['manual_name'],
+				"title": config.get("manual_name", "Manual"),
 				"author": config['author'],
 				"pages": [str(i).replace("\\\\", "\\") for i in book_content],
 			},
 			"lore": [json.dumps(config['source_lore']).replace('"', "'")],
-			"custom_model_data": manual_cmd,
+			"custom_model_data": manual_cmd if not manual_already_exists else database["manual"]["custom_model_data"],
 			"enchantment_glint_override": False,
 		}
 	}
-	config['database'].update(manual_database)
+	database.update(manual_database)
 
-	# Add the model to the resource pack
-	from ..resource_pack.item_models import handle_item
-	handle_item(config, "manual", config['database']["manual"])
-	vanilla_model = {"parent": "item/generated","textures": {"layer0": "item/written_book"},"overrides": [{ "predicate": { "custom_model_data": manual_cmd}, "model": f"{config['namespace']}:item/manual" }]}
-	vanilla_model = super_json_dump(vanilla_model).replace('{"','{ "').replace('"}','" }').replace(',"', ', "')
-	write_to_file(f"{config['build_resource_pack']}/assets/minecraft/models/item/written_book.json", vanilla_model)
+	# Add the model to the resource pack if it doesn't already exist
+	if not manual_already_exists:
+		handle_item(config, "manual", database["manual"])
+		vanilla_model = {"parent": "item/generated","textures": {"layer0": "item/written_book"},"overrides": [{ "predicate": { "custom_model_data": manual_cmd}, "model": f"{namespace}:item/manual" }]}
+		vanilla_model = super_json_dump(vanilla_model).replace('{"','{ "').replace('"}','" }').replace(',"', ', "')
+		write_to_file(f"{config['build_resource_pack']}/assets/minecraft/models/item/written_book.json", vanilla_model)
+
+	# Remove the heavy workbench from the database
+	if OFFICIAL_LIBS["smithed.crafter"]["is_used"]:
+		del database["heavy_workbench"]
+		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/textures/block/heavy_workbench.png")
+		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/models/block/heavy_workbench.json")
 
 	info(f"Added manual to the database")
 

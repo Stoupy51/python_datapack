@@ -25,6 +25,10 @@ def main(config: dict):
 	errors = []
 	for item, data in database.items():
 
+		# Check if the item uses a reserved name
+		if item == "heavy_workbench":
+			errors.append(f"'{item}' is reserved for the heavy workbench used for NBT recipes, please use another name")
+
 		# Check for a proper ID
 		if not data.get("id"):
 			errors.append(f"'id' key missing for '{item}'")

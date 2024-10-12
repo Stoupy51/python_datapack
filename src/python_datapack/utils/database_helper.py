@@ -231,7 +231,7 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 				if f"{pulv_ingr}.png" in config['textures_files']:
 					database[item][RESULT_OF_CRAFTING].append({"type":PULVERIZING,"result_count":2,"category":"misc","group":material_base,"ingredient":ingr_repr(pulv_ingr, config['namespace'])})
 		if item.endswith("nugget"):
-			database[item][RESULT_OF_CRAFTING].append({"type":"crafting_shapeless","result_count":9,"category":"misc","group":material_base,"ingredients":[main_ingredient]})
+			database[item][RESULT_OF_CRAFTING].insert(0, {"type":"crafting_shapeless","result_count":9,"category":"misc","group":material_base,"ingredients":[main_ingredient]})
 			for gear in SLOTS.keys():
 				if f"{material_base}_{gear}.png" in config['textures_files']:
 					database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"equipment","experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"{material_base}_{gear}", config['namespace'])})

@@ -16,7 +16,7 @@ def ingr_repr(id: str, ns: str|None = None, count: int|None = None) -> dict:
 	Args:
 		id		(str):		The id of the ingredient, ex: adamantium_fragment
 		ns		(str|None):	The namespace of the ingredient (optional if 'id' argument is a vanilla item), ex: iyc
-		count	(int|None):	The count of the ingredient (optional)
+		count	(int|None):	The count of the ingredient (optional, used only when this ingredient format is a result item)
 	Returns:
 		str: The identity of the ingredient for custom crafts,
 			ex: {"components":{"minecraft:custom_data":{"iyc":{"adamantium_fragment":True}}}}

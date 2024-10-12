@@ -5,9 +5,12 @@ from ..utils.print import *
 from ..constants import *
 
 def main(config: dict):
+	database: dict[str,dict] = config["database"]
+	external_database: dict[str,dict] = config["external_database"]
+	namespace: str = config["namespace"]
 
 	# For each item in the database, create a loot table
-	for item, data in config['database'].items():
+	for item, data in database.items():
 		loot_table = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:item", "name": data.get("id")}]}]}
 
 		# Set components
@@ -19,10 +22,10 @@ def main(config: dict):
 		# Add functions
 		loot_table["pools"][0]["entries"][0]["functions"] = [set_components]
 
-		write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/loot_table/i/{item}.json", super_json_dump(loot_table, max_level = 9))
+		write_to_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{item}.json", super_json_dump(loot_table, max_level = 9))
 	
 	# Same for external items
-	for item, data in config['external_database'].items():
+	for item, data in external_database.items():
 		namespace, item = item.split(":")
 		loot_table = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:item", "name": data.get("id")}]}]}
 		set_components = {"function":"minecraft:set_components","components":{}}
@@ -30,37 +33,38 @@ def main(config: dict):
 			if k not in NOT_COMPONENTS:
 				set_components["components"][f"minecraft:{k}"] = v
 		loot_table["pools"][0]["entries"][0]["functions"] = [set_components]
-		write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/loot_table/external/{namespace}/{item}.json", super_json_dump(loot_table, max_level = 9))
+		write_to_file(f"{config['build_datapack']}/data/{namespace}/loot_table/external/{namespace}/{item}.json", super_json_dump(loot_table, max_level = 9))
 	
 	info("Made loot tables for every item")
 
 
 	# Loot tables for items with crafting recipes
-	for item, data in config['database'].items():
+	for item, data in database.items():
 		if data.get(RESULT_OF_CRAFTING):
 			results = []
 			for d in data[RESULT_OF_CRAFTING]:
-				count = d["result_count"]
+				d: dict
+				count = d.get("result_count", 1)
 				if count != 1:
 					results.append(count)
 
 			# For each result count, create a loot table for it
 			for result_count in results:
-				loot_table = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:loot_table","value":f"{config['namespace']}:i/{item}","functions":[{"function":"minecraft:set_count","count":result_count}]}]}]}
-				write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/loot_table/i/{item}_x{result_count}.json", super_json_dump(loot_table, max_level = -1), overwrite = True)
+				loot_table = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:loot_table","value":f"{namespace}:i/{item}","functions":[{"function":"minecraft:set_count","count":result_count}]}]}]}
+				write_to_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{item}_x{result_count}.json", super_json_dump(loot_table, max_level = -1), overwrite = True)
 	info("Multiple counts loot tables made for every item with crafting recipes")
 
 	# Second loot table for the manual (if present)
-	if "manual" in config['database']:
-		loot_table = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:loot_table","value":f"{config['namespace']}:i/manual"}]}]}
-		write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/loot_table/i/{config['namespace']}_manual.json", super_json_dump(loot_table, max_level = -1), overwrite = True)
+	if "manual" in database:
+		loot_table = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:loot_table","value":f"{namespace}:i/manual"}]}]}
+		write_to_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{namespace}_manual.json", super_json_dump(loot_table, max_level = -1), overwrite = True)
 
 	# Make a give all command that gives chests with all the items
 	CHEST_SIZE = 27
-	total_chests = (len(config['database']) + CHEST_SIZE - 1) // CHEST_SIZE
+	total_chests = (len(database) + CHEST_SIZE - 1) // CHEST_SIZE
 	lore = json.dumps(config['source_lore']).replace('"', "'")
 	chests = []
-	database_copy = list(config['database'].items())
+	database_copy = list(database.items())
 	for i in range(total_chests):
 		chest_contents = []
 	
