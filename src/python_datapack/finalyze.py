@@ -60,7 +60,7 @@ def main(config: dict, user_code: callable):
 					elif file.endswith((".png",".mcmeta")):
 						super_copy(merge_path, build_path)
 		total_time: float = time.perf_counter() - start_time
-		info(f"All content in the '{config['merge_folder']}' folder copied to '{config['build_folder']}' in {total_time:.5f}s")
+		info(f"All content in the '{config['merge_folder']}' folder copied to the build folder in {total_time:.5f}s")
 
 	# Run user code
 	if user_code:

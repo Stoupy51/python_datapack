@@ -57,6 +57,7 @@ def check_config_format(config: dict) -> bool:
 	has_manual = basic_key_check(config, "has_manual", bool, "Do the program generate a manual/guide? (WARNING: if an item is malformed in the database, the server log will be flooded on load by the manual hiding the malformed item)", True)
 	if has_manual == True:
 		valid = basic_key_check(config, "manual_path", str, "Cached manual assets", valid)
+		valid = basic_key_check(config, "manual_overrides", str, "Path to a folder containing manual overrides to replace the default manual assets", valid)
 		valid = basic_key_check(config, "manual_high_resolution", bool, "Enable the high resolution for the manual to increase the craft resolutions", valid)
 		valid = basic_key_check(config, "cache_manual_assets", bool, "Caches the MC assets and the items renders for the manual (manual/items/*.png)", valid)
 		valid = basic_key_check(config, "cache_manual_pages", bool, "Caches the content of the manual and the images (manual/pages/*.png)", valid)

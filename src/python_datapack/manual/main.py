@@ -13,8 +13,25 @@ def deepcopy(x: list|dict) -> list|dict:
 	return json.loads(json.dumps(x))
 
 def main(config: dict):
-	database: dict = config['database']
-	namespace: str = config['namespace']
+	# Copy everything in the manual assets folder to the templates folder
+	os.makedirs(TEMPLATES_PATH, exist_ok = True)
+	shutil.copytree(MANUAL_ASSETS_PATH + "assets", TEMPLATES_PATH, dirs_exist_ok = True)
+
+	# Copy the manual_overrides folder to the templates folder
+	if config.get("manual_overrides"):
+		shutil.copytree(config["manual_overrides"], TEMPLATES_PATH, dirs_exist_ok = True)
+
+	# Launch the routine
+	try:
+		routine(config)
+
+	# Remove the temporary templates folder
+	finally:
+		shutil.rmtree(TEMPLATES_PATH, ignore_errors = True)
+
+def routine(config: dict):
+	database: dict = config["database"]
+	namespace: str = config["namespace"]
 
 	# If smithed crafter is used, add it to the manual (last page that we will move to the second page)
 	if OFFICIAL_LIBS["smithed.crafter"]["is_used"]:
@@ -93,10 +110,13 @@ def main(config: dict):
 		# Debug categories and sizes
 		s = ""
 		for category, items in categories.items():
+			if category == HEAVY_WORKBENCH_CATEGORY:
+				continue
 			s += f"\n- {category}: {len(items)} items"
 			if len(items) > MAX_ITEMS_PER_PAGE:
 				s += f" (splitted into {len(items) // MAX_ITEMS_PER_PAGE + 1} pages)"
-		debug(f"Found {len(categories)} categories:{s}")
+		nb_categories: int = len(categories) - (1 if HEAVY_WORKBENCH_CATEGORY in categories else 0)
+		debug(f"Found {nb_categories} categories:{s}")
 
 		# Split up categories into pages
 		categories_pages = {}

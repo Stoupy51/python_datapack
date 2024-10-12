@@ -21,7 +21,7 @@ def get_next_font() -> str:	# Returns an incrementing value for each craft
 # Constants
 SQUARE_SIZE = 32
 MANUAL_ASSETS_PATH = clean_path(os.path.dirname(os.path.realpath(__file__)) + "/")
-TEMPLATES_PATH = MANUAL_ASSETS_PATH + "assets"
+TEMPLATES_PATH = MANUAL_ASSETS_PATH + "templates"
 FONT_FILE = "manual"
 BORDER_COLOR = 0xB64E2F
 BORDER_COLOR = (BORDER_COLOR >> 16) & 0xFF, (BORDER_COLOR >> 8) & 0xFF, BORDER_COLOR & 0xFF, 255
