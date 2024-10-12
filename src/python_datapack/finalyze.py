@@ -115,6 +115,7 @@ def main(config: dict, user_code: callable):
 
 	# Copy datapack libraries
 	try:
+		copied_libs: list[str] = []
 		
 		# Copy lib folder
 		if config.get('libs_folder'):
@@ -123,18 +124,23 @@ def main(config: dict, user_code: callable):
 					if file.endswith(".zip"):
 						for dest in datapack_dest:
 							shutil.copy(f"{root}/{file}", dest)
-							info(f"Library '{file}' copied to '{dest}/'")
-		
+							copied_libs.append(file)
+
 		# Copy official used libs
 		for data in OFFICIAL_LIBS.values():
 			if data["is_used"]:
 				name: str = data["name"]
 				for dest in datapack_dest:
 					shutil.copy(f"{OFFICIAL_LIBS_PATH}/datapack/{name}.zip", dest)
-					info(f"Library '{name}.zip' copied to '{dest}/'")
+					copied_libs.append(f"{name}.zip")
+
+		if copied_libs:
+			s: str = '' if len(datapack_dest) == 1 else 's'
+			joined: str = "\n- ".join(copied_libs)
+			info(f"The following libraries were copied to {datapack_dest} folder{s}:\n- {joined}")
 		
 	except OSError as e:
-		warning(f"Could not copy datapack libraries to '{datapack_dest}/': {e}")
+		warning(f"Could not copy datapack libraries to {datapack_dest}: {e}")
 
 
 	# If merge libs is enabled, use weld to generate datapack and resource pack with bundled libraries

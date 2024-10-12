@@ -55,15 +55,15 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		dest_base_model = f"{config['build_resource_pack']}/assets/{config['namespace']}/models/{block_or_item}"
 		content: dict[str, str|dict] = {}
 
+		# Get all variants
+		variants: list[str] = [x.replace(".png", "") for x in config['textures_files'] if "gui/" not in x and x.split("/")[-1].startswith(item)]
+
 		if not ignore_textures and data.get(OVERRIDE_MODEL, None) != {}:
 			# If it's a block
 			if block_or_item == "block":
 
 				# Get parent
 				content = {"parent": "block/cube_all", "textures": {}}
-
-				# Get all variants
-				variants = [x.replace(".png", "") for x in config['textures_files'] if "gui/" not in x and x.split("/")[-1].startswith(item)]
 				
 				## Check in which variants state we are
 				# If one texture, apply on all faces
@@ -136,6 +136,13 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		# Add overrides
 		for key, value in overrides.items():
 			content[key] = value
+		
+		# If powered, check if the on state is in the variants and add it
+		if on_off == "_on":
+			for key, texture in content.get("textures", {}).items():
+				texture: str
+				if (texture.split("/")[-1] + on_off) in variants:
+					content["textures"][key] = texture + on_off
 		
 		# Add used textures
 		if used_textures is not None and content.get("textures") and not ignore_textures:

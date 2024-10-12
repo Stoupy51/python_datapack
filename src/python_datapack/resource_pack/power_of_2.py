@@ -23,7 +23,6 @@ def main(config: dict):
 				if bin(width).count("1") != 1 or bin(height).count("1") != 1:	# At least one of them is not a power of 2
 
 					# If width can't divide height, add it to the wrongs list (else it's probably a GUI or animation texture)
-					print(height%width)
 					if height % width != 0:
 						wrongs.append((file_path, width, height))
 
