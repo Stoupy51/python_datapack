@@ -50,7 +50,10 @@ execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:f
 			path = f"{datapack_functions}/custom_blocks/{item}"
 			beautify_name: str = ""
 			if block_id in BLOCKS_WITH_INTERFACES:
-				beautify_name = json.dumps({"CustomName":'"' + item_name + '"'})
+				if data.get("item_name"):
+					beautify_name = json.dumps({"CustomName": data["item_name"]})
+				else:
+					beautify_name = json.dumps({"CustomName": '"' + item_name + '"'})
 
 			## Place function	
 			content = ""
