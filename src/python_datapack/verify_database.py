@@ -22,7 +22,7 @@ def main(config: dict):
 	debug(f"Received database exported to '{config['database_debug']}'")
 
 	# Check every single thing in the database
-	errors = []
+	errors: list[str] = []
 	for item, data in database.items():
 
 		# Check if the item uses a reserved name
@@ -77,6 +77,21 @@ def main(config: dict):
 		if not data.get("item_name") or not isinstance(data["item_name"], str):
 			errors.append(f"'item_name' key missing or not a string for '{item}'")
 		
+		# Force the use of "lore" key to be in a correct format
+		if data.get("lore"):
+			if not isinstance(data["lore"], list):
+				errors.append(f"'lore' key should be a list for '{item}'")
+			else:
+				for i, line in enumerate(data["lore"]):
+					if not isinstance(line, str):
+						errors.append(f"Line #{i} in 'lore' key should be a string for '{item}', ex: '{{\"text\":\"This is a lore line\"}}'")
+					else:
+						# Verify format {"text":"..."} or "..."
+						if not (line.startswith('{') and line.endswith('}')) \
+							and not (line.startswith('"') and line.endswith('"')) \
+							and not (line.startswith("'") and line.endswith("'")):
+							errors.append(f"Item '{item}' has a lore line that is not in a correct text component format: {line}\n We recommend using 'https://misode.github.io/text-component/' to generate the text component")
+
 		# Warn if no custom model data
 		if not data.get("custom_model_data"):
 			warning(f"'custom_model_data' key missing for '{item}', ignore if it's on purpose")

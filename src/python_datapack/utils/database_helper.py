@@ -117,7 +117,7 @@ class EquipmentsConfig():
 		return {key: value for key, value in self.attributes.items() if key not in NOT_ON_ARMOR}
 
 # UUIDs utils
-def format_attributes(config: dict, attributes: str, slot: str, attr_config: dict = {}) -> list[dict]:
+def format_attributes(config: dict, attributes: dict, slot: str, attr_config: dict = {}) -> list[dict]:
 	""" Returns generated attribute_modifiers key for an item (adds up attributes and config) """
 	# Get attributes from config
 	attribute_modifiers = []
@@ -554,10 +554,12 @@ def add_private_custom_data_for_namespace(config: dict, database: dict[str, dict
 		if not data.get("custom_data"):
 			data["custom_data"] = {}
 		if not is_external:
-			data["custom_data"][config['namespace']] = {item: True}
-		else:
+			ns, id = config['namespace'], item
+		elif ":" in item:
 			ns, id = item.split(":")
-			data["custom_data"][ns] = {id: True}
+		if not data["custom_data"].get(ns):
+			data["custom_data"][ns] = {}
+		data["custom_data"][ns][id] = True
 	return
 
 # Smithed ignore convention

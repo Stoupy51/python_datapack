@@ -12,7 +12,7 @@ from .resource_pack.check_unused_textures import main as check_unused_textures_m
 from .dependencies.main import main as dependencies_main, OFFICIAL_LIBS_PATH, OFFICIAL_LIBS
 import shutil
 
-def main(config: dict, user_code: callable):
+def main(config: dict, user_code: Callable):
 
 	# Copy original_icon.png to pack.png if it exists
 	if config.get('assets_folder') and os.path.exists(f"{config['assets_folder']}/original_icon.png"):

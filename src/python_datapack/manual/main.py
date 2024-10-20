@@ -30,7 +30,7 @@ def main(config: dict):
 		shutil.rmtree(TEMPLATES_PATH, ignore_errors = True)
 
 def routine(config: dict):
-	database: dict = config["database"]
+	database: dict[str, dict] = config["database"]
 	namespace: str = config["namespace"]
 
 	# If smithed crafter is used, add it to the manual (last page that we will move to the second page)
@@ -270,8 +270,8 @@ def routine(config: dict):
 						{"text":" be crafted using the Heavy Workbench."}
 					])
 				else:
-					if raw_data.get("wiki"):
-						wiki_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data["wiki"]}})
+					if raw_data.get(WIKI_COMPONENTS):
+						wiki_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data[WIKI_COMPONENTS]}})
 					
 					# For each craft (except smelting dupes),
 					for i, craft in enumerate(crafts):
@@ -541,9 +541,12 @@ def routine(config: dict):
 			"lore": [json.dumps(config['source_lore']).replace('"', "'")],
 			"custom_model_data": manual_cmd if not manual_already_exists else database["manual"]["custom_model_data"],
 			"enchantment_glint_override": False,
+			"max_stack_size": 1
 		}
 	}
-	database.update(manual_database)
+	if not database.get("manual"):
+		database["manual"] = manual_database["manual"]
+	database["manual"].update(manual_database["manual"])
 
 	# Add the model to the resource pack if it doesn't already exist
 	if not manual_already_exists:

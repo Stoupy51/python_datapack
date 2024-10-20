@@ -76,7 +76,7 @@ def main(config: dict):
 			data = data.copy()
 			id = data.get("id")
 			for k in NOT_COMPONENTS:	# Remove non-component data
-				if data.get(k):
+				if data.get(k, None) is not None:
 					del data[k]
 			json_content = super_json_dump(data, max_level = 0).replace("\n","")
 			chest_contents.append(f'{{slot:{j},item:{{count:1,id:"{id}",components:{json_content}}}}}')

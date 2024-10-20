@@ -4,9 +4,10 @@ import shutil
 import json
 import os
 import io
+from typing import IO
 
 # For easy file management
-def super_open(file_path: str, mode: str, encoding = "utf-8") -> io.TextIOWrapper:
+def super_open(file_path: str, mode: str, encoding = "utf-8") -> IO:
 	""" Open a file with the given mode, creating the directory if it doesn't exist
 	Args:
 		file_path	(str): The path to the file
@@ -27,11 +28,13 @@ def super_open(file_path: str, mode: str, encoding = "utf-8") -> io.TextIOWrappe
 
 
 # For easy file copy
-def super_copy(src: str, dst: str) -> shutil.copy:
+def super_copy(src: str, dst: str) -> str:
 	""" Copy a file (or a folder) from the source to the destination
 	Args:
 		src	(str): The source path
 		dst	(str): The destination path
+	Returns:
+		str: The destination path
 	"""
 	# Make directory
 	os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -60,7 +63,7 @@ def super_json_load(file_path: str) -> dict:
 		return json.load(f)
 
 # JSON dump with indentation for levels
-def super_json_dump(data: dict|list, file: io.TextIOWrapper = None, max_level: int = 2) -> str:
+def super_json_dump(data: dict|list, file: io.TextIOWrapper|None = None, max_level: int = 2) -> str:
 	""" Dump the given data to a JSON file with indentation for only 2 levels by default
 	Args:
 		data (dict|list): 			The data to dump
@@ -146,12 +149,12 @@ def clean_path(file_path: str) -> str:
 
 	# If the path contains "../", simplify it
 	if "../" in file_path:
-		file_path = file_path.split("/")
-		for i in range(len(file_path)):
-			if file_path[i] == ".." and i > 0:
-				file_path[i] = ""
-				file_path[i-1] = ""
-		file_path = "/".join(file_path)
+		splitted = file_path.split("/")
+		for i in range(len(splitted)):
+			if splitted[i] == ".." and i > 0:
+				splitted[i] = ""
+				splitted[i-1] = ""
+		file_path = "/".join(splitted)
 
 	# Replace "./" with nothing since it's useless
 	file_path = file_path.replace("./", "")
@@ -252,11 +255,35 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend
 	else:
 		FILES_TO_WRITE[file_path] += str(content)
 
-def delete_file(file_path: str, clean_on_disk: bool = True) -> None:
+def write_to_function(config: dict, function_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
+	""" Write the content to the function where the path is like when calling a function\n
+	If no namespace is given, it will default to "minecraft"\n
+	Args:
+		config			(dict):	The main configuration
+		function_path	(str):	The path to the function (ex: "namespace:folder/function_name")
+		content			(str):	The content to write
+		overwrite		(bool):	If the file should be overwritten (default: Append the content)
+		prepend			(bool):	If the content should be prepended instead of appended (not used if overwrite is True)
+	"""
+	if isinstance(config, str):
+		error(f"The first argument of write_to_function() should be the configuration dict, not a string. You probably swapped the arguments.")
+
+	# Get the namespace (if any)
+	namespace: str = function_path.split(":")[0] if ":" in function_path else "minecraft"
+	function_path = function_path.split(":")[-1] if ":" in function_path else function_path
+
+	# Write to the file
+	file_path: str = f"{config['build_datapack']}/data/{namespace}/function/{function_path}.mcfunction"
+	write_to_file(file_path, content, overwrite, prepend)
+
+
+def delete_file(file_path: str, clean_on_disk: bool = True) -> bool:
 	""" Delete the file at the given path\n
 	Args:
 		file_path		(str):	The path to the file
 		clean_on_disk	(bool):	If the file should be deleted on disk (default: True)
+	Returns:
+		bool: If the file was deleted
 	"""
 	# Clean path
 	file_path = clean_path(file_path)
@@ -266,6 +293,8 @@ def delete_file(file_path: str, clean_on_disk: bool = True) -> None:
 	if file_path in FILES_TO_WRITE:
 		del FILES_TO_WRITE[file_path]
 		deleted = True
+	if file_path in INITIAL_FILES:
+		del INITIAL_FILES[file_path]
 
 	# If the file exists, delete it
 	if clean_on_disk and os.path.exists(file_path):
@@ -275,6 +304,23 @@ def delete_file(file_path: str, clean_on_disk: bool = True) -> None:
 	# If the file wasn't deleted, print a warning
 	if not deleted:
 		warning(f"Couldn't delete the file '{file_path}', it doesn't exists")
+	return deleted
+
+def delete_files(contains: str = "", clean_on_disk: bool = True) -> list[str]:
+	""" Delete all the files that contains the given string\n
+	Args:
+		contains		(str):	The string that the path must contain
+		clean_on_disk	(bool):	If the files should be deleted on disk (default: True)
+	"""
+	contains = clean_path(contains)
+	deleted_files: list[str] = []
+	for file_path in list(FILES_TO_WRITE.keys()):
+		if contains in file_path:
+			if delete_file(file_path, clean_on_disk):
+				deleted_files.append(file_path)
+	return deleted_files
+
+
 
 def write_to_versioned_file(config: dict, relative_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
 	""" Write the content to the versioned file at the given path\n
@@ -366,4 +412,9 @@ def delete_old_files(contains: str = ""):
 		# If the file is not in the write queue, delete it
 		if file_path not in FILES_TO_WRITE and os.path.exists(file_path):
 			os.remove(file_path)
+
+	# Delete empty folders
+	for root, _, _ in os.walk(".", topdown=False):
+		if not os.listdir(root):
+			os.rmdir(root)
 

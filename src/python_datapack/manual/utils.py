@@ -120,7 +120,7 @@ def image_count(count: int) -> Image.Image:
 
 # Generate iso renders for every item in the database
 def generate_all_iso_renders(config: dict):
-	database: dict = config['database']
+	database: dict[str, dict] = config['database']
 	namespace: str = config['namespace']
 
 	# Create the items folder
@@ -136,7 +136,12 @@ def generate_all_iso_renders(config: dict):
 			if data["id"] == CUSTOM_BLOCK_VANILLA:
 				raise ValueError()
 			if not os.path.exists(f"{path}/{namespace}/{item}.png") or not config['cache_manual_assets']:
-				super_copy(f"{config['textures_folder']}/{item}.png", f"{path}/{namespace}/{item}.png")
+				if data.get(OVERRIDE_MODEL, None) != {}:
+					source: str = f"{config['textures_folder']}/{item}.png"
+					if os.path.exists(source):
+						super_copy(source, f"{path}/{namespace}/{item}.png")
+					else:
+						warning(f"Missing texture for item '{item}', please add it manually to '{path}/{namespace}/{item}.png'")
 		except ValueError:
 			# Else, add the block to the model resolver list
 			# Skip if item is already generated (to prevent OpenGL launching for nothing)

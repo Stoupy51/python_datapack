@@ -11,11 +11,12 @@ VANILLA_BLOCK_FOR_ORES: dict = {"id":"minecraft:polished_deepslate", "apply_faci
 OVERRIDE_MODEL: str = "override_model"					# Key to a dictionnary that will be used to override the whole model
 PULVERIZING: str = "simplenergy_pulverizing"			# Value of a recipe type, used to generate dusts from ores (used by SimplEnergy)
 SMITHED_CRAFTER_COMMAND: str = "smithed_crafter_command"	# Key to a command that will be used in a recipe in the Smithed Crafter library. If not present, the command will be defaulted to a loot table
+WIKI_COMPONENTS: str = "wiki_components"				# Key to a text component that will be used to generate the wiki button in the manual
 RESULT_OF_CRAFTING: str = "result_of_crafting"			# Key to a list of recipes to craft the item, ex: "adamantium": {RESULT_OF_CRAFTING: [...]}
 USED_FOR_CRAFTING: str = "used_for_crafting"			# Should not be used unless you are crafting a vanilla item (ex: iyc.chainmail -> chainmail armor)
 NOT_COMPONENTS: list[str] = [							# Keys that should not be considered as components. Used for recipes, loot tables, etc.
 	"id",
-	"wiki",
+	WIKI_COMPONENTS,
 	RESULT_OF_CRAFTING,
 	USED_FOR_CRAFTING,
 	CATEGORY,
@@ -51,7 +52,7 @@ def official_lib_used(lib: str) -> bool:
 	is_used: bool = OFFICIAL_LIBS[lib]["is_used"]
 	OFFICIAL_LIBS[lib]["is_used"] = True
 	return is_used
-OFFICIAL_LIBS: dict[str, dict[str, list[int] | str | bool]] = {
+OFFICIAL_LIBS: dict[str, dict] = {
 	"common_signals":		{"version":[0, 0, 3], "name":"Common Signals",					"url":"https://github.com/Stoupy51/CommonSignals",			"is_used": False},
 	"smithed.custom_block":	{"version":[0, 3, 0], "name":"Smithed Custom Block",			"url":"https://wiki.smithed.dev/libraries/custom-block/",	"is_used": False},
 	"smithed.crafter":		{"version":[0, 3, 0], "name":"Smithed Crafter",					"url":"https://wiki.smithed.dev/libraries/crafter/",		"is_used": False},

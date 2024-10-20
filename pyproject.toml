@@ -29,3 +29,6 @@ dependencies = [
 Homepage = "https://github.com/Stoupy51/python_datapack"
 Issues = "https://github.com/Stoupy51/python_datapack/issues"
 
+[tool.pyright]
+typeCheckingMode = "basic"
+
