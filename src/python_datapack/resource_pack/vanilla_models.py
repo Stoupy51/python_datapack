@@ -61,13 +61,15 @@ def main(config: dict):
 		)
 
 
-	# Generate Common Signals item model
-	content = super_json_dump({"parent": "block/deepslate", "overrides": [{"predicate": { "custom_model_data": 2010000}, "model": f"minecraft:item/none"}]})
-	write_to_file(
-		f"{config['build_resource_pack']}/assets/minecraft/models/item/deepslate.json",
-		content.replace('{"','{ "').replace('"}','" }').replace(',"', ', "')
-	)	
-	write_to_file(f"{config['build_resource_pack']}/assets/minecraft/models/item/none.json", "{}")
+	# Generate Common Signals item model	# TODO: remove that shit
+	if vanilla_ids:
+		content = super_json_dump({"parent": "block/deepslate", "overrides": [{"predicate": { "custom_model_data": 2010000}, "model": f"minecraft:item/none"}]})
+		write_to_file(
+			f"{config['build_resource_pack']}/assets/minecraft/models/item/deepslate.json",
+			content.replace('{"','{ "').replace('"}','" }').replace(',"', ', "')
+		)	
+		write_to_file(f"{config['build_resource_pack']}/assets/minecraft/models/item/none.json", "{}")
 
-	info("Vanilla models created")
+	if vanilla_ids:
+		info("Vanilla models created")
 

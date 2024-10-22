@@ -19,7 +19,7 @@ def main(config: dict):
 	# Print out loud
 	not_used = ""
 	for texture in unused_textures:
-		path = f"{config['textures_folder']}/{texture}"
+		path = f"{config['assets_folder']}/textures/{texture}"
 		not_used += (f"\n'{path}.png' not used in the resource pack")
 	if not_used:
 		warning("Some textures are not used in the resource pack: " + not_used)

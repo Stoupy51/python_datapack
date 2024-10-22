@@ -152,10 +152,10 @@ execute store result score #game_version {namespace}.data run data get entity @p
 
 # Check if the game version is supported
 scoreboard players set #mcload_error {namespace}.data 0
-execute unless score #game_version {namespace}.data matches {config['data_version']}.. run scoreboard players set #mcload_error {namespace}.data 1
+execute unless score #game_version {namespace}.data matches {DATA_VERSION}.. run scoreboard players set #mcload_error {namespace}.data 1
 
 # Decode errors
-execute if score #mcload_error {namespace}.data matches 1 run tellraw @a {{"text":"{config['datapack_name']} Error: This version is made for Minecraft {config['minecraft_version']}+.","color":"red"}}
+execute if score #mcload_error {namespace}.data matches 1 run tellraw @a {{"text":"{config['datapack_name']} Error: This version is made for Minecraft {MINECRAFT_VERSION}+.","color":"red"}}
 execute if score #dependency_error {namespace}.data matches 1 run tellraw @a {{"text":"{config['datapack_name']} Error: Libraries are missing\\nplease download the right {config['datapack_name']} datapack\\nor download each of these libraries one by one:","color":"red"}}
 {decoder_checks}
 # Load {config['datapack_name']}

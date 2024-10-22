@@ -2,6 +2,7 @@
 # Imports
 from .constants import *
 from .utils.print import *
+from typing import Callable
 import time
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
@@ -23,26 +24,24 @@ from .finalyze import main as finalyze_main
 def basic_key_check(config: dict, key: str, value_type: type, hint: str, valid: bool) -> bool:
 	bool_return = valid
 	if config.get(key, None) == None:
-		bool_return = warning(f"Missing '{key}' key in config file\n ({hint})")
+		bool_return = warning(f"Missing '{key}' key in config file\n ({hint})") or False
 	elif not isinstance(config[key], value_type):
-		bool_return = warning(f"Invalid type for '{key}' key in config file, found {type(config[key])} instead of {value_type}\n ({hint})")
+		bool_return = warning(f"Invalid type for '{key}' key in config file, found {type(config[key])} instead of {value_type}\n ({hint})") or False
 	return bool_return
 
 def check_config_format(config: dict) -> bool:
-	valid = True
+	KNOWN_KEYS: list[str] = ["build_folder","author","datapack_name", "version", "namespace", "description", "ignore_unset", "merge_folder", "assets_folder", "libs_folder", "build_copy_destinations", "debug_mode", "database_debug", "cmd_cache", "enable_translations", "merge_libs", "dependencies", "source_lore", "has_manual", "manual_path", "manual_overrides", "manual_high_resolution", "cache_manual_assets", "cache_manual_pages", "manual_debug", "manual_name", "max_items_per_row", "max_rows_per_page", "opengl_resolution", "manual_first_page_text"]
+	valid: bool = True
 	valid = basic_key_check(config, "build_folder", str, "Folder where the final datapack and resource pack are built", valid)
 	valid = basic_key_check(config, "author", str, "Author(s) name(s) displayed in pack.mcmeta, also used to add convention.debug tag to the players of the same name(s) <-- showing additionnal displays like datapack loading", valid)
 	valid = basic_key_check(config, "datapack_name", str, "Name of the datapack, used for messages and items lore", valid)
-	valid = basic_key_check(config, "minecraft_version", str, "Text used when loading the datapack to warn the user when the data version is not right", valid)
 	valid = basic_key_check(config, "version", str, "Datapack version in the following mandatory format: major.minor.patch, ex: 1.0.0 or 1.21.615", valid)
 	valid = basic_key_check(config, "namespace", str, "Should be the same you use in the merge folder. Used to namespace functions, tags, etc.", valid)
-	valid = basic_key_check(config, "datapack_format", int, "Pack format version, see https://minecraft.wiki/w/Pack_format#List_of_data_pack_formats", valid)
 	valid = basic_key_check(config, "description", str, "Pack description displayed in pack.mcmeta", valid)
 	if config.get("ignore_unset", None) == True:
 		return valid
 	valid = basic_key_check(config, "merge_folder", str, "If a file exists in both merge and build folder, they will be merged. Otherwise, it's just copied.", valid)
 	valid = basic_key_check(config, "assets_folder", str, "Folder containing the all assets (textures, sounds, ...) for the datapack", valid)
-	valid = basic_key_check(config, "textures_folder", str, "Folder containing the textures for the datapack", valid)
 	valid = basic_key_check(config, "libs_folder", str, "The libraries are copied to the build destination, and merged with the datapack using Weld", valid)
 	valid = basic_key_check(config, "build_copy_destinations", tuple, "Can be empty paths if you don't want to copy the generated files", valid)
 	valid = basic_key_check(config, "debug_mode", bool, "Shows up grids in manual", valid)
@@ -50,11 +49,9 @@ def check_config_format(config: dict) -> bool:
 	valid = basic_key_check(config, "cmd_cache", str, "Cache of all items Custom Model Data", valid)
 	valid = basic_key_check(config, "enable_translations", bool, "Will convert all the text components to translate and generate a lang file (WARNING: The algorithm is pretty slow, so it's recommended to disable it when not needed)", valid)
 	valid = basic_key_check(config, "merge_libs", bool, "Make new zip of merged libraries with the datapack and resource pack using Smithed Weld", valid)
-	valid = basic_key_check(config, "data_version", int, "Depending on MC version, given by /data get entity @p DataVersion to check if the datapack is not running in an older version of MC", valid)
-	valid = basic_key_check(config, "resource_pack_format", int, "Resource pack format version, see https://minecraft.wiki/w/Pack_format#List_of_resource_pack_formats", valid)
 	valid = basic_key_check(config, "dependencies", dict, "Automagically, the datapack will check for the presence of dependencies and their minimum required versions at runtime\nThe url is used when the dependency is not found to suggest where to get it\nThe version dict key contains the minimum required version of the dependency in [major, minor, patch] format\nThe main key is the dependency namespace to check for\nThe name can be whatever you want, it's just used in messages", valid)
 	valid = basic_key_check(config, "source_lore", list, "Appended lore to any custom item, can be an empty string to disable", valid)
-	has_manual = basic_key_check(config, "has_manual", bool, "Do the program generate a manual/guide? (WARNING: if an item is malformed in the database, the server log will be flooded on load by the manual hiding the malformed item)", True)
+	has_manual: bool = basic_key_check(config, "has_manual", bool, "Do the program generate a manual/guide? (WARNING: if an item is malformed in the database, the server log will be flooded on load by the manual hiding the malformed item)", True)
 	if has_manual == True:
 		valid = basic_key_check(config, "manual_path", str, "Cached manual assets", valid)
 		valid = basic_key_check(config, "manual_overrides", str, "Path to a folder containing manual overrides to replace the default manual assets", valid)
@@ -69,18 +66,21 @@ def check_config_format(config: dict) -> bool:
 		valid = basic_key_check(config, "manual_first_page_text", list, "Text for the first page of the manual", valid)
 	elif valid == True:
 		valid = has_manual
+	if valid == True:
+		for key in config.keys():
+			if key not in KNOWN_KEYS:
+				warning(f"Unknown key '{key}' in config file")
 	return valid == True
 
 
-def build_process(config: dict, setup_database: callable = None, setup_external_database: callable = None, user_code: callable = None):
+def build_process(config: dict, setup_database: Callable|None = None, setup_external_database: Callable|None = None, user_code: Callable|None = None):
 	""" Main function of the datapack build process
 	Args:
 		config					(dict):				Configuration of the program, the program will check the config format with high precision
-		setup_database			(callable|None):	Function that will setup the database of the datapack items and blocks, again the program will check the format of the database
-		setup_external_database	(callable|None):	Function that will setup the external database (if you need an item in a craft), same format as first
-		user_code				(callable|None):	Function that will be called after the datapack has been generated, can be used to add custom code to generated some parts of the datapack
+		setup_database			(Callable|None):	Function that will setup the database of the datapack items and blocks, again the program will check the format of the database
+		setup_external_database	(Callable|None):	Function that will setup the external database (if you need an item in a craft), same format as first
+		user_code				(Callable|None):	Function that will be called after the datapack has been generated, can be used to add custom code to generated some parts of the datapack
 	"""
-
 	# Check config format
 	valid = check_config_format(config)
 	if not valid:
@@ -107,8 +107,7 @@ def build_process(config: dict, setup_database: callable = None, setup_external_
 			verify_database_main(config)
 
 		# Generate resource pack
-		if config.get("resource_pack_format"):
-			resource_pack_main(config)
+		resource_pack_main(config)
 
 		# Generate custom recipes if any
 		if config.get("database"):

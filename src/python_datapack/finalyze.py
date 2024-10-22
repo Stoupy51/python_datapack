@@ -17,8 +17,7 @@ def main(config: dict, user_code: Callable):
 	# Copy original_icon.png to pack.png if it exists
 	if config.get('assets_folder') and os.path.exists(f"{config['assets_folder']}/original_icon.png"):
 		super_copy(f"{config['assets_folder']}/original_icon.png", f"{config['build_datapack']}/pack.png")
-		if config.get('resource_pack_format'):
-			super_copy(f"{config['assets_folder']}/original_icon.png", f"{config['build_resource_pack']}/pack.png")
+		super_copy(f"{config['assets_folder']}/original_icon.png", f"{config['build_resource_pack']}/pack.png")
 	else:
 		warning(f"No 'original_icon.png' found in assets folder, no icon will be set")
 
@@ -62,6 +61,10 @@ def main(config: dict, user_code: Callable):
 		total_time: float = time.perf_counter() - start_time
 		info(f"All content in the '{config['merge_folder']}' folder copied to the build folder in {total_time:.5f}s")
 
+	# Delete resource_pack folder if no subfolder 'assets' is found
+	if not os.path.exists(f"{config['build_resource_pack']}/assets"):
+		shutil.rmtree(config['build_resource_pack'], ignore_errors=True)
+
 	# Run user code
 	if user_code:
 		start_time: float = time.perf_counter()
@@ -93,7 +96,7 @@ def main(config: dict, user_code: Callable):
 	info(f"All pending files written in {total_time:.5f}s")
 
 	# Check not used textures
-	if config.get('textures_folder'):
+	if config.get('textures_files'):
 		check_unused_textures_main(config)
 
 
@@ -151,7 +154,7 @@ def main(config: dict, user_code: Callable):
 		weld_dp_time: float = weld_datapack(config, weld_dp)
 
 		# Merge weld rp and copy to resourcepack_dest if possible
-		if config.get('resource_pack_format'):
+		if os.path.exists(f"{config['build_resource_pack']}/pack.mcmeta"):
 			weld_rp: str = f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack_with_libs.zip"
 			weld_rp_time: float = weld_resource_pack(config, weld_rp)
 			for dest in resourcepack_dest:
@@ -161,7 +164,7 @@ def main(config: dict, user_code: Callable):
 					print(e)
 					pass
 		else:
-			weld_rp_time = 0.0
+			weld_rp_time: float = 0.0
 
 		# Debug time taken
 		total_time: float = weld_dp_time + weld_rp_time

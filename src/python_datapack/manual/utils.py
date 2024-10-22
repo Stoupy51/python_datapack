@@ -137,7 +137,7 @@ def generate_all_iso_renders(config: dict):
 				raise ValueError()
 			if not os.path.exists(f"{path}/{namespace}/{item}.png") or not config['cache_manual_assets']:
 				if data.get(OVERRIDE_MODEL, None) != {}:
-					source: str = f"{config['textures_folder']}/{item}.png"
+					source: str = f"{config['assets_folder']}/textures/{item}.png"
 					if os.path.exists(source):
 						super_copy(source, f"{path}/{namespace}/{item}.png")
 					else:

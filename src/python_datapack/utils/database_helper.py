@@ -164,13 +164,13 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 		tools_attributes = equipments_config.get_tools_attributes()
 
 	# Get ore color (for armor dye and other stuff)
-	color = None
+	color: int = 0
 	if f"{material_base}_chestplate.png" in config['textures_files']:
-		color = Image.open(f"{config['textures_folder']}/{material_base}_chestplate.png")
-		color = list(color.getdata())										# Get image (1D Array)
-		color = [(r,g,b) for (r,g,b,a) in color if a > 0]					# Get all colors that are not transparent
-		color = [sum(x) / len(color) for x in zip(*color)]					# Get the average color
-		color = int(color[0]) << 16 | int(color[1]) << 8 | int(color[2])	# Convert to int (Minecraft format: Red<<16 + Green<<8 + Blue)
+		color_image: Image.Image = Image.open(f"{config['assets_folder']}/textures/{material_base}_chestplate.png")
+		color_list: list = list(color_image.getdata())									# Get image (1D Array)
+		color_list = [(r,g,b) for (r,g,b,a) in color_list if a > 0]						# Get all colors that are not transparent
+		color_list = [sum(x) / len(color_list) for x in zip(*color_list)]				# Get the average color
+		color = int(color_list[0]) << 16 | int(color_list[1]) << 8 | int(color_list[2])	# Convert to int (Minecraft format: Red<<16 + Green<<8 + Blue)
 
 	# Placeables (ore, deepslate_ore, block, raw_block)
 	for block in [f"{material_base}_block", f"{material_base}_ore", f"deepslate_{material_base}_ore", f"raw_{material_base}_block"]:

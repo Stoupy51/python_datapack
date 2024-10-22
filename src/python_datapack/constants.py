@@ -1,4 +1,11 @@
 
+# Minecraft version constants
+DATAPACK_FORMAT: int = 48			# Pack format version, see https://minecraft.wiki/w/Pack_format#List_of_data_pack_formats
+RESOURCE_PACK_FORMAT: int = 34		# Resource pack format version, see https://minecraft.wiki/w/Pack_format#List_of_resource_pack_formats
+MINECRAFT_VERSION: str = "1.21"		# Text used when loading the datapack to warn the user when the data version is not right
+DATA_VERSION: int = 3947			# Depending on MC version, given by /data get entity @p DataVersion to check if the datapack is not running in an older version of MC
+
+
 # Databases
 CATEGORY: str = "category"								# Key for the category, used for recipes and the manual, ex: CATEGORY:"material" or CATEGORY:"equipment"
 CUSTOM_BLOCK_VANILLA: str = "minecraft:furnace"			# Vanilla block used as base for custom blocks, must have the "facing" blockstate

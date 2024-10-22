@@ -153,7 +153,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		if content.get("textures") and not ignore_textures:
 			for texture in content["textures"].values():
 				texture_path = "/".join(texture.split(":")[-1].split("/")[1:])	# Remove namespace and block/item
-				source = f"{config['textures_folder']}/{texture_path}.png"
+				source = f"{config['assets_folder']}/textures/{texture_path}.png"
 				destination = f"{dest_base_textu}/{texture_path}.png"
 				try:
 					super_copy(source, destination)
@@ -182,10 +182,11 @@ def main(config: dict):
 	# Make warning for missing textures
 	warns = []
 	for texture in used_textures:
-		path = config['textures_folder'] + "/" + "/".join(texture.split("/")[1:]) + ".png"
+		path = f"{config['assets_folder']}/textures/" + "/".join(texture.split("/")[1:]) + ".png"
 		if not os.path.exists(path):
 			warns.append(f"Texture '{path}' not found")
 	if warns:
 		warning("The following textures are used but missing:\n" + "\n".join(sorted(warns)))
-	info("Custom models created")
+	if used_textures:
+		info("Custom models created")
 
