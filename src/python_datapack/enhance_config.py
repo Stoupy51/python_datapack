@@ -13,7 +13,7 @@ def main(config: dict) -> dict:
 			config['textures_files'] = [path.split(f"{textures}/")[1] for path in config['assets_files'] if path.startswith(textures) and path.endswith(".png")]
 
 	# Datapack related constants
-	config['datapack_name_simple'] = "".join([c for c in config['datapack_name'] if c.isalnum()])		# Simplified version of the datapack name, used for paths
+	config['project_name_simple'] = "".join([c for c in config['project_name'] if c.isalnum()])		# Simplified version of the datapack name, used for paths
 
 	# Technical constants
 	config['build_datapack'] = f"{config['build_folder']}/datapack"										# Folder where the final datapack will be built

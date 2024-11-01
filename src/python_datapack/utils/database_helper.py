@@ -537,7 +537,7 @@ def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], i
 				data["lore"].append(lore)
 		else:
 			ns = item.split(":")[0].replace("_"," ").title()
-			ns_lore  = json.dumps(config['source_lore']).replace('"', "'").replace(config['datapack_name'], ns)
+			ns_lore  = json.dumps(config['source_lore']).replace('"', "'").replace(config['project_name'], ns)
 			if not data["lore"] or data["lore"][-1] != ns_lore:
 				data["lore"].append(ns_lore)
 	return

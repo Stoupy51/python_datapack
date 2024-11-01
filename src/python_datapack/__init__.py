@@ -30,11 +30,11 @@ def basic_key_check(config: dict, key: str, value_type: type, hint: str, valid: 
 	return bool_return
 
 def check_config_format(config: dict) -> bool:
-	KNOWN_KEYS: list[str] = ["build_folder","author","datapack_name", "version", "namespace", "description", "ignore_unset", "merge_folder", "assets_folder", "libs_folder", "build_copy_destinations", "debug_mode", "database_debug", "cmd_cache", "enable_translations", "merge_libs", "dependencies", "source_lore", "has_manual", "manual_path", "manual_overrides", "manual_high_resolution", "cache_manual_assets", "cache_manual_pages", "manual_debug", "manual_name", "max_items_per_row", "max_rows_per_page", "opengl_resolution", "manual_first_page_text"]
+	KNOWN_KEYS: list[str] = ["build_folder","author","project_name", "version", "namespace", "description", "ignore_unset", "merge_folder", "assets_folder", "libs_folder", "build_copy_destinations", "debug_mode", "database_debug", "cmd_cache", "enable_translations", "merge_libs", "dependencies", "source_lore", "has_manual", "manual_path", "manual_overrides", "manual_high_resolution", "cache_manual_assets", "cache_manual_pages", "manual_debug", "manual_name", "max_items_per_row", "max_rows_per_page", "opengl_resolution", "manual_first_page_text"]
 	valid: bool = True
 	valid = basic_key_check(config, "build_folder", str, "Folder where the final datapack and resource pack are built", valid)
 	valid = basic_key_check(config, "author", str, "Author(s) name(s) displayed in pack.mcmeta, also used to add convention.debug tag to the players of the same name(s) <-- showing additionnal displays like datapack loading", valid)
-	valid = basic_key_check(config, "datapack_name", str, "Name of the datapack, used for messages and items lore", valid)
+	valid = basic_key_check(config, "project_name", str, "Name of the datapack, used for messages and items lore", valid)
 	valid = basic_key_check(config, "version", str, "Datapack version in the following mandatory format: major.minor.patch, ex: 1.0.0 or 1.21.615", valid)
 	valid = basic_key_check(config, "namespace", str, "Should be the same you use in the merge folder. Used to namespace functions, tags, etc.", valid)
 	valid = basic_key_check(config, "description", str, "Pack description displayed in pack.mcmeta", valid)

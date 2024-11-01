@@ -53,7 +53,7 @@ execute unless score #{namespace}.loaded load.status matches 1 run function {nam
 		pass
 
 	write_to_file(f"{config['datapack_functions']}/v{version}/load/confirm_load.mcfunction", f"""
-tellraw @a[tag=convention.debug] {{"text":"[Loaded {config['datapack_name']} v{version}]","color":"green"}}
+tellraw @a[tag=convention.debug] {{"text":"[Loaded {config['project_name']} v{version}]","color":"green"}}
 
 scoreboard players set #{namespace}.loaded load.status 1
 """ + items_storage)

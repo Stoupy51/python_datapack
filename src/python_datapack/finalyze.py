@@ -108,8 +108,8 @@ def main(config: dict, user_code: Callable):
 	if isinstance(resourcepack_dest, str):
 		resourcepack_dest = [resourcepack_dest]
 	processes = [
-		(config['build_datapack'],			f"{config['build_folder']}/{config['datapack_name_simple']}_datapack",			datapack_dest),
-		(config['build_resource_pack'],		f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack",		resourcepack_dest)
+		(config['build_datapack'],			f"{config['build_folder']}/{config['project_name_simple']}_datapack",			datapack_dest),
+		(config['build_resource_pack'],		f"{config['build_folder']}/{config['project_name_simple']}_resource_pack",		resourcepack_dest)
 	]
 	for source, destination, copy_destinations in processes:
 		if os.path.exists(source):
@@ -150,12 +150,12 @@ def main(config: dict, user_code: Callable):
 	if config.get('merge_libs') == True:
 
 		# Merge weld dp
-		weld_dp: str = f"{config['build_folder']}/{config['datapack_name_simple']}_datapack_with_libs.zip"
+		weld_dp: str = f"{config['build_folder']}/{config['project_name_simple']}_datapack_with_libs.zip"
 		weld_dp_time: float = weld_datapack(config, weld_dp)
 
 		# Merge weld rp and copy to resourcepack_dest if possible
 		if os.path.exists(f"{config['build_resource_pack']}/pack.mcmeta"):
-			weld_rp: str = f"{config['build_folder']}/{config['datapack_name_simple']}_resource_pack_with_libs.zip"
+			weld_rp: str = f"{config['build_folder']}/{config['project_name_simple']}_resource_pack_with_libs.zip"
 			weld_rp_time: float = weld_resource_pack(config, weld_rp)
 			for dest in resourcepack_dest:
 				try:

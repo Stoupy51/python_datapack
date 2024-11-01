@@ -76,7 +76,7 @@ scoreboard players reset * load.status
 	authors = config['author'].split(" ")
 	convention_debug = "".join([f"tag {author} add convention.debug\n" for author in authors])
 	content = f"""
-# {config['datapack_name']}
+# {config['project_name']}
 scoreboard objectives add {config['namespace']}.data dummy
 {convention_debug}"""
 	if dependencies:
@@ -137,7 +137,7 @@ execute if score #{namespace}.major load.status matches {major} if score #{names
 	# Write check_dependencies.mcfunction
 	if dependencies:
 		write_to_file(f"{config['datapack_functions']}/v{version}/load/check_dependencies.mcfunction", f"""
-## Check if {config['datapack_name']} is loadable (dependencies)
+## Check if {config['project_name']} is loadable (dependencies)
 scoreboard players set #dependency_error {namespace}.data 0
 {encoder_checks}
 """)
@@ -155,10 +155,10 @@ scoreboard players set #mcload_error {namespace}.data 0
 execute unless score #game_version {namespace}.data matches {DATA_VERSION}.. run scoreboard players set #mcload_error {namespace}.data 1
 
 # Decode errors
-execute if score #mcload_error {namespace}.data matches 1 run tellraw @a {{"text":"{config['datapack_name']} Error: This version is made for Minecraft {MINECRAFT_VERSION}+.","color":"red"}}
-execute if score #dependency_error {namespace}.data matches 1 run tellraw @a {{"text":"{config['datapack_name']} Error: Libraries are missing\\nplease download the right {config['datapack_name']} datapack\\nor download each of these libraries one by one:","color":"red"}}
+execute if score #mcload_error {namespace}.data matches 1 run tellraw @a {{"text":"{config['project_name']} Error: This version is made for Minecraft {MINECRAFT_VERSION}+.","color":"red"}}
+execute if score #dependency_error {namespace}.data matches 1 run tellraw @a {{"text":"{config['project_name']} Error: Libraries are missing\\nplease download the right {config['project_name']} datapack\\nor download each of these libraries one by one:","color":"red"}}
 {decoder_checks}
-# Load {config['datapack_name']}
+# Load {config['project_name']}
 execute if score #game_version {namespace}.data matches 1.. if score #mcload_error {namespace}.data matches 0 if score #dependency_error {namespace}.data matches 0 run function {namespace}:v{version}/load/confirm_load
 
 """)
