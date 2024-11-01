@@ -12,7 +12,7 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] = [
 
 	# Fix copy_destinations type if needed
 	if copy_destinations and isinstance(copy_destinations, str):
-		copy_destinations: list[str] = [copy_destinations]
+		copy_destinations = [copy_destinations]
 
 	# Get all files that are not in FILES_TO_WRITE
 	not_known_files: list[str] = []
