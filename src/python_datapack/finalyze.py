@@ -11,6 +11,8 @@ from .datapack.custom_block_ticks import custom_blocks_ticks_and_second_function
 from .resource_pack.check_unused_textures import main as check_unused_textures_main
 from .dependencies.main import main as dependencies_main, OFFICIAL_LIBS_PATH, OFFICIAL_LIBS
 import shutil
+import hashlib
+
 
 def main(config: dict, user_code: Callable):
 
@@ -169,4 +171,14 @@ def main(config: dict, user_code: Callable):
 		# Debug time taken
 		total_time: float = weld_dp_time + weld_rp_time
 		info(f"Datapack and resource pack merged with bundled libraries in {total_time:.5f}s ({weld_dp_time:.5f}s + {weld_rp_time:.5f}s)")
+	
+	# Get SHA1 hash for each zip file in build folder
+	sha1_hashes: dict[str, str] = {}
+	for file in os.listdir(config['build_folder']):
+		if file.endswith(".zip"):
+			with open(f"{config['build_folder']}/{file}", "rb") as f:
+				sha1_hashes[file] = hashlib.sha1(f.read()).hexdigest()
+	with super_open(f"{config['build_folder']}/sha1_hashes.json", "w") as f:
+		f.write(super_json_dump(sha1_hashes))
+
 
