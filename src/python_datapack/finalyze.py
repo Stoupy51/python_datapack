@@ -119,9 +119,7 @@ def main(config: dict, user_code: Callable):
 			debug(f"'{destination}.zip' file generated and copied to destinations in {total_time:.5f}s")
 
 	# Copy datapack libraries
-	try:
-		copied_libs: list[str] = []
-		
+	try:		
 		# Copy lib folder
 		if config.get('libs_folder'):
 			for root, _, files in os.walk(config['libs_folder'] + "/datapack"):
@@ -129,7 +127,6 @@ def main(config: dict, user_code: Callable):
 					if file.endswith(".zip"):
 						for dest in datapack_dest:
 							shutil.copy(f"{root}/{file}", dest)
-							copied_libs.append(file)
 
 		# Copy official used libs
 		for data in OFFICIAL_LIBS.values():
@@ -137,13 +134,7 @@ def main(config: dict, user_code: Callable):
 				name: str = data["name"]
 				for dest in datapack_dest:
 					shutil.copy(f"{OFFICIAL_LIBS_PATH}/datapack/{name}.zip", dest)
-					copied_libs.append(f"{name}.zip")
 
-		if copied_libs:
-			s: str = '' if len(datapack_dest) == 1 else 's'
-			joined: str = "\n- ".join(copied_libs)
-			info(f"The following libraries were copied to {datapack_dest} folder{s}:\n- {joined}")
-		
 	except OSError as e:
 		warning(f"Could not copy datapack libraries to {datapack_dest}: {e}")
 

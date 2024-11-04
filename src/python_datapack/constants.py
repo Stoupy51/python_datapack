@@ -1,9 +1,9 @@
 
 # Minecraft version constants
-DATAPACK_FORMAT: int = 48			# Pack format version, see https://minecraft.wiki/w/Pack_format#List_of_data_pack_formats
-RESOURCE_PACK_FORMAT: int = 34		# Resource pack format version, see https://minecraft.wiki/w/Pack_format#List_of_resource_pack_formats
-MINECRAFT_VERSION: str = "1.21"		# Text used when loading the datapack to warn the user when the data version is not right
-DATA_VERSION: int = 3947			# Depending on MC version, given by /data get entity @p DataVersion to check if the datapack is not running in an older version of MC
+DATAPACK_FORMAT: int = 57			# Pack format version, see https://minecraft.wiki/w/Pack_format#List_of_data_pack_formats
+RESOURCE_PACK_FORMAT: int = 42		# Resource pack format version, see https://minecraft.wiki/w/Pack_format#List_of_resource_pack_formats
+MINECRAFT_VERSION: str = "1.21.3"	# Text used when loading the datapack to warn the user when the data version is not right
+DATA_VERSION: int = 4082			# Depending on MC version, given by /data get entity @p DataVersion to check if the datapack is not running in an older version of MC
 
 
 # Databases
@@ -17,7 +17,7 @@ NO_SILK_TOUCH_DROP: str = "no_silk_touch_drop"			# Key to an item ID that will d
 VANILLA_BLOCK_FOR_ORES: dict = {"id":"minecraft:polished_deepslate", "apply_facing": False}	# Vanilla block that will be used for an optimization tip for ores, don't ask questions
 OVERRIDE_MODEL: str = "override_model"					# Key to a dictionnary that will be used to override the whole model
 PULVERIZING: str = "simplenergy_pulverizing"			# Value of a recipe type, used to generate dusts from ores (used by SimplEnergy)
-SMITHED_CRAFTER_COMMAND: str = "smithed_crafter_command"	# Key to a command that will be used in a recipe in the Smithed Crafter library. If not present, the command will be defaulted to a loot table
+SMITHED_CRAFTER_COMMAND: str = "smithed_crafter_command"	# Key to a command that will be used in a recipe in the Smithed Crafter library. If not present, the command will be defaulted to a loot table. Ex: {"result":...,SMITHED_CRAFTER_COMMAND: "function your_namespace:calls/smithed_crafter/do_something_else"}
 WIKI_COMPONENTS: str = "wiki_components"				# Key to a text component that will be used to generate the wiki button in the manual
 RESULT_OF_CRAFTING: str = "result_of_crafting"			# Key to a list of recipes to craft the item, ex: "adamantium": {RESULT_OF_CRAFTING: [...]}
 USED_FOR_CRAFTING: str = "used_for_crafting"			# Should not be used unless you are crafting a vanilla item (ex: iyc.chainmail -> chainmail armor)
@@ -59,6 +59,7 @@ def official_lib_used(lib: str) -> bool:
 	is_used: bool = OFFICIAL_LIBS[lib]["is_used"]
 	OFFICIAL_LIBS[lib]["is_used"] = True
 	return is_used
+
 OFFICIAL_LIBS: dict[str, dict] = {
 	"common_signals":		{"version":[0, 0, 3], "name":"Common Signals",					"url":"https://github.com/Stoupy51/CommonSignals",			"is_used": False},
 	"smithed.custom_block":	{"version":[0, 3, 0], "name":"Smithed Custom Block",			"url":"https://wiki.smithed.dev/libraries/custom-block/",	"is_used": False},
