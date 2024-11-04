@@ -65,7 +65,7 @@ def main(config: dict, user_code: Callable):
 
 	# Delete resource_pack folder if no subfolder 'assets' is found
 	if not os.path.exists(f"{config['build_resource_pack']}/assets"):
-		shutil.rmtree(config['build_resource_pack'], ignore_errors=True)
+		delete_files(config['build_resource_pack'])
 
 	# Run user code
 	if user_code:
