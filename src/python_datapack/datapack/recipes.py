@@ -227,6 +227,9 @@ scoreboard players reset #count furnace_nbt_recipes.data
 				smithed_crafter_used = True
 				if not official_lib_used("smithed.crafter"):
 					debug(f"Found a crafting table recipe using custom item in ingredients, adding 'smithed.crafter' dependency")
+
+					# Add to the give_all function the heavy workbench give command
+					write_to_function(config, f"{namespace}:_give_all", f"loot give @s loot smithed.crafter:blocks/table\n", prepend=True)
 			
 			# If there is a component in the ingredient furnace, use furnace nbt recipes
 			if not furnace_nbt_used and recipe.get("type") in SMELTING and ingr[0].get("components"):

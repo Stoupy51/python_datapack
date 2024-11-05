@@ -270,8 +270,8 @@ def routine(config: dict):
 						{"text":" be crafted using the Heavy Workbench."}
 					])
 				else:
-					if raw_data.get(WIKI_COMPONENTS):
-						wiki_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data[WIKI_COMPONENTS]}})
+					if raw_data.get(WIKI_COMPONENT):
+						wiki_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data[WIKI_COMPONENT]}})
 					
 					# For each craft (except smelting dupes),
 					for i, craft in enumerate(crafts):

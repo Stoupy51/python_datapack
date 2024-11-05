@@ -155,12 +155,13 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 		material			(str):					The ore/material to generate everything about (ex: "adamantium_fragment", "steel_ingot", "minecraft:emerald", "minecraft:copper_ingot")
 		equipments_config	(EquipmentsConfig):	The base multiplier to apply
 	"""
+	namespace: str = config['namespace']
 	# Constants
 	if '_' in material:
 		material_base = "_".join(material.split(":")[-1].split("_")[:-1])			# Get the base material name (ex: "adamantium" from "adamantium_fragment")
 	else:
 		material_base = material.split(":")[-1]										# Get the base material name (ex: "adamantium" from "adamantium_fragment")
-	main_ingredient = ingr_repr(material, config['namespace']) 						# Get the main ingredient for recipes
+	main_ingredient = ingr_repr(material, namespace) 						# Get the main ingredient for recipes
 	if equipments_config:
 		equivalent_to = equipments_config.equivalent_to
 		durability_factor = equipments_config.pickaxe_durability / VanillaEquipments.PICKAXE.value[equivalent_to]["durability"]
@@ -190,10 +191,27 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 			database[block]["custom_data"]["smithed"]["dict"]["ore"] = {material_base: True}
 		if block.endswith("block"):
 			if block.startswith("raw") and f"raw_{material_base}.png" in config['textures_files']:
-				database[block][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"group":material_base,"category":"misc","shape":["XXX","XXX","XXX"],"ingredients":{"X":ingr_repr(f"raw_{material_base}", config['namespace'])}}]
+				database[block][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"group":material_base,"category":"misc","shape":["XXX","XXX","XXX"],"ingredients":{"X":ingr_repr(f"raw_{material_base}", namespace)}}]
 			else:
 				database[block][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"group":material_base,"category":"misc","shape":["XXX","XXX","XXX"],"ingredients":{"X":main_ingredient}}]
 		pass
+
+	# Armor equipment entity (top layer and leggings)
+	namespace_rp: str = f"{config['build_resource_pack']}/assets/{namespace}"
+	def handle_armor_layer(layer_num: int, gear_types: list[str], humanoid_type: str) -> bool:
+		layer_file: str = f"{material_base}_layer_{layer_num}.png"
+		if any(f"{material_base}_{gear}.png" in config['textures_files'] for gear in gear_types) and layer_file in config['textures_files']:
+			source: str = f"{config['assets_folder']}/textures/{layer_file}"
+			destination: str = f"{namespace_rp}/textures/entity/equipment/{humanoid_type}/{layer_file}"
+			super_copy(source, destination)
+			
+			model_file: str = f"{namespace_rp}/models/equipment/{material_base}.json"
+			model_data: dict = {"layers": {humanoid_type: [{"texture": f"{namespace}:{layer_file.replace('.png', '')}"}]}}
+			write_to_file(model_file, super_json_dump(model_data))
+			return True
+		return False
+	top_layer: bool = handle_armor_layer(1, ["helmet", "chestplate"], "humanoid")
+	bottom_layer: bool = handle_armor_layer(2, ["leggings", "boots"], "humanoid_leggings")
 
 	# Armor (helmet, chestplate, leggings, boots)
 	for gear in ["helmet", "chestplate", "leggings", "boots"]:
@@ -212,20 +230,28 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 			database[armor][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"category":"equipment","shape":["XXX","X X"],"ingredients":{"X": main_ingredient}}]
 			gear_config = VanillaEquipments.HELMET.value[equivalent_to]
 			database[armor]["max_damage"] = int(gear_config["durability"] * durability_factor)
+			if top_layer:
+				database[armor]["equippable"] = {"slot":"head", "model":f"{namespace}:{material_base}"}
 		elif gear == "chestplate":
 			database[armor][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"category":"equipment","shape":["X X","XXX","XXX"],"ingredients":{"X": main_ingredient}}]
 			gear_config = VanillaEquipments.CHESTPLATE.value[equivalent_to]
 			database[armor]["max_damage"] = int(gear_config["durability"] * durability_factor)
+			if top_layer:
+				database[armor]["equippable"] = {"slot":"chest", "model":f"{namespace}:{material_base}"}
 		elif gear == "leggings":
 			database[armor][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"category":"equipment","shape":["XXX","X X","X X"],"ingredients":{"X": main_ingredient}}]
 			gear_config = VanillaEquipments.LEGGINGS.value[equivalent_to]
 			database[armor]["max_damage"] = int(gear_config["durability"] * durability_factor)
+			if bottom_layer:
+				database[armor]["equippable"] = {"slot":"legs", "model":f"{namespace}:{material_base}"}
 		elif gear == "boots":
 			database[armor][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"category":"equipment","shape":["X X","X X"],"ingredients":{"X": main_ingredient}}]
 			gear_config = VanillaEquipments.BOOTS.value[equivalent_to]
 			database[armor]["max_damage"] = int(gear_config["durability"] * durability_factor)
+			if bottom_layer:
+				database[armor]["equippable"] = {"slot":"feet", "model":f"{namespace}:{material_base}"}
 		database[armor]["attribute_modifiers"] = format_attributes(config, armor_attributes, SLOTS[gear], gear_config)
-	
+
 	# Tools (sword, pickaxe, axe, shovel, hoe)
 	for gear in ["sword", "pickaxe", "axe", "shovel", "hoe"]:
 		tool = material_base + "_" + gear
@@ -279,33 +305,33 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 		database[item][USED_FOR_CRAFTING] = database[item].get(USED_FOR_CRAFTING, [])
 		if item.endswith("ingot") or item.endswith("fragment") or item == material_base:
 			if f"{material_base}_block.png" in config['textures_files']:
-				database[item][RESULT_OF_CRAFTING].append({"type":"crafting_shapeless","result_count":9,"category":"misc","group":material_base,"ingredients":[ingr_repr(f"{material_base}_block", config['namespace'])]})
+				database[item][RESULT_OF_CRAFTING].append({"type":"crafting_shapeless","result_count":9,"category":"misc","group":material_base,"ingredients":[ingr_repr(f"{material_base}_block", namespace)]})
 			if f"{material_base}_nugget.png" in config['textures_files']:
-				database[item][RESULT_OF_CRAFTING].append({"type":"crafting_shaped","result_count":1,"category":"misc","group":material_base,"shape":["XXX","XXX","XXX"],"ingredients":{"X":ingr_repr(f"{material_base}_nugget", config['namespace'])}})
+				database[item][RESULT_OF_CRAFTING].append({"type":"crafting_shaped","result_count":1,"category":"misc","group":material_base,"shape":["XXX","XXX","XXX"],"ingredients":{"X":ingr_repr(f"{material_base}_nugget", namespace)}})
 			if f"raw_{material_base}.png" in config['textures_files']:
-				database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"raw_{material_base}", config['namespace'])})
-				database[item][RESULT_OF_CRAFTING].append({"type":"blasting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":100,"ingredient":ingr_repr(f"raw_{material_base}", config['namespace'])})
+				database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"raw_{material_base}", namespace)})
+				database[item][RESULT_OF_CRAFTING].append({"type":"blasting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":100,"ingredient":ingr_repr(f"raw_{material_base}", namespace)})
 			if f"{material_base}_dust.png" in config['textures_files']:
-				database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"{material_base}_dust", config['namespace'])})
-				database[item][RESULT_OF_CRAFTING].append({"type":"blasting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":100,"ingredient":ingr_repr(f"{material_base}_dust", config['namespace'])})
+				database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"{material_base}_dust", namespace)})
+				database[item][RESULT_OF_CRAFTING].append({"type":"blasting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":100,"ingredient":ingr_repr(f"{material_base}_dust", namespace)})
 			if f"{material_base}_ore.png" in config['textures_files']:
-				database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"{material_base}_ore", config['namespace'])})
-				database[item][RESULT_OF_CRAFTING].append({"type":"blasting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":100,"ingredient":ingr_repr(f"{material_base}_ore", config['namespace'])})
+				database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"{material_base}_ore", namespace)})
+				database[item][RESULT_OF_CRAFTING].append({"type":"blasting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":100,"ingredient":ingr_repr(f"{material_base}_ore", namespace)})
 			if f"deepslate_{material_base}_ore.png" in config['textures_files']:
-				database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"deepslate_{material_base}_ore", config['namespace'])})
-				database[item][RESULT_OF_CRAFTING].append({"type":"blasting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":100,"ingredient":ingr_repr(f"deepslate_{material_base}_ore", config['namespace'])})
+				database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"deepslate_{material_base}_ore", namespace)})
+				database[item][RESULT_OF_CRAFTING].append({"type":"blasting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":100,"ingredient":ingr_repr(f"deepslate_{material_base}_ore", namespace)})
 		if item.endswith("dust"):
-			database[item][USED_FOR_CRAFTING].append({"type":"smelting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":200,"ingredient":ingr_repr(item, config['namespace']),"result":main_ingredient})
-			database[item][USED_FOR_CRAFTING].append({"type":"blasting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":100,"ingredient":ingr_repr(item, config['namespace']),"result":main_ingredient})
+			database[item][USED_FOR_CRAFTING].append({"type":"smelting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":200,"ingredient":ingr_repr(item, namespace),"result":main_ingredient})
+			database[item][USED_FOR_CRAFTING].append({"type":"blasting","result_count":1,"category":"misc","group":material_base,"experience":0.8,"cookingtime":100,"ingredient":ingr_repr(item, namespace),"result":main_ingredient})
 			database[item][RESULT_OF_CRAFTING].append({"type":PULVERIZING,"result_count":1,"category":"misc","group":material_base,"ingredient":main_ingredient})
 			for pulv_ingr in [f"raw_{material_base}",f"{material_base}_ore",f"deepslate_{material_base}_ore"]:
 				if f"{pulv_ingr}.png" in config['textures_files']:
-					database[item][RESULT_OF_CRAFTING].append({"type":PULVERIZING,"result_count":2,"category":"misc","group":material_base,"ingredient":ingr_repr(pulv_ingr, config['namespace'])})
+					database[item][RESULT_OF_CRAFTING].append({"type":PULVERIZING,"result_count":2,"category":"misc","group":material_base,"ingredient":ingr_repr(pulv_ingr, namespace)})
 		if item.endswith("nugget"):
 			database[item][RESULT_OF_CRAFTING].insert(0, {"type":"crafting_shapeless","result_count":9,"category":"misc","group":material_base,"ingredients":[main_ingredient]})
 			for gear in SLOTS.keys():
 				if f"{material_base}_{gear}.png" in config['textures_files']:
-					database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"equipment","experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"{material_base}_{gear}", config['namespace'])})
+					database[item][RESULT_OF_CRAFTING].append({"type":"smelting","result_count":1,"category":"equipment","experience":0.8,"cookingtime":200,"ingredient":ingr_repr(f"{material_base}_{gear}", namespace)})
 		if item.endswith("stick"):
 			database[item][RESULT_OF_CRAFTING].append({"type":"crafting_shaped","result_count":4,"category":"misc","shape":["X","X"],"ingredients":{"X":main_ingredient}})
 		if item.endswith("rod"):
