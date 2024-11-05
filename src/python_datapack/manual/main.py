@@ -35,7 +35,7 @@ def routine(config: dict):
 
 	# If smithed crafter is used, add it to the manual (last page that we will move to the second page)
 	if OFFICIAL_LIBS["smithed.crafter"]["is_used"]:
-		super_copy(f"{TEMPLATES_PATH}/heavy_workbench.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/block/heavy_workbench.png")
+		super_copy(f"{TEMPLATES_PATH}/heavy_workbench.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/item/heavy_workbench.png")
 		database["heavy_workbench"] = {
 			"id": CUSTOM_BLOCK_VANILLA,
 			"item_name": "'Heavy Workbench'",
@@ -43,7 +43,7 @@ def routine(config: dict):
 			OVERRIDE_MODEL: {
 				"parent":"minecraft:block/cube",
 				"texture_size":[64,32],
-				"textures":{"0":f"{namespace}:block/heavy_workbench"},
+				"textures":{"0":f"{namespace}:item/heavy_workbench"},
 				"elements":[{"from":[0,0,0],"to":[16,16,16],"faces":{"north":{"uv":[4,8,8,16],"texture":"#0"},"east":{"uv":[0,8,4,16],"texture":"#0"},"south":{"uv":[12,8,16,16],"texture":"#0"},"west":{"uv":[8,8,12,16],"texture":"#0"},"up":{"uv":[4,0,8,8],"texture":"#0"},"down":{"uv":[8,0,12,8],"texture":"#0"}}}],
 				"display":{"thirdperson_righthand":{"rotation":[75,45,0],"translation":[0,2.5,0],"scale":[0.375,0.375,0.375]},"thirdperson_lefthand":{"rotation":[75,45,0],"translation":[0,2.5,0],"scale":[0.375,0.375,0.375]},"firstperson_righthand":{"rotation":[0,45,0],"scale":[0.4,0.4,0.4]},"firstperson_lefthand":{"rotation":[0,225,0],"scale":[0.4,0.4,0.4]},"ground":{"translation":[0,3,0],"scale":[0.25,0.25,0.25]},"gui":{"rotation":[30,225,0],"scale":[0.625,0.625,0.625]},"head":{"translation":[0,-30.43,0],"scale":[1.601,1.601,1.601]},"fixed":{"scale":[0.5,0.5,0.5]}}
 			},
@@ -52,7 +52,7 @@ def routine(config: dict):
 			]
 		}
 		handle_item(config, "heavy_workbench", database["heavy_workbench"], set(), ignore_textures = True)
-		write_all_files(contains="block/heavy_workbench")
+		write_all_files(contains="item/heavy_workbench")
 
 	# Prework
 	os.makedirs(f"{config['manual_path']}/font/page", exist_ok=True)
@@ -528,7 +528,6 @@ def routine(config: dict):
 				error(f"Font provider '{path}' has no chars")
 
 	# Finally, prepend the manual to the database
-	manual_cmd = min(x["custom_model_data"] for x in database.values() if x.get("custom_model_data")) - 1		# First custom_model_data minus 1
 	manual_already_exists: bool = "manual" in database
 	manual_database = {
 		"manual": {
@@ -539,7 +538,7 @@ def routine(config: dict):
 				"pages": [str(i).replace("\\\\", "\\") for i in book_content],
 			},
 			"lore": [json.dumps(config['source_lore']).replace('"', "'")],
-			"custom_model_data": manual_cmd if not manual_already_exists else database["manual"]["custom_model_data"],
+			"item_model": f"{namespace}:manual",
 			"enchantment_glint_override": False,
 			"max_stack_size": 1
 		}
@@ -551,15 +550,12 @@ def routine(config: dict):
 	# Add the model to the resource pack if it doesn't already exist
 	if not manual_already_exists:
 		handle_item(config, "manual", database["manual"])
-		vanilla_model = {"parent": "item/generated","textures": {"layer0": "item/written_book"},"overrides": [{ "predicate": { "custom_model_data": manual_cmd}, "model": f"{namespace}:item/manual" }]}
-		vanilla_model = super_json_dump(vanilla_model).replace('{"','{ "').replace('"}','" }').replace(',"', ', "')
-		write_to_file(f"{config['build_resource_pack']}/assets/minecraft/models/item/written_book.json", vanilla_model)
 
 	# Remove the heavy workbench from the database
 	if OFFICIAL_LIBS["smithed.crafter"]["is_used"]:
 		del database["heavy_workbench"]
-		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/textures/block/heavy_workbench.png")
-		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/models/block/heavy_workbench.json")
+		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/textures/item/heavy_workbench.png")
+		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/models/item/heavy_workbench.json")
 
 	info(f"Added manual to the database")
 

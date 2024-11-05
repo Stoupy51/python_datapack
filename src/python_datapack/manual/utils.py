@@ -149,7 +149,7 @@ def generate_all_iso_renders(config: dict):
 				continue
 
 			# Add to the model resolver queue
-			rp_path = f"{namespace}:block/{item}"
+			rp_path = f"{namespace}:item/{item}"
 			dst_path = f"{path}/{namespace}/{item}.png"
 			for_model_resolver[rp_path] = dst_path
 

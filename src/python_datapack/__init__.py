@@ -46,7 +46,6 @@ def check_config_format(config: dict) -> bool:
 	valid = basic_key_check(config, "build_copy_destinations", tuple, "Can be empty paths if you don't want to copy the generated files", valid)
 	valid = basic_key_check(config, "debug_mode", bool, "Shows up grids in manual", valid)
 	valid = basic_key_check(config, "database_debug", str, "Dump of the database for debugging purposes", valid)
-	valid = basic_key_check(config, "cmd_cache", str, "Cache of all items Custom Model Data", valid)
 	valid = basic_key_check(config, "enable_translations", bool, "Will convert all the text components to translate and generate a lang file (WARNING: The algorithm is pretty slow, so it's recommended to disable it when not needed)", valid)
 	valid = basic_key_check(config, "merge_libs", bool, "Make new zip of merged libraries with the datapack and resource pack using Smithed Weld", valid)
 	valid = basic_key_check(config, "dependencies", dict, "Automagically, the datapack will check for the presence of dependencies and their minimum required versions at runtime\nThe url is used when the dependency is not found to suggest where to get it\nThe version dict key contains the minimum required version of the dependency in [major, minor, patch] format\nThe main key is the dependency namespace to check for\nThe name can be whatever you want, it's just used in messages", valid)

@@ -8,9 +8,10 @@ def main(config: dict):
 	namespace: str = config['namespace']
 	build_datapack: str = config['build_datapack']
 	datapack_functions: str = config['datapack_functions']
+	database: dict = config['database']
 
 	# Stop if not custom block
-	if not any(data.get(VANILLA_BLOCK) for data in config['database'].values()):
+	if not any(data.get(VANILLA_BLOCK) for data in database.values()):
 		return
 
 	# Predicates
@@ -40,7 +41,9 @@ execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:f
 
 	# For each custom block
 	unique_blocks = set()
-	for item, data in config['database'].items():
+	for item, data in database.items():
+		item: str
+		data: dict
 		item_name: str = item.replace("_", " ").title()
 
 		# Custom block
@@ -106,9 +109,9 @@ scoreboard players add #total_{item} {namespace}.data 1
 
 			## Secondary function
 			block_id = block_id.replace(":","_")
-			set_custom_model_data = ""
-			if data.get("custom_model_data"):
-				set_custom_model_data = f"item replace entity @s container.0 with {CUSTOM_BLOCK_VANILLA}[minecraft:custom_model_data={data['custom_model_data']}]\n"
+			set_custom_model = ""
+			if data.get("item_model"):
+				set_custom_model = f"item replace entity @s container.0 with {CUSTOM_BLOCK_VANILLA}[item_model=\"{data['item_model']}\"]\n"
 			content = f"""
 # Add convention and utils tags, and the custom block tag
 tag @s add global.ignore
@@ -120,8 +123,7 @@ tag @s add {namespace}.{item}
 tag @s add {namespace}.vanilla.{block_id}
 
 # Modify item display entity to match the custom block
-{set_custom_model_data}data modify entity @s transformation.scale set value [1.002f,1.008f,1.002f]
-data modify entity @s transformation.translation[1] set value 0.003f
+{set_custom_model}data modify entity @s transformation.scale set value [1.002f,1.002f,1.002f]
 data modify entity @s brightness set value {{block:15,sky:15}}
 """
 			if block["apply_facing"]:
@@ -143,7 +145,7 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 		pass
 
 	# Link the custom block library to the datapack
-	smithed_custom_blocks = [1 for data in config['database'].values() if data.get("id") == CUSTOM_BLOCK_VANILLA]
+	smithed_custom_blocks = [1 for data in database.values() if data.get("id") == CUSTOM_BLOCK_VANILLA]
 	if smithed_custom_blocks:
 
 		# Change is_used state
@@ -158,7 +160,7 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 
 		# Write the function that will place the custom blocks
 		content = f"tag @s add {namespace}.placer\n"
-		for item, data in config['database'].items():
+		for item, data in database.items():
 			if data.get("id") == CUSTOM_BLOCK_VANILLA:
 				content += f"execute if data storage smithed.custom_block:main blockApi{{id:\"{namespace}:{item}\"}} run function {namespace}:custom_blocks/{item}/place_main\n"
 		content += f"tag @s remove {namespace}.placer\n"
@@ -197,7 +199,7 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 		content = "\n"
 
 		# For every custom block, add a tag check for destroy if it's the right vanilla block
-		for item, data in config['database'].items():
+		for item, data in database.items():
 			if data.get(VANILLA_BLOCK):
 
 				# Get the vanilla block
@@ -211,7 +213,7 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 		write_to_file(f"{datapack_functions}/custom_blocks/_groups/{block_underscore}.mcfunction", content + "\n")
 
 	# For each custom block, make it's destroy function
-	for item, data in config['database'].items():
+	for item, data in database.items():
 		if data.get(VANILLA_BLOCK):
 			block = data[VANILLA_BLOCK]
 			path = f"{datapack_functions}/custom_blocks/{item}"
@@ -299,7 +301,7 @@ execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,pr
 
 
 	## Custom ores break detection (if any custom ore)
-	if any(data.get(VANILLA_BLOCK) == VANILLA_BLOCK_FOR_ORES for data in config['database'].values()):
+	if any(data.get(VANILLA_BLOCK) == VANILLA_BLOCK_FOR_ORES for data in database.values()):
 		write_to_file(f"{build_datapack}/data/common_signals/tags/function/signals/on_new_item.json", super_json_dump({"values": [f"{namespace}:calls/common_signals/new_item"]}))
 		write_to_file(f"{datapack_functions}/calls/common_signals/new_item.mcfunction", f"""
 # If the item is from a custom ore, launch the on_ore_destroyed function
@@ -330,7 +332,7 @@ execute as @e[tag={namespace}.custom_block,dx=0,dy=0,dz=0] at @s run function {n
 
 
 	## Custom blocks using player_head
-	for item, data in config['database'].items():
+	for item, data in database.items():
 		if data["id"] == CUSTOM_BLOCK_HEAD and data.get(VANILLA_BLOCK):
 
 			# Make advancement

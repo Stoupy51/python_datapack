@@ -38,7 +38,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 	block_or_item: str = "item"
 	if data.get("id") == CUSTOM_BLOCK_VANILLA or any("block" in x for x in data.get(OVERRIDE_MODEL, {}).values()):
 		block_or_item = "block"
-	dest_base_textu = f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/{block_or_item}"
+	dest_base_textu = f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/item"
 	overrides: dict = data.get(OVERRIDE_MODEL, {})
 
 	# Get powered states (if any)
@@ -52,8 +52,8 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 
 	# Generate its model file(s)
 	for on_off in powered:
-		dest_base_model = f"{config['build_resource_pack']}/assets/{config['namespace']}/models/{block_or_item}"
-		content: dict[str, str|dict] = {}
+		dest_base_model = f"{config['build_resource_pack']}/assets/{config['namespace']}/models/item"
+		content: dict = {}
 
 		# Get all variants
 		variants: list[str] = [x.replace(".png", "") for x in config['textures_files'] if "gui/" not in x and x.split("/")[-1].startswith(item)]
@@ -69,7 +69,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 				# If one texture, apply on all faces
 				variants_without_on = [x for x in variants if "_on" not in x]
 				if len(variants_without_on) == 1:
-					content["textures"]["all"] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, "", on_off)
+					content["textures"]["all"] = f"{config['namespace']}:item/" + get_powered_texture(variants, "", on_off)
 				else:
 					# Prepare models to check
 					cake = ["bottom", "side", "top", "inner"]
@@ -81,7 +81,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 					if model_in_variants(cake, variants):
 						content["parent"] = "block/cake"
 						for side in cake:
-							content["textures"][side.replace("inner","inside")] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
+							content["textures"][side.replace("inner","inside")] = f"{config['namespace']}:item/" + get_powered_texture(variants, side, on_off)
 						
 						# Generate 6 models for each cake slice
 						for i in range(1, 7):
@@ -93,19 +93,19 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 					elif model_in_variants(cube_bottom_top, variants):
 						content["parent"] = "block/cube_bottom_top"
 						for side in cube_bottom_top:
-							content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
+							content["textures"][side] = f"{config['namespace']}:item/" + get_powered_texture(variants, side, on_off)
 					
 					# Check orientable model
 					elif model_in_variants(orientable, variants):
 						content["parent"] = "block/orientable"
 						for side in orientable:
-							content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
+							content["textures"][side] = f"{config['namespace']}:item/" + get_powered_texture(variants, side, on_off)
 					
 					# Check cube_column model
 					elif model_in_variants(cube_column, variants):
 						content["parent"] = "block/cube_column"
 						for side in cube_column:
-							content["textures"][side] = f"{config['namespace']}:{block_or_item}/" + get_powered_texture(variants, side, on_off)
+							content["textures"][side] = f"{config['namespace']}:item/" + get_powered_texture(variants, side, on_off)
 					
 					# Else, if there are no textures override, show error
 					elif not data.get(OVERRIDE_MODEL,{}).get("textures"):
@@ -126,7 +126,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 					parent = data["id"].replace(':', ":item/")
 				
 				# Get textures
-				textures = {"layer0": f"{config['namespace']}:{block_or_item}/{item}{on_off}"}
+				textures = {"layer0": f"{config['namespace']}:item/{item}{on_off}"}
 				if "leather_" in data["id"]:
 					textures["layer1"] = textures["layer0"]
 
@@ -176,8 +176,7 @@ def main(config: dict):
 	# For each item,
 	used_textures = set()
 	for item, data in config['database'].items():
-		if data.get("custom_model_data"):
-			handle_item(config, item, data, used_textures)
+		handle_item(config, item, data, used_textures)
 
 	# Make warning for missing textures
 	warns = []

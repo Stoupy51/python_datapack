@@ -107,7 +107,7 @@ class EquipmentsConfig():
 		self.equivalent_to = equivalent_to
 		self.pickaxe_durability = pickaxe_durability
 		self.attributes = attributes
-		for key, value in attributes.items():
+		for key in attributes.keys():
 			if "player." in key:
 				warning(f"Since 1.21.3, the 'player.' prefix is no longer written in attributes!!!")
 			elif "generic." in key:
@@ -458,57 +458,21 @@ def deterministic_custom_model_data(config: dict, database: dict[str, dict], sta
 		starting_cmd	(int):				The starting custom model data.
 		blacklist		(list[str]):		The list of items to ignore.
 	"""
-	# Load cached custom model data
-	cached_custom_model_data = {}
-	if os.path.exists(config['cmd_cache']):
-		with open(config['cmd_cache'], "r") as f:
-			cached_custom_model_data = json.load(f)
-	
-	# For each item in the database, apply its cached custom model data if it exists
+	error("(deterministic_custom_model_data is deprecated since 1.21.3) Please now use the 'add_item_model_component' function instead.")
+
+# Add item model component
+def add_item_model_component(config: dict, database: dict[str, dict], black_list: list[str] = []) -> None:
+	""" Add an item model component to all items in the database.
+	Args:
+		config		(dict):				The configuration to get the namespace from.
+		database	(dict[str, dict]):	The database to add the item model component to.
+		black_list	(list[str]):		The list of items to ignore.
+	"""
+	namespace: str = config['namespace']
 	for item, data in database.items():
-		if item in cached_custom_model_data:
-			data["custom_model_data"] = cached_custom_model_data[item]
-
-	# Get maximum custom model data
-	max_cmd: int = starting_cmd - 1
-	for item, data in database.items():
-		if data.get("custom_model_data") and isinstance(data["custom_model_data"], int):
-			cmd: int = int(data["custom_model_data"])
-
-			# Add two custom model data if the item has an on/off texture
-			if any(item in texture and "_on" in texture for texture in config['textures_files']):
-				cmd += 1
-
-			# If it is a cake, add 6 custom model data for each slice
-			elif item.endswith("cake") and all(f"{item}_{face}.png" in config['textures_files'] for face in ["top","bottom","side","inner"]):
-				cmd += 7
-
-			# Increment the maximum custom model data
-			max_cmd = max(max_cmd, cmd)
-	
-	# For each item in the database, apply its new custom model data if it doesn't exist
-	for item, data in database.items():
-		if item not in black_list and (not data.get("custom_model_data") or not isinstance(data["custom_model_data"], int)):
-			data["custom_model_data"] = max_cmd + 1
-
-			# Add two custom model data if the item has an on/off texture
-			if any(item in texture and "_on" in texture for texture in config['textures_files']):
-				max_cmd += 2
-			
-			# If it is a cake, add 6 custom model data for each slice
-			elif item.endswith("cake") and all(f"{item}_{face}.png" in config['textures_files'] for face in ["top","bottom","side","inner"]):
-				max_cmd += 7
-			
-			# Else, add one custom model data
-			else:
-				max_cmd += 1
-	
-	# Update cache
-	for item, data in database.items():
-		if data.get("custom_model_data"):
-			cached_custom_model_data[item] = data["custom_model_data"]
-	with open(config['cmd_cache'], "w") as f:
-		super_json_dump(cached_custom_model_data, f)
+		if item in black_list:
+			continue
+		data["item_model"] = f"{namespace}:{item}"
 	return
 
 # Add item name and lore
@@ -607,7 +571,7 @@ class CustomOreGeneration():
 			debug("Found custom ore generation, adding 'smart_ore_generation' dependency")
 		self.check_validity()
 	
-	def check_validity(self) -> list[str]:
+	def check_validity(self) -> None:
 		""" Check if the custom ore generation configuration is valid """
 		if not isinstance(self.dimensions, list) or not all(isinstance(dimension, str) for dimension in self.dimensions):
 			error("Custom ore generation 'dimensions' must be a list of strings")

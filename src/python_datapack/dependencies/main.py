@@ -112,12 +112,9 @@ execute if score #{namespace}.major load.status matches {major} if score #{names
 
 
 	# For each used library, show message
-	message = ""
-	for data in OFFICIAL_LIBS.values():
-		if data["is_used"]:
-			message += f" - {data['name']}\n"
-	if message:
-		info(f"Summary of the official supported libraries used in the datapack:\n{message}")
+	used_libs: list[str] = [data['name'] for data in OFFICIAL_LIBS.values() if data["is_used"]]
+	if used_libs:
+		info(f"Summary of the official supported libraries used in the datapack: {', '.join(used_libs)}\n")
 
 	## Write check_dependencies and valid_dependencies functions now that we have all the dependencies
 	encoder_checks = ""

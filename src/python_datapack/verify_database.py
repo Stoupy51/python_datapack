@@ -91,10 +91,6 @@ def main(config: dict):
 							and not (line.startswith('"') and line.endswith('"')) \
 							and not (line.startswith("'") and line.endswith("'")):
 							errors.append(f"Item '{item}' has a lore line that is not in a correct text component format: {line}\n We recommend using 'https://misode.github.io/text-component/' to generate the text component")
-
-		# Warn if no custom model data
-		if not data.get("custom_model_data"):
-			warning(f"'custom_model_data' key missing for '{item}', ignore if it's on purpose")
 		
 		# Check all the recipes
 		if data.get(RESULT_OF_CRAFTING) or data.get(USED_FOR_CRAFTING):
