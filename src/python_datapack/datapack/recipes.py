@@ -27,11 +27,12 @@ def main(config: dict):
 			dict: The generated recipe
 		"""
 		result_ingr = ingr_repr(item, namespace) if not recipe.get("result") else recipe["result"]
+		ingredients: list[str] = [get_vanilla_item_id_from_ingredient(config, i) for i in recipe["ingredients"]]
 		to_return = {
 			"type": "minecraft:" + recipe["type"],
 			"category": recipe[CATEGORY],
 			"group": recipe["group"] if recipe.get("group") else None,
-			"ingredients": recipe["ingredients"],
+			"ingredients": ingredients,
 			"result": item_to_id_ingr_repr(get_item_from_ingredient(config, result_ingr)),
 		}
 		if not to_return["group"]:
@@ -42,12 +43,13 @@ def main(config: dict):
 	@simple_cache
 	def vanilla_shaped_recipe(recipe: dict, item: str) -> dict:
 		result_ingr = ingr_repr(item, namespace) if not recipe.get("result") else recipe["result"]
+		ingredients: dict[str, str] = {k:get_vanilla_item_id_from_ingredient(config, i) for k, i in recipe["ingredients"].items()}
 		to_return = {
 			"type": "minecraft:" + recipe["type"],
 			"category": recipe[CATEGORY],
 			"group": recipe["group"] if recipe.get("group") else None,
 			"pattern": recipe["shape"],
-			"key": recipe["ingredients"],
+			"key": ingredients,
 			"result": item_to_id_ingr_repr(get_item_from_ingredient(config, result_ingr)),
 		}
 		if not to_return["group"]:
@@ -58,11 +60,12 @@ def main(config: dict):
 	@simple_cache
 	def vanilla_furnace_recipe(recipe: dict, item: str) -> dict:
 		result_ingr = ingr_repr(item, namespace) if not recipe.get("result") else recipe["result"]
+		ingredient_vanilla: str = get_vanilla_item_id_from_ingredient(config, recipe["ingredient"])
 		to_return = {
 			"type": "minecraft:" + recipe["type"],
 			"category": recipe[CATEGORY],
 			"group": recipe["group"] if recipe.get("group") else None,
-			"ingredient": recipe["ingredient"],
+			"ingredient": ingredient_vanilla,
 			"result": item_to_id_ingr_repr(get_item_from_ingredient(config, result_ingr)),
 		}
 		if not to_return["group"]:
@@ -168,7 +171,7 @@ def main(config: dict):
 		result_item: str = ingr_to_id(result_ingr).replace(':','_')
 		path: str = f"{build_datapack}/data/furnace_nbt_recipes/recipe/vanilla_items/{type}__{ingredient_vanilla.split(':')[1]}__{result_item}.json"
 		type = f"minecraft:{type}" if ":" not in type else type
-		json_file: dict = {"type":type,"ingredient":{"item": ingredient_vanilla},"result":result,"experience":recipe.get("experience", 0),"cookingtime":recipe.get("cookingtime", 200)}
+		json_file: dict = {"type":type,"ingredient":ingredient_vanilla,"result":result,"experience":recipe.get("experience", 0),"cookingtime":recipe.get("cookingtime", 200)}
 		write_to_file(path, super_json_dump(json_file, max_level = -1), overwrite = True)
 
 		# Prepare line and return

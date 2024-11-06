@@ -203,14 +203,14 @@ def get_ingredients_from_recipe(recipe: dict) -> list[str]:
 	ingredients: list[str] = []
 	if recipe.get("key"):
 		for value in recipe["key"].values():
-			ingredients.append(value["item"])
+			ingredients.append(value)
 	elif recipe.get("ingredients"):
 		for ingr in recipe["ingredients"]:
-			ingredients.append(ingr["item"])
+			ingredients.append(ingr)
 	elif recipe.get("ingredient"):
-		ingredients.append(recipe["ingredient"]["item"])
+		ingredients.append(recipe["ingredient"])
 	elif recipe.get("template"):
-		ingredients.append(recipe["template"]["item"])
+		ingredients.append(recipe["template"])
 	return ingredients
 
 

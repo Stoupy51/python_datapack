@@ -144,8 +144,8 @@ def clean_path(file_path: str) -> str:
 	Returns:
 		str: The cleaned path
 	"""
-	# Replace backslashes with forward slashes
-	file_path = file_path.replace("\\", "/")
+	# Replace backslashes with forward slashes and double slashes
+	file_path = file_path.replace("\\", "/").replace("//", "/")
 
 	# If the path contains "../", simplify it
 	if "../" in file_path:
