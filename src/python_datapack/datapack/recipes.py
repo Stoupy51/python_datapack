@@ -195,7 +195,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 		write_to_file(f"{FURNACE_NBT_PATH}/xp_reward/{experience}.mcfunction", file, overwrite = True)
 
 		# Create the recipe for the reward
-		json_file: dict = {"type":"minecraft:smelting","ingredient":{"item":"minecraft:command_block"},"result":{"id":"minecraft:command_block"},"experience":experience,"cookingtime":200}
+		json_file: dict = {"type":"minecraft:smelting","ingredient":"minecraft:command_block","result":{"id":"minecraft:command_block"},"experience":experience,"cookingtime":200}
 		write_to_file(f"{build_datapack}/data/furnace_nbt_recipes/recipe/xp/{experience}.json", super_json_dump(json_file, max_level = -1), overwrite = True)
 
 		# Prepare line and return
