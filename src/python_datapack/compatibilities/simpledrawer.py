@@ -36,7 +36,7 @@ def get_result_count(config: dict, item: str, ingr_to_seek: str) -> int:
 	return 9
 
 # Main function
-def simpledrawer(config: dict):
+def main(config: dict):
 	database: dict[str, dict] = config["database"]
 	namespace: str = config["namespace"]
 
