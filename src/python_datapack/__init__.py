@@ -50,7 +50,9 @@ def check_config_format(config: dict) -> bool:
 	valid = basic_key_check(config, "merge_libs", bool, "Make new zip of merged libraries with the datapack and resource pack using Smithed Weld", valid)
 	valid = basic_key_check(config, "dependencies", dict, "Automagically, the datapack will check for the presence of dependencies and their minimum required versions at runtime\nThe url is used when the dependency is not found to suggest where to get it\nThe version dict key contains the minimum required version of the dependency in [major, minor, patch] format\nThe main key is the dependency namespace to check for\nThe name can be whatever you want, it's just used in messages", valid)
 	valid = basic_key_check(config, "source_lore", list, "Appended lore to any custom item, can be an empty string to disable", valid)
-	has_manual: bool = basic_key_check(config, "has_manual", bool, "Do the program generate a manual/guide? (WARNING: if an item is malformed in the database, the server log will be flooded on load by the manual hiding the malformed item)", True)
+	has_manual: bool|None = config.get("has_manual", None)
+	if has_manual != None:
+		valid = basic_key_check(config, "has_manual", bool, "Do the program generate a manual/guide? (WARNING: if an item is malformed in the database, the server log will be flooded on load by the manual hiding the malformed item)", True)
 	if has_manual == True:
 		valid = basic_key_check(config, "manual_path", str, "Cached manual assets", valid)
 		valid = basic_key_check(config, "manual_overrides", str, "Path to a folder containing manual overrides to replace the default manual assets", valid)
@@ -63,8 +65,6 @@ def check_config_format(config: dict) -> bool:
 		valid = basic_key_check(config, "max_rows_per_page", int, "Max number of rows per page in the manual, should not exceed 6", valid)
 		valid = basic_key_check(config, "opengl_resolution", int, "Resolution of the OpenGL renders used in the manual, best value is 256 <--- 256x256", valid)
 		valid = basic_key_check(config, "manual_first_page_text", list, "Text for the first page of the manual", valid)
-	elif valid == True:
-		valid = has_manual
 	if valid == True:
 		for key in config.keys():
 			if key not in KNOWN_KEYS:
@@ -106,7 +106,8 @@ def build_process(config: dict, setup_database: Callable|None = None, setup_exte
 			verify_database_main(config)
 
 		# Generate resource pack
-		resource_pack_main(config)
+		if config.get("assets_folder"):
+			resource_pack_main(config)
 
 		# Generate custom recipes if any
 		if config.get("database"):
