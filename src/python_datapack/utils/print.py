@@ -1,8 +1,9 @@
 
 # Imports
-import time
-import sys
 import os
+import sys
+import time
+import traceback
 from typing import Callable
 
 # Decorator that make a function silent (disable stdout)
@@ -31,15 +32,17 @@ def silent(func: Callable, mute_stderr: bool = False):
 			sys.stderr.close()
 			sys.stderr = _original_stderr
 		return result
-	
 	return wrapper
 
+
 # Colors constants
-GREEN = "\033[92m"
-BLUE = "\033[94m"
-YELLOW = "\033[93m"
-RED = "\033[91m"
 RESET = "\033[0m"
+RED = "\033[91m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+BLUE = "\033[94m"
+MAGENTA = "\033[95m"
+CYAN = "\033[96m"
 
 # Print functions
 def current_time() -> str:
@@ -50,6 +53,12 @@ def info(*values: object, **print_kwargs: dict):
 
 def debug(*values: object, **print_kwargs: dict):
 	print(f"{BLUE}[DEBUG {current_time()}]", *values, RESET, **print_kwargs)
+
+def suggestion(*values: object, **print_kwargs: dict):
+	print(f"{CYAN}[SUGGESTION {current_time()}]", *values, RESET, **print_kwargs)
+
+def progress(*values: object, **print_kwargs: dict):
+	print(f"{MAGENTA}[PROGRESS {current_time()}]", *values, RESET, **print_kwargs)
 
 def warning(*values: object, **print_kwargs: dict):
 	print(f"{YELLOW}[WARNING {current_time()}]", *values, RESET, **print_kwargs)
@@ -66,6 +75,82 @@ def error(*values: object, exit: bool = True, **print_kwargs: dict) -> None:
 		try:
 			input("Press enter to ignore error and continue or 'CTRL+C' to stop the program... ")
 		except KeyboardInterrupt:
-			import sys
 			sys.exit(1)
+
+
+# Execution time decorator
+def measure_time(print_func: Callable = debug, message: str = "", perf_counter: bool = True) -> Callable:
+	""" Decorator that will measure the execution time of a function\n
+	Args:
+		print_func	(Callable):	Function to use to print the execution time
+		message		(str):		Message to display with the execution time (e.g. "Execution time of Something"), defaults to "Execution time of {func.__name__}"
+		perf_counter	(bool):	Whether to use time.perf_counter_ns or time.time_ns
+	"""
+	ns: Callable = time.perf_counter_ns if perf_counter else time.time_ns
+	def decorator(func: Callable) -> Callable:
+
+		# Set the message if not specified
+		nonlocal message
+		if not message:
+			message = f"Execution time of {func.__name__}"
+
+		def wrapper(*args, **kwargs) -> object:
+
+			# Measure the execution time (nanoseconds and seconds)
+			start_ns: int = ns()
+			result = func(*args, **kwargs)
+			total_ns: int = ns() - start_ns
+			total_ms: float = total_ns / 1_000_000
+			total_s: float = total_ns / 1_000_000_000
+
+			# Print the execution time (nanoseconds if less than 0.3s, seconds otherwise)
+			if total_ms < 300:
+				print_func(f"{message}: {total_ms:.3f}ms ({total_ns}ns)")
+			elif total_s < 60:
+				print_func(f"{message}: {(total_s):.5f}s")
+			else:
+				minutes: int = total_s // 60
+				seconds: int = total_s % 60
+				if minutes < 60:
+					print_func(f"{message}: {minutes}m {seconds}s")
+				else:
+					hours: int = minutes // 60
+					minutes: int = minutes % 60
+					if hours < 24:
+						print_func(f"{message}: {hours}h {minutes}m {seconds}s")
+					else:
+						days: int = hours // 24
+						hours: int = hours % 24
+						print_func(f"{message}: {days}d {hours}h {minutes}m {seconds}s")
+			return result
+		return wrapper
+	return decorator
+
+
+# Decorator that handle an error with different log levels
+def handle_error(exceptions: tuple[Exception], message: str = "", error_log: int = 0) -> Callable:
+	""" Decorator that handle an error with different log levels.\n
+	Args:
+		exceptions		(tuple[Exception]):	Exceptions to handle
+		message			(str):				Message to display with the error. (e.g. "Error during something")
+		error_log		(int):				Log level for the errors (0: None, 1: Show as warning, 2: Show as error, 3: Raise exception)
+	"""
+	def decorator(func: Callable) -> Callable:
+		if message != "":
+			msg = f"{message}:\n"
+		else:
+			msg = message
+			
+		def wrapper(*args, **kwargs) -> object:
+			try:
+				return func(*args, **kwargs)
+			except exceptions as e:
+				if error_log == 1:
+					warning(f"{msg}Error during {func.__name__}:\n {e}")
+				elif error_log == 2:
+					error(f"{msg}Error during {func.__name__}:\n{traceback.format_exc()}", exit=True)
+				else:
+					raise e
+		return wrapper
+	return decorator
 
