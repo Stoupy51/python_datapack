@@ -471,18 +471,24 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 		# Get song duration
 		file_path = f"{config['assets_folder']}/records/{sound}"
 		if os.path.exists(file_path):
-			duration: int = round(OggVorbis(file_path).info.length)
-			
-			# Set jukebox song
-			json_song = {"comparator_output": duration % 16, "length_in_seconds": duration + 1, "sound_event": {"sound_id":f"{config['namespace']}:{record}"}, "description": {"text": item_name}}
-			write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/jukebox_song/{record}.json", super_json_dump(json_song))
+			try:
+				duration: int = round(OggVorbis(file_path).info.length)
+				
+				# Set jukebox song
+				json_song = {"comparator_output": duration % 16, "length_in_seconds": duration + 1, "sound_event": {"sound_id":f"{config['namespace']}:{record}"}, "description": {"text": item_name}}
+				write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/jukebox_song/{record}.json", super_json_dump(json_song))
 
-			# Copy sound to resource pack
-			super_copy(file_path, f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds/{record}.ogg")
+				# Copy sound to resource pack
+				super_copy(file_path, f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds/{record}.ogg")
 
-			json_sound = {"category": "music", "sounds": [{"name": f"{config['namespace']}:{record}","stream": True}]}
-			json_sound = {record: json_sound}
-			write_to_file(f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds.json", super_json_dump(json_sound))
+				json_sound = {"category": "music", "sounds": [{"name": f"{config['namespace']}:{record}","stream": True}]}
+				json_sound = {record: json_sound}
+				write_to_file(f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds.json", super_json_dump(json_sound))
+
+			except KeyboardInterrupt as e:
+				raise e
+			except Exception as e:
+				error(f"Error during custom record generation of '{file_path}', make sure it is using proper Ogg format: {e}")
 		else:
 			warning(f"Error during custom record generation: path '{file_path}' does not exist")
 
