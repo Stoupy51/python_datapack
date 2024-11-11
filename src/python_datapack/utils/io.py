@@ -101,6 +101,21 @@ def super_json_dump(data: dict|list, file: io.TextIOWrapper|None = None, max_lev
 		file.write(content)
 	return content
 
+def unique_list(list_to_clean: list) -> list:
+	""" Remove duplicates from the list while keeping the order
+	Args:
+		list_to_clean (list): The list to clean
+	Returns:
+		list: The cleaned list
+	"""
+	seen: set = set()
+	result: list = []
+	for item in list_to_clean:
+		item_key = tuple(item) if isinstance(item, list) else item	# Convert item to tuple if it's a list to make it hashable
+		if item_key not in seen:
+			seen.add(item_key)
+			result.append(item)
+	return result
 
 # Merge two dict recuirsively
 def super_merge_dict(dict1: dict, dict2: dict) -> dict:
@@ -127,7 +142,7 @@ def super_merge_dict(dict1: dict, dict2: dict) -> dict:
 		elif key in dict1 and isinstance(dict1[key], list) and isinstance(value, list):
 			new_dict[key] = dict1[key] + value
 			if not any(isinstance(x, dict) for x in new_dict[key]):
-				new_dict[key] = list(set(new_dict[key]))
+				new_dict[key] = unique_list(new_dict[key])
 		
 		# Else, just overwrite or add value
 		else:

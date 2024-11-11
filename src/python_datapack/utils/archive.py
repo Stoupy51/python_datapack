@@ -40,6 +40,7 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] = [
 				continue
 			base_path: str = file.replace(source, "").strip("/")
 			info = ZipInfo(base_path)
+			info.compress_type = ZIP_DEFLATED
 			info.date_time = constant_time
 			with open(file, "rb") as f:
 				zip.writestr(info, f.read())
@@ -50,6 +51,7 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] = [
 				continue
 			base_path: str = file.replace(source, "").strip("/")
 			info: ZipInfo = ZipInfo(base_path)
+			info.compress_type = ZIP_DEFLATED
 			info.date_time = constant_time
 			zip.writestr(info, FILES_TO_WRITE[file])
 

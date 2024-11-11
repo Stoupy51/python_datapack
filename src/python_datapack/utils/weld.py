@@ -52,6 +52,7 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 			for file in temp_zip.namelist():
 				if file not in ["pack.mcmeta", "pack.png"]:
 					info: ZipInfo = ZipInfo(file)
+					info.compress_type = ZIP_DEFLATED
 					info.date_time = constant_time
 					zip.writestr(info, temp_zip.read(file))
 
@@ -64,6 +65,7 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 				
 				# Copy the file with the same timestamp as mcmeta
 				info: ZipInfo = ZipInfo("pack.png")
+				info.compress_type = ZIP_DEFLATED
 				info.date_time = constant_time
 				with open(pack_png_path, "rb") as f:
 					zip.writestr(info, f.read())
@@ -118,6 +120,7 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 			for file in temp_zip.namelist():
 				if file not in ["pack.mcmeta", "pack.png"]:
 					info: ZipInfo = ZipInfo(file)
+					info.compress_type = ZIP_DEFLATED
 					info.date_time = constant_time
 					zip.writestr(info, temp_zip.read(file))
 
@@ -130,6 +133,7 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 				
 				# Copy the file with the same timestamp as mcmeta
 				info: ZipInfo = ZipInfo("pack.png")
+				info.compress_type = ZIP_DEFLATED
 				info.date_time = constant_time
 				with open(pack_png_path, "rb") as f:
 					zip.writestr(info, f.read())
