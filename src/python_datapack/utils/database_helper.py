@@ -515,7 +515,7 @@ def add_item_model_component(config: dict, database: dict[str, dict], black_list
 	"""
 	namespace: str = config['namespace']
 	for item, data in database.items():
-		if item in black_list:
+		if item in black_list or data.get("item_model", None) is not None:
 			continue
 		data["item_model"] = f"{namespace}:{item}"
 	return
@@ -529,7 +529,6 @@ def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], i
 		is_external	(bool):				Whether the database is the external one or not (meaning the namespace is in the item name).
 	"""
 	lore = json.dumps(config['source_lore']) if len(config['source_lore']) > 1 else json.dumps(config['source_lore'][0])
-	lore = lore.replace('"', "'")
 	for item, data in database.items():
 
 		# Add item name if none
@@ -538,7 +537,7 @@ def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], i
 				item_str = item.replace("_"," ").title()
 			else:
 				item_str = item.split(":")[-1].replace("_"," ").title()
-			data["item_name"] = json.dumps( {"text": item_str, "italic": False, "color":"white"} ).replace("'", "\\'").replace('"', "'")
+			data["item_name"] = json.dumps( {"text": item_str, "italic": False, "color":"white"} )
 
 		# Apply namespaced lore if none
 		if not data.get("lore"):
