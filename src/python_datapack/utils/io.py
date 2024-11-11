@@ -179,6 +179,7 @@ def clean_path(file_path: str) -> str:
 
 # Keeping track of the files that have been present before running the program
 INITIAL_FILES: dict[str, str] = {}
+INITIAL_FILES_SET: set[str] = set()
 def read_initial_files(folders: list[str]) -> None:
 	""" Read all the files in the given folders and store them in INITIAL_FILES\n
 	Args:
@@ -191,6 +192,7 @@ def read_initial_files(folders: list[str]) -> None:
 				try:
 					with super_open(path, "r") as f:
 						INITIAL_FILES[path] = f.read()
+						INITIAL_FILES_SET.add(path)
 				except:
 					pass
 
@@ -308,8 +310,9 @@ def delete_file(file_path: str, clean_on_disk: bool = True) -> bool:
 	if file_path in FILES_TO_WRITE:
 		del FILES_TO_WRITE[file_path]
 		deleted = True
-	if file_path in INITIAL_FILES:
+	if file_path in INITIAL_FILES_SET:
 		del INITIAL_FILES[file_path]
+		INITIAL_FILES_SET.remove(file_path)
 
 	# If the file exists, delete it
 	if clean_on_disk and os.path.exists(file_path):
@@ -395,22 +398,25 @@ def write_all_files(contains: str = ""):
 		contains (str): If set, only write the files that contains this string in their path
 	"""
 	contains = clean_path(contains)
-	for file_path, content in FILES_TO_WRITE.items():
-		if contains not in file_path:
+	
+	# Pre-process all contents to have two newlines at the end
+	processed_contents: dict[str, str] = {}
+	for path, content in FILES_TO_WRITE.items():
+		if contains not in path:
 			continue
-
-		# Make sure the content ends with two break lines
+			
 		if not content.endswith("\n\n"):
-			if content.endswith("\n"):
-				content += "\n"
-			else:
-				content += "\n\n"
+			content = content.rstrip("\n") + "\n\n"
+		processed_contents[path] = content
 
-		# If the file already exists and the content didn't change, skip it
-		if file_path in INITIAL_FILES and content == INITIAL_FILES[file_path]:
-			continue
+	# Filter out unchanged files
+	files_to_write: dict[str, str] = {
+		path: content for path, content in processed_contents.items()
+		if path not in INITIAL_FILES_SET or content != INITIAL_FILES[path]
+	}
 
-		# Write the content to the file
+	# Batch write all files
+	for file_path, content in files_to_write.items():
 		with super_open(file_path, "w") as f:
 			f.write(content)
 
@@ -420,7 +426,7 @@ def delete_old_files(contains: str = ""):
 		contains (str): If set, only delete the files that contains this string in their path
 	"""
 	contains = clean_path(contains)
-	for file_path in INITIAL_FILES.keys():
+	for file_path in INITIAL_FILES_SET:
 		if contains not in file_path:
 			continue
 
