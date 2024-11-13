@@ -109,6 +109,8 @@ def main(config: dict, user_code: Callable):
 		datapack_dest = [datapack_dest]
 	if isinstance(resourcepack_dest, str):
 		resourcepack_dest = [resourcepack_dest]
+	datapack_dest = [x for x in datapack_dest if x != ""]
+	resourcepack_dest = [x for x in resourcepack_dest if x != ""]
 	processes = [
 		(config['build_datapack'],			f"{config['build_folder']}/{config['project_name_simple']}_datapack",			datapack_dest),
 		(config['build_resource_pack'],		f"{config['build_folder']}/{config['project_name_simple']}_resource_pack",		resourcepack_dest)
