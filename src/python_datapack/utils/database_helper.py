@@ -182,9 +182,8 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 	# Get ore color (for armor dye and other stuff)
 	color: int = 0
 	if f"{material_base}_chestplate.png" in config['textures_files']:
-		color_image: Image.Image = Image.open(f"{config['assets_folder']}/textures/{material_base}_chestplate.png")
+		color_image: Image.Image = Image.open(f"{config['assets_folder']}/textures/{material_base}_chestplate.png").convert("RGB")
 		color_list: list = list(color_image.getdata())									# Get image (1D Array)
-		color_list = [(r,g,b) for (r,g,b,a) in color_list if a > 0]						# Get all colors that are not transparent
 		color_list = [sum(x) / len(color_list) for x in zip(*color_list)]				# Get the average color
 		color = int(color_list[0]) << 16 | int(color_list[1]) << 8 | int(color_list[2])	# Convert to int (Minecraft format: Red<<16 + Green<<8 + Blue)
 
