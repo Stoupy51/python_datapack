@@ -179,14 +179,6 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 		armor_attributes = equipments_config.get_armor_attributes()
 		tools_attributes = equipments_config.get_tools_attributes()
 
-	# Get ore color (for armor dye and other stuff)
-	color: int = 0
-	if f"{material_base}_chestplate.png" in config['textures_files']:
-		color_image: Image.Image = Image.open(f"{config['assets_folder']}/textures/{material_base}_chestplate.png").convert("RGB")
-		color_list: list = list(color_image.getdata())									# Get image (1D Array)
-		color_list = [sum(x) / len(color_list) for x in zip(*color_list)]				# Get the average color
-		color = int(color_list[0]) << 16 | int(color_list[1]) << 8 | int(color_list[2])	# Convert to int (Minecraft format: Red<<16 + Green<<8 + Blue)
-
 	# Placeables (ore, deepslate_ore, block, raw_block)
 	for block in [f"{material_base}_block", f"{material_base}_ore", f"deepslate_{material_base}_ore", f"raw_{material_base}_block"]:
 		if block + ".png" not in config['textures_files']:
@@ -230,11 +222,10 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 			continue
 		if armor not in database:
 			database[armor] = {}
-		database[armor]["id"] = f"minecraft:leather_{gear}"		# Leather armor to dye
+		database[armor]["id"] = f"minecraft:leather_{gear}"		# Leather armor by default
 		database[armor][CATEGORY] = "equipment"					# Category
 		database[armor]["custom_data"] = {"smithed":{}}			# Smithed convention
 		database[armor]["custom_data"]["smithed"]["dict"] = {"armor": {material_base: True, gear: True}}
-		database[armor]["dyed_color"] = {"rgb": color, "show_in_tooltip": False}	# Apply dye to leather armor
 		gear_config = {}
 		if gear == "helmet":
 			database[armor][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"category":"equipment","shape":["XXX","X X"],"ingredients":{"X": main_ingredient}}]
@@ -445,11 +436,13 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 	if not records or records in ["auto", "all"]:
 		
 		songs: list[str] = [x for x in os.listdir(config["assets_folder"] + "/records") if x.endswith((".ogg",".wav"))]
-		records = { clean_record_name(file): file for file in songs }
-		debug(f"No records specified, searching in '{config['assets_folder']}/records' folder. Found {len(records)} records.")
+		records_to_check: dict[str, str] = { clean_record_name(file): file for file in songs }
+		debug(f"No records specified, searching in '{config['assets_folder']}/records' folder. Found {len(records_to_check)} records.")
+	else:
+		records_to_check = records # type: ignore
 
 	# For each record, add it to the database
-	for record, sound in records.items():
+	for record, sound in records_to_check.items():
 		if not isinstance(sound, str):
 			error(f"Error during custom record generation: sound '{sound}' is not a string, got {type(sound).__name__}")
 		if not sound.endswith(".ogg"):
@@ -471,7 +464,7 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 		file_path = f"{config['assets_folder']}/records/{sound}"
 		if os.path.exists(file_path):
 			try:
-				duration: int = round(OggVorbis(file_path).info.length)
+				duration: int = round(OggVorbis(file_path).info.length) # type: ignore
 				
 				# Set jukebox song
 				json_song = {"comparator_output": duration % 16, "length_in_seconds": duration + 1, "sound_event": {"sound_id":f"{config['namespace']}:{record}"}, "description": {"text": item_name}}
