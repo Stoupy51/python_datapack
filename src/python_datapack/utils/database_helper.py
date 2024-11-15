@@ -513,15 +513,18 @@ def add_item_model_component(config: dict, database: dict[str, dict], black_list
 	return
 
 # Add item name and lore
-def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], is_external: bool = False) -> None:
+def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], is_external: bool = False, black_list: list[str] = []) -> None:
 	""" Add item name and lore to all items in the database if they are missing.
 	Args:
 		config		(dict):				The configuration to get the source lore from.
 		database	(dict[str, dict]):	The database to add item name and lore to.
 		is_external	(bool):				Whether the database is the external one or not (meaning the namespace is in the item name).
+		black_list	(list[str]):		The list of items to ignore.
 	"""
 	lore = json.dumps(config['source_lore']) if len(config['source_lore']) > 1 else json.dumps(config['source_lore'][0])
 	for item, data in database.items():
+		if item in black_list:
+			continue
 
 		# Add item name if none
 		if not data.get("item_name"):

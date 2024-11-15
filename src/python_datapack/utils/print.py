@@ -48,22 +48,22 @@ CYAN = "\033[96m"
 def current_time() -> str:
 	return time.strftime("%H:%M:%S")
 
-def info(*values: object, **print_kwargs: dict):
+def info(*values: object, **print_kwargs) -> None:
 	print(f"{GREEN}[INFO  {current_time()}]", *values, RESET, **print_kwargs)
 
-def debug(*values: object, **print_kwargs: dict):
+def debug(*values: object, **print_kwargs) -> None:
 	print(f"{BLUE}[DEBUG {current_time()}]", *values, RESET, **print_kwargs)
 
-def suggestion(*values: object, **print_kwargs: dict):
+def suggestion(*values: object, **print_kwargs):
 	print(f"{CYAN}[SUGGESTION {current_time()}]", *values, RESET, **print_kwargs)
 
-def progress(*values: object, **print_kwargs: dict):
+def progress(*values: object, **print_kwargs):
 	print(f"{MAGENTA}[PROGRESS {current_time()}]", *values, RESET, **print_kwargs)
 
-def warning(*values: object, **print_kwargs: dict):
+def warning(*values: object, **print_kwargs):
 	print(f"{YELLOW}[WARNING {current_time()}]", *values, RESET, **print_kwargs)
 
-def error(*values: object, exit: bool = True, **print_kwargs: dict) -> None:
+def error(*values: object, exit: bool = True, **print_kwargs) -> None:
 	""" Print an error message and optionally ask the user to continue or stop the program\n
 	Args:
 		values			(object):		Values to print (like the print function)
@@ -109,8 +109,8 @@ def measure_time(print_func: Callable = debug, message: str = "", perf_counter: 
 			elif total_s < 60:
 				print_func(f"{message}: {(total_s):.5f}s")
 			else:
-				minutes: int = total_s // 60
-				seconds: int = total_s % 60
+				minutes: int = int(total_s) // 60
+				seconds: int = int(total_s) % 60
 				if minutes < 60:
 					print_func(f"{message}: {minutes}m {seconds}s")
 				else:
@@ -126,9 +126,12 @@ def measure_time(print_func: Callable = debug, message: str = "", perf_counter: 
 		return wrapper
 	return decorator
 
+# All exceptions
+IGNORE_EXCEPTIONS: tuple[type[Exception], ...] = (KeyboardInterrupt, OSError)  # type: ignore
+ALL_EXCEPTIONS: tuple[type[Exception], ...] = tuple(x for x in Exception.__subclasses__() if x not in IGNORE_EXCEPTIONS)
 
 # Decorator that handle an error with different log levels
-def handle_error(exceptions: tuple[Exception], message: str = "", error_log: int = 0) -> Callable:
+def handle_error(exceptions: tuple[type[Exception], ...] = ALL_EXCEPTIONS, message: str = "", error_log: int = 2) -> Callable:
 	""" Decorator that handle an error with different log levels.\n
 	Args:
 		exceptions		(tuple[Exception]):	Exceptions to handle

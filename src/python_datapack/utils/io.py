@@ -6,6 +6,73 @@ import os
 import io
 from typing import IO
 
+
+# Utility function to clean the path
+def clean_path(file_path: str) -> str:
+	""" Clean the path by replacing backslashes with forward slashes and simplifying the path\n
+	Args:
+		file_path (str): The path to clean
+	Returns:
+		str: The cleaned path
+	"""
+	# Replace backslashes with forward slashes and double slashes
+	file_path = file_path.replace("\\", "/").replace("//", "/")
+
+	# If the path contains "../", simplify it
+	if "../" in file_path:
+		splitted = file_path.split("/")
+		for i in range(len(splitted)):
+			if splitted[i] == ".." and i > 0:
+				splitted[i] = ""
+				splitted[i-1] = ""
+		file_path = "/".join(splitted)
+
+	# Replace "./" with nothing since it's useless
+	file_path = file_path.replace("./", "")
+
+	# Return the cleaned path
+	return file_path
+
+# Keeping track of the files that have been present before running the program
+INITIAL_FILES: dict[str, str] = {}
+INITIAL_FILES_SET: set[str] = set()
+def read_initial_files(folders: list[str]) -> None:
+	""" Read all the files in the given folders and store them in INITIAL_FILES\n
+	Args:
+		folders (list[str]): The list of folders to read the files from
+	"""
+	for folder in folders:
+		for root, _, files in os.walk(folder):
+			for file in files:
+				path: str = clean_path(os.path.join(root, file))
+				try:
+					with super_open(path, "r") as f:
+						INITIAL_FILES[path] = f.read()
+						INITIAL_FILES_SET.add(path)
+				except:
+					pass
+
+@handle_error(exceptions=(KeyError,))
+def remove_initial_file(file_path: str) -> None:
+	""" Remove the file from the initial files\n
+	Args:
+		file_path (str): The path to the file
+	"""
+	del INITIAL_FILES[file_path]
+	INITIAL_FILES_SET.remove(file_path)
+
+def is_in_initial_files(file_paths: list[str]|str) -> bool:
+	""" Check if all the given file paths are in the initial files\n
+	Args:
+		file_paths (list[str]|str): The list of file paths to check or a single file path
+	Returns:
+		bool: If all the file paths are in the initial files
+	"""
+	if isinstance(file_paths, str):
+		return file_paths in INITIAL_FILES_SET
+	return all(file_path in INITIAL_FILES_SET for file_path in file_paths)
+
+
 # For easy file management
 def super_open(file_path: str, mode: str, encoding = "utf-8") -> IO:
 	""" Open a file with the given mode, creating the directory if it doesn't exist
@@ -45,8 +112,8 @@ def super_copy(src: str, dst: str) -> str:
 	else:
 		# Remove destination path from old files
 		cleaned_dst = clean_path(dst)
-		if cleaned_dst in INITIAL_FILES:
-			del INITIAL_FILES[cleaned_dst]
+		if is_in_initial_files(cleaned_dst):
+			remove_initial_file(cleaned_dst)
 
 		# Copy file
 		return shutil.copy(src, dst)
@@ -150,52 +217,6 @@ def super_merge_dict(dict1: dict, dict2: dict) -> dict:
 	
 	# Return the new dict
 	return new_dict
-
-# Utility function to clean the path
-def clean_path(file_path: str) -> str:
-	""" Clean the path by replacing backslashes with forward slashes and simplifying the path\n
-	Args:
-		file_path (str): The path to clean
-	Returns:
-		str: The cleaned path
-	"""
-	# Replace backslashes with forward slashes and double slashes
-	file_path = file_path.replace("\\", "/").replace("//", "/")
-
-	# If the path contains "../", simplify it
-	if "../" in file_path:
-		splitted = file_path.split("/")
-		for i in range(len(splitted)):
-			if splitted[i] == ".." and i > 0:
-				splitted[i] = ""
-				splitted[i-1] = ""
-		file_path = "/".join(splitted)
-
-	# Replace "./" with nothing since it's useless
-	file_path = file_path.replace("./", "")
-
-	# Return the cleaned path
-	return file_path
-
-# Keeping track of the files that have been present before running the program
-INITIAL_FILES: dict[str, str] = {}
-INITIAL_FILES_SET: set[str] = set()
-def read_initial_files(folders: list[str]) -> None:
-	""" Read all the files in the given folders and store them in INITIAL_FILES\n
-	Args:
-		folders (list[str]): The list of folders to read the files from
-	"""
-	for folder in folders:
-		for root, _, files in os.walk(folder):
-			for file in files:
-				path: str = clean_path(os.path.join(root, file))
-				try:
-					with super_open(path, "r") as f:
-						INITIAL_FILES[path] = f.read()
-						INITIAL_FILES_SET.add(path)
-				except:
-					pass
-
 
 # The majority of files will be written at the end of the program to prevent excessive disk access (reading + appending + writing)
 FILES_TO_WRITE: dict[str, str] = {}
@@ -310,9 +331,8 @@ def delete_file(file_path: str, clean_on_disk: bool = True) -> bool:
 	if file_path in FILES_TO_WRITE:
 		del FILES_TO_WRITE[file_path]
 		deleted = True
-	if file_path in INITIAL_FILES_SET:
-		del INITIAL_FILES[file_path]
-		INITIAL_FILES_SET.remove(file_path)
+	if is_in_initial_files(file_path):
+		remove_initial_file(file_path)
 
 	# If the file exists, delete it
 	if clean_on_disk and os.path.exists(file_path):
