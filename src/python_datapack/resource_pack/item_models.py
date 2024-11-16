@@ -41,12 +41,13 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		block_or_item = "block"
 	dest_base_textu = f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/item"
 	overrides: dict = data.get(OVERRIDE_MODEL, {})
+	textures_files: list[str] = config['textures_files']
 
 	# Get powered states (if any)
 	powered = [""]
 	on_textures = []
 	if not ignore_textures:
-		for p in config['textures_files']:
+		for p in textures_files:
 			if p.split("/")[-1].startswith(item) and p.endswith("_on.png"):
 				powered = ["", "_on"]
 				on_textures.append(p)
@@ -57,7 +58,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		content: dict = {}
 
 		# Get all variants
-		variants: list[str] = [x.replace(".png", "") for x in config['textures_files'] if "gui/" not in x and x.split("/")[-1].startswith(item)]
+		variants: list[str] = [x.replace(".png", "") for x in textures_files if "gui/" not in x and x.split("/")[-1].startswith(item)]
 
 		if not ignore_textures and data.get(OVERRIDE_MODEL, None) != {}:
 			# If it's a block
@@ -123,17 +124,35 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 
 				# Get parent
 				parent = "item/generated"
-				if data["id"] != CUSTOM_ITEM_VANILLA:
-					parent = data["id"].replace(':', ":item/")
+				data_id: str = data["id"]
+				if data_id != CUSTOM_ITEM_VANILLA:
+					parent = data_id.replace(':', ":item/")
 				
 				# Get textures
 				textures = {"layer0": f"{config['namespace']}:item/{item}{on_off}"}
-				if "leather_" in data["id"]:
+				content = {"parent": parent, "textures": textures}
+				data_id = data_id.replace("minecraft:", "")
+
+				# Check for leather armor textures
+				if data_id.startswith("leather_"):
 					textures["layer1"] = textures["layer0"]
 
-				# Setup content
-				content = {"parent": parent, "textures": textures}
-		
+				# Check for bow pulling textures
+				elif data_id.endswith("bow"):
+					sorted_pull_variants: list[str] = sorted([v for v in variants if "_pulling_" in v], key=lambda x: int(x.split("_")[-1]))
+					if sorted_pull_variants:
+						content["overrides"] = [{"predicate": {"pulling": 1},"model": f"{config['namespace']}:item/{item}_pulling_0"}]
+
+						# Add override for each pulling state (pulling_0 = 0, pulling_1 = 0.65, pulling_2 = 0.9)
+						for i, variant in enumerate(sorted_pull_variants):
+							pull_content: dict = {"parent": parent,"textures": {"layer0": f"{config['namespace']}:item/{variant}"}}
+							write_to_file(f"{dest_base_model}/{item}_pulling_{i}.json", super_json_dump(pull_content))
+
+							if i < (len(sorted_pull_variants) - 1):
+								pull: float = 0.65 + (0.25 * i)
+								model: str = f"{config['namespace']}:item/{item}_pulling_{i + 1}"
+								content["overrides"].append({"predicate": {"pulling": 1, "pull": pull},"model": model})
+
 		# Add overrides
 		for key, value in overrides.items():
 			content[key] = value
@@ -144,7 +163,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 				texture: str
 				if (texture.split("/")[-1] + on_off) in variants:
 					content["textures"][key] = texture + on_off
-		
+
 		# Add used textures
 		if used_textures is not None and content.get("textures") and not ignore_textures:
 			for texture in content["textures"].values():
@@ -162,7 +181,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 						super_copy(source + ".mcmeta", destination + ".mcmeta")
 				except FileNotFoundError:
 					error(f"Texture '{source}' not found")
-			
+
 		# Write content if not empty
 		if data.get(OVERRIDE_MODEL, None) != {}:
 			dump: str = super_json_dump(content, max_level = 4)
