@@ -196,7 +196,7 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 			if is_there_raw_material:
 				database[block][NO_SILK_TOUCH_DROP] = f"raw_{material_base}"			# Drop without silk touch (raw_steel is an item in the database)
 			else:
-				database[block][NO_SILK_TOUCH_DROP] = main_ingredient
+				database[block][NO_SILK_TOUCH_DROP] = material
 		if block.endswith("block"):
 			if block.startswith("raw") and is_there_raw_material:
 				database[block][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"group":material_base,"category":"misc","shape":["XXX","XXX","XXX"],"ingredients":{"X":ingr_repr(f"raw_{material_base}", namespace)}}]
