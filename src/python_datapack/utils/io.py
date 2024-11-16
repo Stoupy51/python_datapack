@@ -258,6 +258,34 @@ def read_file(file_path: str) -> str:
 	# Else, return an empty string
 	return ""
 
+def function_path_to_file_path(config: dict, function_path: str) -> str:
+	""" Convert a function path to a file path\n
+	Args:
+		config (dict): The main configuration
+		function_path (str): The path to the function (ex: "namespace:folder/function_name")
+	Returns:
+		str: The file path
+	"""
+	if isinstance(config, str):
+		error(f"The first argument should be the configuration dict, not a string. You probably swapped the arguments.")
+
+	# Get the namespace (if any)
+	namespace: str = function_path.split(":")[0] if ":" in function_path else "minecraft"
+	function_path = function_path.split(":")[-1] if ":" in function_path else function_path
+
+	# Return the file path
+	return f"{config['build_datapack']}/data/{namespace}/function/{function_path}.mcfunction"
+
+def read_function(config: dict, function_path: str) -> str:
+	""" Read the function at the given path\n
+	Args:
+		config (dict): The main configuration
+		function_path (str): The path to the function (ex: "namespace:folder/function_name")
+	Returns:
+		str: The content of the function
+	"""
+	return read_file(function_path_to_file_path(config, function_path))
+
 def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
 	""" Write the content to the file at the given path\n
 	If you wish to write to the load/tick files or other versioned files, use the dedicated function instead (write_to_versioned_file)\n
@@ -303,16 +331,7 @@ def write_to_function(config: dict, function_path: str, content: str, overwrite:
 		overwrite		(bool):	If the file should be overwritten (default: Append the content)
 		prepend			(bool):	If the content should be prepended instead of appended (not used if overwrite is True)
 	"""
-	if isinstance(config, str):
-		error(f"The first argument of write_to_function() should be the configuration dict, not a string. You probably swapped the arguments.")
-
-	# Get the namespace (if any)
-	namespace: str = function_path.split(":")[0] if ":" in function_path else "minecraft"
-	function_path = function_path.split(":")[-1] if ":" in function_path else function_path
-
-	# Write to the file
-	file_path: str = f"{config['build_datapack']}/data/{namespace}/function/{function_path}.mcfunction"
-	write_to_file(file_path, content, overwrite, prepend)
+	write_to_file(function_path_to_file_path(config, function_path), content, overwrite, prepend)
 
 
 def delete_file(file_path: str, clean_on_disk: bool = True) -> bool:
