@@ -146,6 +146,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 						# Add override for each pulling state (pulling_0 = 0, pulling_1 = 0.65, pulling_2 = 0.9)
 						for i, variant in enumerate(sorted_pull_variants):
 							pull_content: dict = {"parent": parent,"textures": {"layer0": f"{config['namespace']}:item/{variant}"}}
+							super_copy(f"{config['assets_folder']}/textures/{variant}.png", f"{dest_base_textu}/{variant}.png")
 							write_to_file(f"{dest_base_model}/{item}_pulling_{i}.json", super_json_dump(pull_content))
 
 							if i < (len(sorted_pull_variants) - 1):
