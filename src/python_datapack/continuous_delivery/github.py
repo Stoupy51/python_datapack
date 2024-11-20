@@ -1,8 +1,5 @@
 
 # Imports
-from typing import BinaryIO
-import requests
-import os
 from ..utils.print import *
 from .cd_utils import *
 
@@ -276,8 +273,7 @@ def upload_to_github(credentials: dict[str, dict[str, str]], github_config: dict
 	if can_create:
 		create_tag(owner, project_name, version, headers)
 		release_id = create_release(owner, project_name, version, changelog, headers)
-		upload_assets(owner, project_name, release_id, build_folder, headers)
-	
-	info(f"Project {project_name} updated on GitHub!")
+		upload_assets(owner, project_name, release_id, build_folder, headers)	
+		info(f"Project {project_name} updated on GitHub!")
 	return changelog
 
