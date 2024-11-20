@@ -1,6 +1,7 @@
 
 # Imports
 from ..utils.print import *
+import requests
 import json
 import yaml
 import os
@@ -45,4 +46,17 @@ def load_credentials(credentials_path: str) -> dict[str, str]:
 	# Else, raise an error
 	else:
 		raise ValueError("Credentials file must be .json or .yml format")
+
+# Handle a response
+def handle_response(response: requests.Response, error_message: str) -> None:
+	""" Handle a response from the API
+	Args:
+		response		(requests.Response): The response from the API
+		error_message	(str): The error message to raise if the response is not successful
+	"""
+	if response.status_code < 200 or response.status_code >= 300:
+		try:
+			raise ValueError(f"{error_message}, response code {response.status_code} with response {response.json()}")
+		except requests.exceptions.JSONDecodeError:
+			raise ValueError(f"{error_message}, response code {response.status_code} with response {response.text}")
 

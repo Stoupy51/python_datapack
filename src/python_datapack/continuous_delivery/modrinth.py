@@ -3,28 +3,21 @@
 from typing import BinaryIO
 from ..utils.print import *
 from ..constants import MINECRAFT_VERSION
-from .credentials_utils import *
-import requests
+from .cd_utils import *
 
 # Constants
 MODRINTH_API_URL: str = "https://api.modrinth.com/v2"
 PROJECT_ENDPOINT: str = f"{MODRINTH_API_URL}/project"
 VERSION_ENDPOINT: str = f"{MODRINTH_API_URL}/version"
 
-def handle_response(response: requests.Response, error_message: str) -> None:
-	if response.status_code < 200 or response.status_code >= 300:
-		try:
-			raise ValueError(f"{error_message}, response code {response.status_code} with response {response.json()}")
-		except requests.exceptions.JSONDecodeError:
-			raise ValueError(f"{error_message}, response code {response.status_code} with response {response.text}")
-
 @measure_time(progress, "Uploading to modrinth took")
 @handle_error(error_log=3)
-def upload_to_modrinth(credentials: dict[str, str], modrinth_config: dict[str, str]) -> None:
-	""" Upload the project to Modrinth using the credentials and the configuration
+def upload_to_modrinth(credentials: dict[str, str], modrinth_config: dict[str, str], changelog: str = "") -> None:
+	""" Upload the project to Modrinth using the credentials and the configuration\n
 	Args:
-		credentials (dict[str, str]): Credentials for the Modrinth API
-		modrinth_config (dict[str, str]): Configuration for the Modrinth project
+		credentials		(dict[str, str]): Credentials for the Modrinth API
+		modrinth_config	(dict[str, str]): Configuration for the Modrinth project
+		changelog		(str): Changelog text for the release
 	"""
 	# Get the API key
 	if "modrinth_api_key" not in credentials:
@@ -59,8 +52,6 @@ def upload_to_modrinth(credentials: dict[str, str], modrinth_config: dict[str, s
 	search_response = requests.get(f"{PROJECT_ENDPOINT}/{slug}", headers=headers)
 	handle_response(search_response, f"Project not found on Modrinth, with namespace {slug}, please create it manually on https://modrinth.com/")
 	project: dict = search_response.json()
-	# with open("project.json", "w", encoding="utf-8") as file:
-	# 	json.dump(project, file, indent='\t')
 
 	# Update the description and the summary
 	update_response = requests.patch(f"{PROJECT_ENDPOINT}/{slug}", headers=headers, json={"body": description_markdown.strip(), "description": summary.strip()})
@@ -69,8 +60,12 @@ def upload_to_modrinth(credentials: dict[str, str], modrinth_config: dict[str, s
 	# Check if the current version already exists
 	version_response = requests.get(f"{PROJECT_ENDPOINT}/{slug}/version/{version}", headers=headers)
 	if version_response.status_code == 200:
-		warning(f"Version {version} already exists on Modrinth, skipping upload... (Change your version in the config file if you want to upload a new version)")
-		return
+		warning(f"Version {version} already exists on Modrinth, do you want to delete it? (y/N)")
+		if input().lower() != "y":
+			return
+		version_id: str = version_response.json()["id"]
+		delete_response = requests.delete(f"{VERSION_ENDPOINT}/{version_id}", headers=headers)
+		handle_response(delete_response, "Failed to delete the version")
 	elif version_response.status_code == 404:
 		info(f"Version {version} not found on Modrinth, uploading...")
 	else:
@@ -94,7 +89,7 @@ def upload_to_modrinth(credentials: dict[str, str], modrinth_config: dict[str, s
 	request_data: dict = {
 		"name": f"{project_name} [v{version}]",
 		"version_number": version,
-		"changelog": "",
+		"changelog": changelog,
 		"dependencies": modrinth_config.get("dependencies", []),
 		"game_versions": [MINECRAFT_VERSION],
 		"version_type": version_type,
