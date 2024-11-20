@@ -14,7 +14,7 @@ import shutil
 import hashlib
 
 
-def main(config: dict, user_code: Callable):
+def main(config: dict, user_code: Callable|None = None):
 
 	# Copy original_icon.png to pack.png if it exists
 	if config.get('assets_folder') and os.path.exists(f"{config['assets_folder']}/original_icon.png"):

@@ -48,29 +48,29 @@ CYAN = "\033[96m"
 def current_time() -> str:
 	return time.strftime("%H:%M:%S")
 
-def info(*values: object, **print_kwargs) -> None:
-	print(f"{GREEN}[INFO  {current_time()}]", *values, RESET, **print_kwargs)
+def info(*values: object, prefix: str = "", **print_kwargs) -> None:
+	print(f"{prefix}{GREEN}[INFO  {current_time()}]", *values, RESET, **print_kwargs)
 
-def debug(*values: object, **print_kwargs) -> None:
-	print(f"{BLUE}[DEBUG {current_time()}]", *values, RESET, **print_kwargs)
+def debug(*values: object, prefix: str = "", **print_kwargs) -> None:
+	print(f"{prefix}{BLUE}[DEBUG {current_time()}]", *values, RESET, **print_kwargs)
 
-def suggestion(*values: object, **print_kwargs):
-	print(f"{CYAN}[SUGGESTION {current_time()}]", *values, RESET, **print_kwargs)
+def suggestion(*values: object, prefix: str = "", **print_kwargs) -> None:
+	print(f"{prefix}{CYAN}[SUGGESTION {current_time()}]", *values, RESET, **print_kwargs)
 
-def progress(*values: object, **print_kwargs):
-	print(f"{MAGENTA}[PROGRESS {current_time()}]", *values, RESET, **print_kwargs)
+def progress(*values: object, prefix: str = "", **print_kwargs) -> None:
+	print(f"{prefix}{MAGENTA}[PROGRESS {current_time()}]", *values, RESET, **print_kwargs)
 
-def warning(*values: object, **print_kwargs):
-	print(f"{YELLOW}[WARNING {current_time()}]", *values, RESET, **print_kwargs)
+def warning(*values: object, prefix: str = "", **print_kwargs) -> None:
+	print(f"{prefix}{YELLOW}[WARNING {current_time()}]", *values, RESET, **print_kwargs)
 
-def error(*values: object, exit: bool = True, **print_kwargs) -> None:
+def error(*values: object, exit: bool = True, prefix: str = "", **print_kwargs) -> None:
 	""" Print an error message and optionally ask the user to continue or stop the program\n
 	Args:
 		values			(object):		Values to print (like the print function)
 		exit			(bool):			Whether to ask the user to continue or stop the program, false to ignore the error automatically and continue
 		print_kwargs	(dict):			Keyword arguments to pass to the print function
 	"""
-	print(f"{RED}[ERROR {current_time()}]", *values, RESET, **print_kwargs)
+	print(f"{prefix}{RED}[ERROR {current_time()}]", *values, RESET, **print_kwargs)
 	if exit:
 		try:
 			input("Press enter to ignore error and continue or 'CTRL+C' to stop the program... ")
@@ -126,17 +126,14 @@ def measure_time(print_func: Callable = debug, message: str = "", perf_counter: 
 		return wrapper
 	return decorator
 
-# All exceptions
-IGNORE_EXCEPTIONS: tuple[type[Exception], ...] = (KeyboardInterrupt, OSError)  # type: ignore
-ALL_EXCEPTIONS: tuple[type[Exception], ...] = tuple(x for x in Exception.__subclasses__() if x not in IGNORE_EXCEPTIONS)
 
 # Decorator that handle an error with different log levels
-def handle_error(exceptions: tuple[type[Exception], ...] = ALL_EXCEPTIONS, message: str = "", error_log: int = 2) -> Callable:
+def handle_error(exceptions: tuple[type[Exception], ...] = (Exception,), message: str = "", error_log: int = 3) -> Callable:
 	""" Decorator that handle an error with different log levels.\n
 	Args:
 		exceptions		(tuple[Exception]):	Exceptions to handle
 		message			(str):				Message to display with the error. (e.g. "Error during something")
-		error_log		(int):				Log level for the errors (0: None, 1: Show as warning, 2: Show as error, 3: Raise exception)
+		error_log		(int):				Log level for the errors (0: None, 1: Show as warning, 2: Show as warning with traceback, 3: Show as error with traceback, 4: Raise exception)
 	"""
 	def decorator(func: Callable) -> Callable:
 		if message != "":
@@ -151,6 +148,8 @@ def handle_error(exceptions: tuple[type[Exception], ...] = ALL_EXCEPTIONS, messa
 				if error_log == 1:
 					warning(f"{msg}Error during {func.__name__}:\n {e}")
 				elif error_log == 2:
+					warning(f"{msg}Error during {func.__name__}:\n{traceback.format_exc()}")
+				elif error_log == 3:
 					error(f"{msg}Error during {func.__name__}:\n{traceback.format_exc()}", exit=True)
 				else:
 					raise e

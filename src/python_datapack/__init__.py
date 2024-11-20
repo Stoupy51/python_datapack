@@ -68,7 +68,7 @@ def check_config_format(config: dict) -> bool:
 	if valid == True:
 		for key in config.keys():
 			if key not in KNOWN_KEYS:
-				warning(f"Unknown key '{key}' in config file")
+				warning(f"Unknown key '{key}' in config file, it might be a typo or been removed from the configuration")
 	return valid == True
 
 
@@ -80,6 +80,9 @@ def build_process(config: dict, setup_database: Callable|None = None, setup_exte
 		setup_external_database	(Callable|None):	Function that will setup the external database (if you need an item in a craft), same format as first
 		user_code				(Callable|None):	Function that will be called after the datapack has been generated, can be used to add custom code to generated some parts of the datapack
 	"""
+	# Enable colors in Windows 10 console
+	os.system("color")
+
 	# Check config format
 	valid = check_config_format(config)
 	if not valid:
@@ -88,9 +91,8 @@ def build_process(config: dict, setup_database: Callable|None = None, setup_exte
 	# Enhance config dict
 	config = enhance_config_main(config)
 
-	# Get start time & Enable colors in Windows 10 console
+	# Get start time & 
 	START_TIME: float = time.perf_counter()
-	os.system("color")
 	info("Starting build process...")
 
 	# Try to build the datapack
