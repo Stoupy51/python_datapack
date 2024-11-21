@@ -158,8 +158,17 @@ def get_commits_since_tag(owner: str, project_name: str, latest_tag_sha: str|Non
 	"""
 	commits_url: str = f"{PROJECT_ENDPOINT}/{owner}/{project_name}/commits"
 	commits_params: dict[str, str] = {"per_page": "100"}
+	
 	if latest_tag_sha:
-		commits_params["since"] = latest_tag_sha
+		# Get the date of the latest tag
+		tag_commit_url = f"{PROJECT_ENDPOINT}/{owner}/{project_name}/commits/{latest_tag_sha}"
+		tag_response = requests.get(tag_commit_url, headers=headers)
+		handle_response(tag_response, "Failed to get tag commit")
+		tag_date = tag_response.json()["commit"]["committer"]["date"]
+		
+		# Use the date as the 'since' parameter to get all commits after that date
+		commits_params["since"] = tag_date
+	
 	response = requests.get(commits_url, headers=headers, params=commits_params)
 	handle_response(response, "Failed to get commits")
 	return response.json()
