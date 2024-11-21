@@ -127,6 +127,12 @@ def get_file_parts(project_name: str, build_folder: str) -> list[str]:
 	]
 	file_parts = [file_part for file_part in file_parts if os.path.exists(file_part)]
 	if len(file_parts) == 0:
+		file_parts = [
+			f"{build_folder}/{project_name}_datapack.zip",
+			f"{build_folder}/{project_name}_resource_pack.zip"
+		]
+		file_parts = [file_part for file_part in file_parts if os.path.exists(file_part)]
+	if len(file_parts) == 0:
 		raise ValueError(f"No file parts (datapack and resourcepack zip files) found in {build_folder}, please check the build_folder path in the modrinth_config file")
 	return file_parts
 
