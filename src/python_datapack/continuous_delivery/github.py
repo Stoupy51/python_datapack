@@ -158,7 +158,9 @@ def generate_changelog(commits: list[dict], owner: str, project_name: str, lates
 	changelog = "## Changelog\n\n"
 	for type_ in sorted(commit_groups.keys()):
 		changelog += f"### {type_.title()}\n"
-		for desc in commit_groups[type_]:
+
+		# Reverse the list to display the most recent commits in last
+		for desc in commit_groups[type_][::-1]:
 			changelog += f"- {desc}\n"
 		changelog += "\n"
 	
