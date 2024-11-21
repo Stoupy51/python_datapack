@@ -159,7 +159,9 @@ def get_commits_since_tag(owner: str, project_name: str, latest_tag_sha: str|Non
 	commits_url: str = f"{PROJECT_ENDPOINT}/{owner}/{project_name}/commits"
 	commits_params: dict[str, str] = {"per_page": "100"}
 	
+	# If there is a latest tag, use it to get the commits since the tag date
 	if latest_tag_sha:
+
 		# Get the date of the latest tag
 		tag_commit_url = f"{PROJECT_ENDPOINT}/{owner}/{project_name}/commits/{latest_tag_sha}"
 		tag_response = requests.get(tag_commit_url, headers=headers)
@@ -169,9 +171,15 @@ def get_commits_since_tag(owner: str, project_name: str, latest_tag_sha: str|Non
 		# Use the date as the 'since' parameter to get all commits after that date
 		commits_params["since"] = tag_date
 	
+	# Get the commits
 	response = requests.get(commits_url, headers=headers, params=commits_params)
 	handle_response(response, "Failed to get commits")
-	return response.json()
+	commits: list[dict] = response.json()
+
+	# If there is a latest tag, make sure to commit has the same date as the tag
+	if latest_tag_sha:
+		commits = [commit for commit in commits if commit["commit"]["committer"]["date"] != tag_date]
+	return commits
 
 def generate_changelog(commits: list[dict], owner: str, project_name: str, latest_tag_version: str|None, version: str) -> str:
 	""" Generate changelog from commits\n
