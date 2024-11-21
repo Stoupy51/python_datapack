@@ -6,6 +6,20 @@ from .cd_utils import *
 # Constants
 GITHUB_API_URL: str = "https://api.github.com"
 PROJECT_ENDPOINT: str = f"{GITHUB_API_URL}/repos"
+COMMIT_TYPES: dict[str, str] = {
+	"feat":		"Features",
+	"fix":		"Bug Fixes",
+	"docs":		"Documentation",
+	"style":	"Style",
+	"refactor":	"Code Refactoring",
+	"perf":		"Performance Improvements",
+	"test":		"Tests",
+	"build":	"Build System",
+	"ci":		"CI/CD",
+	"chore":	"Chores",
+	"revert":	"Reverts",
+	"uwu":		"UwU ༼ つ ◕_◕ ༽つ",
+}
 
 def validate_credentials(credentials: dict[str, dict[str, str]]) -> tuple[str, dict[str, str]]:
 	""" Get and validate GitHub credentials\n
@@ -136,32 +150,39 @@ def get_commits_since_tag(owner: str, project_name: str, latest_tag_sha: str|Non
 
 def generate_changelog(commits: list[dict], owner: str, project_name: str, latest_tag_version: str|None, version: str) -> str:
 	""" Generate changelog from commits\n
+	They must follow the conventional commits convention:\n
+		<type>: <description>
+	Source:
+		https://www.conventionalcommits.org/en/v1.0.0/
 	Args:
-		commits (list[dict]): List of commits to generate changelog from
-		owner (str): GitHub username
-		project_name (str): Name of the GitHub repository
-		latest_tag_version (str|None): Version number of the latest tag
-		version (str): Current version being released
+		commits				(list[dict]):	List of commits to generate changelog from
+		owner				(str):			GitHub username
+		project_name		(str):			Name of the GitHub repository
+		latest_tag_version	(str|None):		Version number of the latest tag
+		version				(str):			Current version being released
 	Returns:
 		str: Generated changelog text
 	"""
-	commit_groups: dict[str, list[str]] = {}
+	commit_groups: dict[str, list[tuple[str, str]]] = {}
 	for commit in commits:
 		message: str = commit["commit"]["message"].split("\n")[0]
+		sha: str = commit["sha"]
 		if ":" in message:
 			type_, desc = message.split(":", 1)
-			type_ = type_.lower().strip()
+			type_ = type_.split('(')[0]
+			type_ = "".join(c for c in type_.lower().strip() if c in "abcdefghijklmnopqrstuvwxyz")
+			type_ = COMMIT_TYPES.get(type_, type_.title())
 			if type_ not in commit_groups:
 				commit_groups[type_] = []
-			commit_groups[type_].append(desc.strip())
+			commit_groups[type_].append((desc.strip(), sha))
 
 	changelog = "## Changelog\n\n"
 	for type_ in sorted(commit_groups.keys()):
-		changelog += f"### {type_.title()}\n"
+		changelog += f"### {type_}\n"
 
 		# Reverse the list to display the most recent commits in last
-		for desc in commit_groups[type_][::-1]:
-			changelog += f"- {desc}\n"
+		for desc, sha in commit_groups[type_][::-1]:
+			changelog += f"- {desc} ([{sha[:7]}](https://github.com/{owner}/{project_name}/commit/{sha}))\n"
 		changelog += "\n"
 	
 	if latest_tag_version:
