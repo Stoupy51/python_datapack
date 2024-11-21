@@ -226,6 +226,8 @@ def upload_assets(owner: str, project_name: str, release_id: int, build_folder: 
 		build_folder (str): Folder containing assets to upload
 		headers (dict[str, str]): Headers for GitHub API requests
 	"""
+	if not build_folder:
+		return
 	progress("Uploading assets")
 	
 	response = requests.get(f"{PROJECT_ENDPOINT}/{owner}/{project_name}/releases/{release_id}", headers=headers)
