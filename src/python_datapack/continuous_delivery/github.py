@@ -24,7 +24,7 @@ COMMIT_TYPES: dict[str, str] = {
 def validate_credentials(credentials: dict[str, dict[str, str]]) -> tuple[str, dict[str, str]]:
 	""" Get and validate GitHub credentials\n
 	Args:
-		credentials (dict[str, dict[str, str]]): Credentials for the GitHub API
+		credentials (dict[str, dict[str, str]]):	Credentials for the GitHub API
 	Returns:
 		str:			Owner (the username of the account to use)
 		dict[str, str]:	Headers (for the requests to the GitHub API)
@@ -44,7 +44,7 @@ def validate_credentials(credentials: dict[str, dict[str, str]]) -> tuple[str, d
 def validate_config(github_config: dict[str, str]) -> tuple[str, str, str]:
 	""" Validate GitHub configuration\n
 	Args:
-		github_config (dict[str, str]): Configuration for the GitHub project
+		github_config (dict[str, str]):	Configuration for the GitHub project
 	Returns:
 		str: Project name on GitHub
 		str: Version of the project
@@ -62,10 +62,10 @@ def validate_config(github_config: dict[str, str]) -> tuple[str, str, str]:
 def handle_existing_tag(owner: str, project_name: str, version: str, headers: dict[str, str]) -> bool:
 	""" Check if tag exists and handle deletion if needed\n
 	Args:
-		owner (str): GitHub username
-		project_name (str): Name of the GitHub repository
-		version (str): Version to check for existing tag
-		headers (dict[str, str]): Headers for GitHub API requests
+		owner (str):				GitHub username
+		project_name (str):			Name of the GitHub repository
+		version (str):				Version to check for existing tag
+		headers (dict[str, str]):	Headers for GitHub API requests
 	Returns:
 		bool: True if the tag was deleted or if it was not found, False otherwise
 	"""
@@ -84,10 +84,10 @@ def handle_existing_tag(owner: str, project_name: str, version: str, headers: di
 def delete_existing_release(owner: str, project_name: str, version: str, headers: dict[str, str]) -> None:
 	""" Delete existing release for a version\n
 	Args:
-		owner (str): GitHub username
-		project_name (str): Name of the GitHub repository
-		version (str): Version of the release to delete
-		headers (dict[str, str]): Headers for GitHub API requests
+		owner (str):				GitHub username
+		project_name (str):			Name of the GitHub repository
+		version (str):				Version of the release to delete
+		headers (dict[str, str]):	Headers for GitHub API requests
 	"""
 	releases_url = f"{PROJECT_ENDPOINT}/{owner}/{project_name}/releases/tags/v{version}"
 	release_response = requests.get(releases_url, headers=headers)
@@ -103,8 +103,8 @@ def delete_existing_release(owner: str, project_name: str, version: str, headers
 def delete_existing_tag(tag_url: str, headers: dict[str, str]) -> None:
 	""" Delete existing tag\n
 	Args:
-		tag_url (str): URL of the tag to delete
-		headers (dict[str, str]): Headers for GitHub API requests
+		tag_url (str):				URL of the tag to delete
+		headers (dict[str, str]):	Headers for GitHub API requests
 	"""
 	delete_response = requests.delete(tag_url, headers=headers)
 	handle_response(delete_response, "Failed to delete existing tag")
@@ -128,10 +128,10 @@ def version_to_int(version: str) -> int:
 def get_latest_tag(owner: str, project_name: str, version: str, headers: dict[str, str]) -> tuple[str|None, str|None]:
 	""" Get latest tag information\n
 	Args:
-		owner (str): GitHub username
-		project_name (str): Name of the GitHub repository
-		version (str): Version to remove from the list of tags
-		headers (dict[str, str]): Headers for GitHub API requests
+		owner (str):				GitHub username
+		project_name (str):			Name of the GitHub repository
+		version (str):				Version to remove from the list of tags
+		headers (dict[str, str]):	Headers for GitHub API requests
 	Returns:
 		str|None: SHA of the latest tag commit, None if no tags exist
 		str|None: Version number of the latest tag, None if no tags exist
@@ -149,10 +149,10 @@ def get_latest_tag(owner: str, project_name: str, version: str, headers: dict[st
 def get_commits_since_tag(owner: str, project_name: str, latest_tag_sha: str|None, headers: dict[str, str]) -> list[dict]:
 	""" Get commits since last tag\n
 	Args:
-		owner (str): GitHub username
-		project_name (str): Name of the GitHub repository
-		latest_tag_sha (str|None): SHA of the latest tag commit
-		headers (dict[str, str]): Headers for GitHub API requests
+		owner			(str):				GitHub username
+		project_name	(str):				Name of the GitHub repository
+		latest_tag_sha	(str|None):			SHA of the latest tag commit
+		headers			(dict[str, str]):	Headers for GitHub API requests
 	Returns:
 		list[dict]: List of commits since the last tag
 	"""
@@ -226,10 +226,10 @@ def generate_changelog(commits: list[dict], owner: str, project_name: str, lates
 def create_tag(owner: str, project_name: str, version: str, headers: dict[str, str]) -> None:
 	""" Create a new tag\n
 	Args:
-		owner (str): GitHub username
-		project_name (str): Name of the GitHub repository
-		version (str): Version for the new tag
-		headers (dict[str, str]): Headers for GitHub API requests
+		owner (str):				GitHub username
+		project_name (str):			Name of the GitHub repository
+		version (str):				Version for the new tag
+		headers (dict[str, str]):	Headers for GitHub API requests
 	"""
 	progress(f"Creating tag v{version}")
 	create_tag_url = f"{PROJECT_ENDPOINT}/{owner}/{project_name}/git/refs"
@@ -251,11 +251,11 @@ def create_tag(owner: str, project_name: str, version: str, headers: dict[str, s
 def create_release(owner: str, project_name: str, version: str, changelog: str, headers: dict[str, str]) -> int:
 	""" Create a new release\n
 	Args:
-		owner (str): GitHub username
-		project_name (str): Name of the GitHub repository
-		version (str): Version for the new release
-		changelog (str): Changelog text for the release
-		headers (dict[str, str]): Headers for GitHub API requests
+		owner (str):				GitHub username
+		project_name (str):			Name of the GitHub repository
+		version (str):				Version for the new release
+		changelog (str):			Changelog text for the release
+		headers (dict[str, str]):	Headers for GitHub API requests
 	Returns:
 		int: ID of the created release
 	"""
@@ -276,11 +276,11 @@ def create_release(owner: str, project_name: str, version: str, changelog: str, 
 def upload_assets(owner: str, project_name: str, release_id: int, build_folder: str, headers: dict[str, str]) -> None:
 	""" Upload release assets\n
 	Args:
-		owner (str): GitHub username
-		project_name (str): Name of the GitHub repository
-		release_id (int): ID of the release to upload assets to
-		build_folder (str): Folder containing assets to upload
-		headers (dict[str, str]): Headers for GitHub API requests
+		owner (str):				GitHub username
+		project_name (str):			Name of the GitHub repository
+		release_id (int):			ID of the release to upload assets to
+		build_folder (str):			Folder containing assets to upload
+		headers (dict[str, str]):	Headers for GitHub API requests
 	"""
 	if not build_folder:
 		return
@@ -314,8 +314,8 @@ def upload_assets(owner: str, project_name: str, release_id: int, build_folder: 
 def upload_to_github(credentials: dict[str, dict[str, str]], github_config: dict[str, str]) -> str:
 	""" Upload the project to GitHub using the credentials and the configuration\n
 	Args:
-		credentials (dict[str, dict[str, str]]): Credentials for the GitHub API
-		github_config (dict[str, str]): Configuration for the GitHub project
+		credentials (dict[str, dict[str, str]]):	Credentials for the GitHub API
+		github_config (dict[str, str]):			Configuration for the GitHub project
 	Returns:
 		str: Generated changelog text
 	"""
