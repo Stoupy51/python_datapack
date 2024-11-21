@@ -110,6 +110,21 @@ def delete_existing_tag(tag_url: str, headers: dict[str, str]) -> None:
 	handle_response(delete_response, "Failed to delete existing tag")
 	info(f"Deleted existing tag")
 
+def version_to_int(version: str) -> int:
+	""" Version format: major.minor.patch.something_else.... infinitely """
+	for letter in "vabr":
+		version = version.replace(letter, "")
+	version_parts: list[str] = version.split(".")
+	total: int = 0
+	multiplier: int = 1
+	for part in version_parts[::-1]:
+		try:
+			total += int(part) * multiplier
+			multiplier *= 1_000_000	# It means 1 million possible version by dot
+		except ValueError:
+			pass
+	return total
+
 def get_latest_tag(owner: str, project_name: str, version: str, headers: dict[str, str]) -> tuple[str|None, str|None]:
 	""" Get latest tag information\n
 	Args:
@@ -126,6 +141,7 @@ def get_latest_tag(owner: str, project_name: str, version: str, headers: dict[st
 	handle_response(response, "Failed to get tags")
 	tags: list[dict] = response.json()
 	tags = [tag for tag in tags if tag["name"] != f"v{version}"]
+	tags.sort(key=lambda x: version_to_int(x.get("name", "0.0.0")), reverse=True)
 	latest_tag_sha: str|None = None if len(tags) == 0 else tags[0]["commit"]["sha"]
 	latest_tag_version: str|None = None if len(tags) == 0 else tags[0]["name"].replace("v", "")
 	return latest_tag_sha, latest_tag_version
