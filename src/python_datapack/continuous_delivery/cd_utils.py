@@ -1,6 +1,7 @@
 
 # Imports
 from ..utils.print import *
+from ..constants import MINECRAFT_VERSION
 import requests
 import json
 import yaml
@@ -60,3 +61,15 @@ def handle_response(response: requests.Response, error_message: str) -> None:
 		except requests.exceptions.JSONDecodeError:
 			raise ValueError(f"{error_message}, response code {response.status_code} with response {response.text}")
 
+# Supported versions
+def get_supported_versions(version: str = MINECRAFT_VERSION) -> list[str]:
+	""" Get the supported versions for a given version of Minecraft\n
+	Args:
+		version (str): Version of Minecraft
+	Returns:
+		list[str]: List of supported versions, ex: ["1.21.3", "1.21.2"]
+	"""
+	supported_versions: list[str] = [version]
+	if version == "1.21.3":
+		supported_versions.append("1.21.2")
+	return supported_versions

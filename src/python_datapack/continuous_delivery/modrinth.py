@@ -49,7 +49,7 @@ def validate_config(modrinth_config: dict[str, str]) -> tuple[str, str, str, str
 	
 	for key in required_keys:
 		if key not in modrinth_config:
-			raise ValueError(f"The modrinth_config file must contain a '{key}' key, which is the {error_messages[key]}")
+			raise ValueError(f"The modrinth_config dictionary must contain a '{key}' key, which is the {error_messages[key]}")
 	
 	return (
 		modrinth_config["project_name"],
@@ -171,7 +171,7 @@ def upload_version(
 		"version_number": version,
 		"changelog": changelog,
 		"dependencies": dependencies,
-		"game_versions": [MINECRAFT_VERSION],
+		"game_versions": get_supported_versions(),
 		"version_type": version_type,
 		"loaders": ["datapack"],
 		"featured": False,
