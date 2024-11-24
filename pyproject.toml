@@ -1,6 +1,6 @@
 
 [build-system]
-requires = ["hatchling", "requests", "pillow", "smithed", "model_resolver", "mutagen", "watchdog"]
+requires = ["hatchling", "requests", "pillow", "smithed", "model_resolver", "mutagen", "watchdog", "pyperclip"]
 build-backend = "hatchling.build"
 
 [project]
@@ -24,6 +24,7 @@ dependencies = [
 	"model_resolver>=0.12.0",
 	"mutagen>=1.47.0",
 	"watchdog>=3.0.0",
+	"pyperclip>=1.8.2",
 ]
 
 [project.urls]
