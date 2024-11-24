@@ -7,16 +7,23 @@ from .cd_utils import *
 # Constants
 SMITHED_API_URL: str = "https://api.smithed.dev/v2/packs"
 
-def validate_credentials(credentials: dict[str, str]) -> str:
+def validate_credentials(credentials: dict) -> tuple[str, str]:
 	""" Get and validate Smithed credentials\n
 	Args:
 		credentials (dict[str, str]): Credentials for the Smithed API
 	Returns:
 		str: API key for Smithed
+		str: GitHub author
 	"""
 	if "smithed_api_key" not in credentials:
 		raise ValueError("The credentials file must contain a 'smithed_api_key' key, which is a token with 'WRITE_PACKS' scope for the Smithed API: https://smithed.net/settings?tab=account")
-	return credentials["smithed_api_key"]
+	if "github" not in credentials:
+		raise ValueError("The credentials file must contain a 'github' key, which is a dictionary containing a 'api_key' key (a PAT for the GitHub API: https://github.com/settings/tokens) and a 'username' key (the username of the account to use)")
+	if "api_key" not in credentials["github"]:
+		raise ValueError("The credentials file must contain a 'github' key, which is a dictionary containing a 'api_key' key (a PAT for the GitHub API: https://github.com/settings/tokens) and a 'username' key (the username of the account to use)")
+	if "username" not in credentials["github"]:
+		raise ValueError("The credentials file must contain a 'github' key, which is a dictionary containing a 'api_key' key (a PAT for the GitHub API: https://github.com/settings/tokens) and a 'username' key (the username of the account to use)")
+	return credentials["smithed_api_key"], credentials["github"]["username"]
 
 def validate_config(smithed_config: dict[str, str]) -> tuple[str, str, str]:
 	""" Validate Smithed configuration\n
@@ -44,14 +51,14 @@ def validate_config(smithed_config: dict[str, str]) -> tuple[str, str, str]:
 		smithed_config["version"]
 	)
 
-def upload_version(project_id: str, project_name: str, version: str, api_key: str, changelog: str) -> None:
+def upload_version(project_id: str, project_name: str, version: str, api_key: str, author: str) -> None:
 	""" Upload new version\n
 	Args:
 		project_id		(str):				Smithed project ID
 		project_name	(str):				Name of the project
 		version			(str):				Version number
 		api_key			(str):				API key for Smithed
-		changelog		(str):				Changelog text
+		author			(str):				Author (for the github link)
 	"""
 	progress(f"Creating version {version}")
 	post_url: str = f"{SMITHED_API_URL}/{project_id}/versions"
@@ -62,14 +69,18 @@ def upload_version(project_id: str, project_name: str, version: str, api_key: st
 		"dependencies": []
 	}
 
-	# Add the download links (https://github.com/Stoupy51/SimplEnergy/releases/download/v2.0.0/SimplEnergy_datapack_with_libs.zip)
+	# Add the download links
 	links: dict[str, str] = {
-		"datapack":			f"https://github.com/Stoupy51/{project_name}/releases/download/v{version}/{project_name}_datapack_with_libs.zip",
-		"resourcepack":		f"https://github.com/Stoupy51/{project_name}/releases/download/v{version}/{project_name}_resource_pack_with_libs.zip"
+		"datapack":			f"https://github.com/{author}/{project_name}/releases/download/v{version}/{project_name}_datapack_with_libs.zip",
+		"resourcepack":		f"https://github.com/{author}/{project_name}/releases/download/v{version}/{project_name}_resource_pack_with_libs.zip"
 	}
 	for key, value in links.items():
 		if requests.get(value).status_code == 200:
 			data["downloads"][key] = value
+		else:
+			value = value.replace("_with_libs", "")
+			if requests.get(value).status_code == 200:
+				data["downloads"][key] = value
 	
 	response = requests.post(
 		post_url,
@@ -89,10 +100,10 @@ def upload_to_smithed(credentials: dict[str, str], smithed_config: dict, changel
 		smithed_config	(dict):				Configuration for the Smithed project
 		changelog		(str):				Changelog text for the release
 	"""
-	api_key = validate_credentials(credentials)
+	api_key, author = validate_credentials(credentials)
 	project_id, project_name, version = validate_config(smithed_config)
 
-	upload_version(project_id, project_name, version, api_key, changelog)
+	upload_version(project_id, project_name, version, api_key, author)
 
 	info(f"Project {project_name} updated on Smithed!")
 
