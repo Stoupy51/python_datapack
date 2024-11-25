@@ -43,7 +43,7 @@ def upload_version(project_url: str, version: str, changelog: str) -> None:
 
 	# Copy the changelog text to the clipboard
 	pyperclip.copy(changelog)
-	info("Changelog text copied to the clipboard")
+	info("Changelog text copied to the clipboard!")
 
 	# Wait for the user to know if the upload is successful
 	progress("Press Enter if you have uploaded the new version")
