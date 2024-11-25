@@ -210,13 +210,16 @@ scoreboard players reset #count furnace_nbt_recipes.data
 	furnace_nbt_used: bool = False
 	furnace_nbt_vanilla_items: set[str] = set()
 	items: list[tuple[str, dict]] = list(config['database'].items())
-	any_recipe: bool = False
+	any_shapeless: bool = False
+	any_shaped: bool = False
 	for item, data in items:
 		crafts: list[dict] = list(data.get(RESULT_OF_CRAFTING, []))
 		crafts += list(data.get(USED_FOR_CRAFTING, []))
 		for recipe in crafts:
-			if recipe["type"] in ["crafting_shapeless", "crafting_shaped"]:
-				any_recipe = True
+			if recipe["type"] == "crafting_shapeless":
+				any_shapeless = True
+			elif recipe["type"] == "crafting_shaped":
+				any_shaped = True
 
 			# Transform ingr to a list of dicts
 			ingr: list[dict] = recipe.get("ingredients")
@@ -241,10 +244,11 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					debug(f"Found a furnace recipe using custom item in ingredient, adding 'furnace_nbt_recipes' dependency")
 	
 	# If there is any shaped or shapeless recipe, link the functions
-	if any_recipe:
+	if any_shapeless:
 		shapeless_func_tag: str = f"{build_datapack}/data/smithed.crafter/tags/function/event/shapeless_recipes.json"
-		shaped_func_tag: str = f"{build_datapack}/data/smithed.crafter/tags/function/event/recipes.json"
 		write_to_file(shapeless_func_tag, super_json_dump({"values": [f"{namespace}:calls/smithed_crafter/shapeless_recipes"]}))
+	if any_shaped:
+		shaped_func_tag: str = f"{build_datapack}/data/smithed.crafter/tags/function/event/recipes.json"
 		write_to_file(shaped_func_tag, super_json_dump({"values": [f"{namespace}:calls/smithed_crafter/shaped_recipes"]}))
 
 	# Generate recipes with vanilla input (no components)
