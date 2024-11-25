@@ -65,7 +65,7 @@ def main(config: dict, user_code: Callable|None = None):
 
 	# Delete resource_pack folder if no subfolder 'assets' is found
 	if not os.path.exists(f"{config['build_resource_pack']}/assets"):
-		delete_files(config['build_resource_pack'])
+		delete_files(config['build_resource_pack'], clean_on_disk = True)
 
 	# Run user code
 	if user_code:

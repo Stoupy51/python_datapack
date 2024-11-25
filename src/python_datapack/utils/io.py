@@ -371,10 +371,28 @@ def delete_files(contains: str = "", clean_on_disk: bool = True) -> list[str]:
 	"""
 	contains = clean_path(contains)
 	deleted_files: list[str] = []
-	for file_path in list(FILES_TO_WRITE.keys()):
-		if contains in file_path:
-			if delete_file(file_path, clean_on_disk):
-				deleted_files.append(file_path)
+	files_to_delete: list[str] = list(FILES_TO_WRITE.keys())
+
+	# Delete all the files
+	for file_path in [x for x in files_to_delete if contains in x]:
+		if delete_file(file_path, clean_on_disk):
+			deleted_files.append(file_path)
+
+	# If clean_on_disk is true, add the files present on disk to the list
+	if clean_on_disk:
+
+		# Get the build folder by searching the data folder
+		has_data: list[str] = [x for x in files_to_delete if "datapack/data/" in x]
+		if len(has_data) != 0:
+			build_folder: str = os.path.dirname(has_data[0].split("datapack/data/")[0])
+
+			# Add all the files that contains the string to the list
+			files: list[str] = [clean_path(f"{root}/{path}") for root, _, files in os.walk(build_folder) for path in files]
+			for file_path in files:
+				if contains in file_path:
+					if os.path.isfile(file_path) and delete_file(file_path, clean_on_disk):
+						deleted_files.append(file_path)
+
 	return deleted_files
 
 
