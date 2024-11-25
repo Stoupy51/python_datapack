@@ -61,7 +61,7 @@ def official_lib_used(lib: str) -> bool:
 	return is_used
 
 OFFICIAL_LIBS: dict[str, dict] = {
-	"common_signals":		{"version":[0, 0, 5], "name":"Common Signals",					"url":"https://github.com/Stoupy51/CommonSignals",			"is_used": False},
+	"common_signals":		{"version":[0, 1, 0], "name":"Common Signals",					"url":"https://github.com/Stoupy51/CommonSignals",			"is_used": False},
 	"smithed.custom_block":	{"version":[0, 5, 0], "name":"Smithed Custom Block",			"url":"https://wiki.smithed.dev/libraries/custom-block/",	"is_used": False},
 	"smithed.crafter":		{"version":[0, 5, 0], "name":"Smithed Crafter",					"url":"https://wiki.smithed.dev/libraries/crafter/",		"is_used": False},
 	"furnace_nbt_recipes":	{"version":[1, 7, 0], "name":"Furnace NBT Recipes",				"url":"https://github.com/Stoupy51/FurnaceNbtRecipes",		"is_used": False},
