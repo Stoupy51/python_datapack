@@ -36,7 +36,7 @@ def check_config_format(config: dict) -> bool:
 	valid = basic_key_check(config, "author", str, "Author(s) name(s) displayed in pack.mcmeta, also used to add convention.debug tag to the players of the same name(s) <-- showing additionnal displays like datapack loading", valid)
 	valid = basic_key_check(config, "project_name", str, "Name of the datapack, used for messages and items lore", valid)
 	valid = basic_key_check(config, "version", str, "Datapack version in the following mandatory format: major.minor.patch, ex: 1.0.0 or 1.21.615", valid)
-	valid = basic_key_check(config, "namespace", str, "Should be the same you use in the merge folder. Used to namespace functions, tags, etc.", valid)
+	valid = basic_key_check(config, "namespace", str, "Used to namespace functions, tags, etc. Should be the same you use in the merge folder.", valid)
 	valid = basic_key_check(config, "description", str, "Pack description displayed in pack.mcmeta", valid)
 	if config.get("ignore_unset", None) == True:
 		return valid
