@@ -28,7 +28,7 @@ def main(config: dict):
 	# Prepare lang dictionnary and lang_format function
 	lang = {}
 	@simple_cache
-	def lang_format(text: str) -> str:
+	def lang_format(text: str) -> tuple[str, str]:
 		""" Get alphanumeric characters from a string and return it.
 		Args:
 			text (str): The text to format

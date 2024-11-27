@@ -128,7 +128,7 @@ def main(config: dict, user_code: Callable|None = None):
 				for file in files:
 					if file.endswith(".zip"):
 						for dest in datapack_dest:
-							shutil.copy(f"{root}/{file}", dest)
+							shutil.copy(clean_path(f"{root}/{file}"), clean_path(dest))
 
 		# Copy official used libs
 		for data in OFFICIAL_LIBS.values():

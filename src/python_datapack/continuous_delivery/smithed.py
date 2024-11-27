@@ -92,7 +92,7 @@ def upload_version(project_id: str, project_name: str, version: str, api_key: st
 
 
 @measure_time(progress, "Uploading to smithed took")
-@handle_error(error_log=3)
+@handle_error(error_log=2)
 def upload_to_smithed(credentials: dict[str, str], smithed_config: dict, changelog: str = "") -> None:
 	""" Upload the project to Smithed using the credentials and the configuration\n
 	Args:

@@ -58,13 +58,14 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] = [
 	# Copy the archive to the destination(s)
 	for dest_folder in copy_destinations:
 		try:
+			dest_folder = clean_path(dest_folder)
 			if dest_folder.endswith("/"):
 				file_name = destination.split("/")[-1]
-				shutil.copy(destination, f"{dest_folder}/{file_name}")
+				shutil.copy(clean_path(destination), f"{dest_folder}/{file_name}")
 			else:	# Else, it's not a folder but a file path
-				shutil.copy(destination, dest_folder)
+				shutil.copy(clean_path(destination), dest_folder)
 		except Exception as e:
-			warning(f"Unable to copy '{destination}' to '{dest_folder}', reason: {e}")
+			warning(f"Unable to copy '{clean_path(destination)}' to '{dest_folder}', reason: {e}")
 	
 	# Return the time taken to archive the source folder
 	return time.perf_counter() - start_time
