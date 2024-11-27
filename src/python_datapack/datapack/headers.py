@@ -13,7 +13,7 @@ def main(config: dict):
 		if functions_folder in file_path and file_path.endswith(".mcfunction"):
 
 			# Get namespace of the file
-			splitted = file_path.split(functions_folder)
+			splitted = file_path.split(functions_folder, 1)
 			namespace = splitted[0].split("/")[-1]
 				
 			# Get string that is used for calling the function (ex: "namespace:my_function")
@@ -30,7 +30,7 @@ def main(config: dict):
 			if functions_tags_folder in file_path:
 
 				# Get namespace of the file
-				splitted = file_path.split(functions_tags_folder)
+				splitted = file_path.split(functions_tags_folder, 1)
 				namespace = splitted[0].split("/")[-1]
 
 				# Get string that is used for calling the function (ex: "#namespace:my_function")
@@ -51,7 +51,7 @@ def main(config: dict):
 			elif advancements_folder in file_path:
 
 				# Get namespace of the file
-				splitted = file_path.split(advancements_folder)
+				splitted = file_path.split(advancements_folder, 1)
 				namespace = splitted[0].split("/")[-1]
 
 				# Get string that is used for calling the function (ex: "advancement namespace:my_function")
@@ -73,7 +73,7 @@ def main(config: dict):
 			if "function " in line:
 
 				# Get the called function
-				splitted = line.split("function ")[1].replace("\n","").split(" ")
+				splitted = line.split("function ", 1)[1].replace("\n","").split(" ")
 				calling = splitted[0]
 
 				# Get additional text like macros, ex: function iyc:function {id:"51"}
