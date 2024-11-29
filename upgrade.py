@@ -4,7 +4,8 @@
 import os
 
 # Constants
-PYPROJECT_PATH = "pyproject.toml"
+ROOT: str = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/")
+PYPROJECT_PATH = f"{ROOT}/pyproject.toml"
 VERSION_KEY = "version = "
 
 def read_file(path: str) -> list[str]:

@@ -7,5 +7,6 @@ destination = "C:/Users/Alexandre-PC/AppData/Local/Programs/Python/Python310/Lib
 
 shutil.rmtree(destination, ignore_errors=True)
 shutil.copytree(source, destination)
-print("Copied python_datapack to local Python's site-packages")
+os.system("clear")
+print("\nCopied python_datapack to local Python's site-packages\n")
 

@@ -77,14 +77,22 @@ def error(*values: object, exit: bool = True, prefix: str = "", **print_kwargs) 
 		except KeyboardInterrupt:
 			sys.exit(1)
 
+def whatisit(*values: object, print_function: Callable = debug, prefix: str = "") -> None:
+	if len(values) > 1:
+		print_function("(What is it?)", prefix=prefix)
+		for value in values:
+			print_function(f"{type(value)}:\t{value}", prefix=prefix)
+	elif len(values) == 1:
+		print_function(f"(What is it?) {type(values[0])}:\t{values[0]}", prefix=prefix)
+
 
 # Execution time decorator
 def measure_time(print_func: Callable = debug, message: str = "", perf_counter: bool = True) -> Callable:
 	""" Decorator that will measure the execution time of a function\n
 	Args:
-		print_func	(Callable):	Function to use to print the execution time
-		message		(str):		Message to display with the execution time (e.g. "Execution time of Something"), defaults to "Execution time of {func.__name__}"
-		perf_counter	(bool):	Whether to use time.perf_counter_ns or time.time_ns
+		print_func		(Callable):	Function to use to print the execution time
+		message			(str):		Message to display with the execution time (e.g. "Execution time of Something"), defaults to "Execution time of {func.__name__}"
+		perf_counter	(bool):		Whether to use time.perf_counter_ns or time.time_ns
 	"""
 	ns: Callable = time.perf_counter_ns if perf_counter else time.time_ns
 	def decorator(func: Callable) -> Callable:
@@ -123,6 +131,13 @@ def measure_time(print_func: Callable = debug, message: str = "", perf_counter: 
 						hours: int = hours % 24
 						print_func(f"{message}: {days}d {hours}h {minutes}m {seconds}s")
 			return result
+
+		# Preserve the docstring and other attributes for doctest
+		wrapper.__doc__ = func.__doc__
+		wrapper.__name__ = func.__name__
+		wrapper.__module__ = func.__module__
+		wrapper.__dict__.update(func.__dict__)
+		
 		return wrapper
 	return decorator
 
