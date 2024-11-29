@@ -55,7 +55,7 @@ def main(config: dict) -> None:
 	write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/load.json", super_json_dump({"values": ["#load:_private/load"]}))
 	write_to_file(f"{config['build_datapack']}/data/load/tags/function/_private/init.json", super_json_dump({"values": ["load:_private/init"]}))
 	write_to_file(f"{config['build_datapack']}/data/load/tags/function/_private/load.json", super_json_dump({"values": ["#load:_private/init",{"id":"#load:pre_load","required":False},{"id":"#load:load","required":False},{"id":"#load:post_load","required":False}]}))
-	write_to_file(f"{config['build_datapack']}/data/load/function/_private/init.mcfunction", f"""
+	write_to_function(config, f"load:_private/init", f"""
 # Reset scoreboards so packs can set values accurate for current load.
 scoreboard objectives add load.status dummy
 scoreboard players reset * load.status
@@ -64,7 +64,7 @@ scoreboard players reset * load.status
 
 	# Setup load json files
 	write_to_file(f"{config['build_datapack']}/data/load/tags/function/load.json", super_json_dump({"values": [f"#{namespace}:load"]}))
-	values: list[str] = [f"#{namespace}:enumerate", f"#{namespace}:resolve"]
+	values: list[str | dict] = [f"#{namespace}:enumerate", f"#{namespace}:resolve"]
 	if dependencies:
 		values.insert(0, {"id":f"#{namespace}:dependencies","required":False})
 	write_to_file(f"{config['build_datapack']}/data/{namespace}/tags/function/load.json", super_json_dump({"values": values}, max_level = 3))
@@ -90,13 +90,13 @@ function {config['namespace']}:v{version}/load/valid_dependencies
 # Confirm load
 function {config['namespace']}:v{version}/load/confirm_load
 """
-	write_to_file(f"{config['datapack_functions']}/v{version}/load/secondary.mcfunction", content)
+	write_to_versioned_file(config, "load/secondary", content)
 
 
 	# Tick verification
 	if is_in_write_queue(f"{config['datapack_functions']}/v{version}/tick.mcfunction"):
 		write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/tick.json", super_json_dump({"values": [f"{namespace}:v{version}/load/tick_verification"]}))
-		write_to_file(f"{config['datapack_functions']}/v{version}/load/tick_verification.mcfunction", f"""
+		write_to_versioned_file(config, "load/tick_verification", f"""
 execute if score #{namespace}.major load.status matches {major} if score #{namespace}.minor load.status matches {minor} if score #{namespace}.patch load.status matches {patch} run function {namespace}:v{version}/tick
 
 """)
@@ -133,7 +133,7 @@ execute if score #{namespace}.major load.status matches {major} if score #{names
 
 	# Write check_dependencies.mcfunction
 	if dependencies:
-		write_to_file(f"{config['datapack_functions']}/v{version}/load/check_dependencies.mcfunction", f"""
+		write_to_versioned_file(config, "load/check_dependencies", f"""
 ## Check if {config['project_name']} is loadable (dependencies)
 scoreboard players set #dependency_error {namespace}.data 0
 {encoder_checks}
@@ -141,7 +141,7 @@ scoreboard players set #dependency_error {namespace}.data 0
 
 	# Waiting for player
 	if dependencies:
-		write_to_file(f"{config['datapack_functions']}/v{version}/load/valid_dependencies.mcfunction", f"""
+		write_to_versioned_file(config, "load/valid_dependencies", f"""
 # Waiting for a player to get the game version, but stop function if no player found
 execute unless entity @p run schedule function {namespace}:v{version}/load/valid_dependencies 1t replace
 execute unless entity @p run return 0

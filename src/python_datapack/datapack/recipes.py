@@ -356,7 +356,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 	content = "\n# Get all recipes\n"
 	for recipe in vanilla_generated_recipes:
 		content += f"recipe give @s {namespace}:{recipe}\n"
-	write_to_file(f"{config['datapack_functions']}/utils/get_all_recipes.mcfunction", content + "\n")
+	write_to_function(config, f"{namespace}:utils/get_all_recipes", content + "\n")
 
 
 	# Unlock vanilla recipes when at least one of the ingredient is in inventory

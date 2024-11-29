@@ -82,6 +82,6 @@ def main(config: dict):
 			chest_contents.append(f'{{slot:{j},item:{{count:1,id:"{id}",components:{json_content}}}}}')
 		joined_content = ",".join(chest_contents)
 		chests.append(f'give @s chest[container=[{joined_content}],custom_name=\'{{"text":"Chest [{i+1}/{total_chests}]","color":"yellow"}}\',lore=["{lore}"]]')
-	write_to_file(f"{config['datapack_functions']}/_give_all.mcfunction", "\n" + "\n\n".join(chests) + "\n\n")
+	write_to_function(config, f"{namespace}:_give_all", "\n" + "\n\n".join(chests) + "\n\n")
 	info("Give all function successfully made")
 
