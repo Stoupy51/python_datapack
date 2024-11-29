@@ -43,7 +43,7 @@ def optimize_element(content: list|dict|str) -> list|dict|str:
 			previous_without_text = new_content[-1].copy() if isinstance(new_content[-1], dict) else new_content[-1]
 			if isinstance(compound, dict) and isinstance(new_content[-1], dict):
 				compound_without_text.pop("text", None)
-				previous_without_text.pop("text", None)
+				previous_without_text.pop("text", None) # type: ignore
 
 			# If the previous compound is the same as the current one, merge the text
 			if str(compound_without_text) == str(previous_without_text):
@@ -76,7 +76,7 @@ def optimize_element(content: list|dict|str) -> list|dict|str:
 
 # Remove events recursively
 EVENTS = ["hoverEvent", "clickEvent"]
-def remove_events(compound: dict):
+def remove_events(compound: dict|list):
 	""" Remove events from a compound recursively
 	Args:
 		compound (dict): The compound
@@ -93,7 +93,7 @@ def remove_events(compound: dict):
 		remove_events(value)
 
 # Function
-def optimize_book(book_content: list) -> list:
+def optimize_book(book_content: list) -> list|dict|str:
 	""" Optimize the book content by associating compounds when possible
 	Args:
 		book_content (list): The book content

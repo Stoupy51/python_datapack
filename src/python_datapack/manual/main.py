@@ -9,7 +9,7 @@ from ..constants import *
 from ..resource_pack.item_models import handle_item		# Handle new items models (used for the manual and the heavy workbench)
 
 # Utility functions
-def deepcopy(x: list|dict) -> list|dict:
+def deepcopy(x):
 	return json.loads(json.dumps(x))
 
 def main(config: dict):
@@ -262,17 +262,17 @@ def routine(config: dict):
 						content.append("\n")
 
 				## Add wiki information if any
-				wiki_buttons = []
+				info_buttons: list[dict] = []
 				if name == "heavy_workbench":
 					content.append([
-						{"text":"\nEvery recipe that uses custom items ", "font":"minecraft:default","color":"black"},
-						{"text":"must","color":"red","underlined":True},
+						{"text":"\nEvery recipe that uses custom items ", "font":"minecraft:default", "color":"black"},
+						{"text":"must", "color":"red", "underlined":True},
 						{"text":" be crafted using the Heavy Workbench."}
 					])
 				else:
 					if raw_data.get(WIKI_COMPONENT):
-						wiki_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data[WIKI_COMPONENT]}})
-					
+						info_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data[WIKI_COMPONENT]}})
+
 					# For each craft (except smelting dupes),
 					for i, craft in enumerate(crafts):
 						if craft["type"] == "crafting_shapeless":
@@ -286,7 +286,7 @@ def routine(config: dict):
 						if not config['manual_high_resolution']:
 							craft_font = get_next_font()	# Unique used font for the craft
 							generate_page_font(config, name, craft_font, craft, output_name = f"{name}_{i+1}")
-							hover_text = [""]
+							hover_text: list[dict|list|str] = [""]
 							hover_text.append({"text": craft_font + "\n\n" * breaklines, "font": FONT, "color": "white"})
 						else:
 							l = generate_craft_content(config, craft, name, "")
@@ -325,22 +325,34 @@ def routine(config: dict):
 
 						# Add the craft to the content
 						result_or_ingredient = WIKI_RESULT_OF_CRAFT_FONT if "result" not in craft else generate_wiki_font_for_ingr(config, name, craft)
-						wiki_buttons.append({"text": result_or_ingredient + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": hover_text}})
+						info_buttons.append({"text": result_or_ingredient + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": hover_text}})
 
 						# If there is a result to the craft, try to add the clickEvent that change to that page
 						if "result" in craft:
 							result_item = ingr_to_id(craft["result"], False)
 							if result_item in database:
-								wiki_buttons[-1]["clickEvent"] = {"action": "change_page", "value": str(get_page_number(result_item))}
+								info_buttons[-1]["clickEvent"] = {"action": "change_page", "value": str(get_page_number(result_item))}
 				
 				# Add wiki buttons 5 by 5
-				if wiki_buttons:
+				if info_buttons:
+					
+					# If too many buttons, remove all the blue ones (no clickEvent) except the last one
+					if len(info_buttons) > 15:
+						first_index: int = 0 if not raw_data.get(WIKI_COMPONENT) else 1
+						last_index: int = -1
+						for i, button in enumerate(info_buttons):
+							if isinstance(button, dict) and not button.get("clickEvent") and i != first_index:
+								last_index = i
+						
+						# If there are more than 1 blue button, remove them except the last one
+						if (last_index - first_index) > 1:
+							info_buttons = info_buttons[:first_index] + info_buttons[last_index:]
 
 					# Add a breakline only if there aren't too many breaklines already
 					content.append("\n")
 
 					last_i = 0
-					for i, button in enumerate(wiki_buttons):
+					for i, button in enumerate(info_buttons):
 						last_i = i
 						# Duplicate line and add breakline
 						if i % 5 == 0 and i != 0:
@@ -444,11 +456,11 @@ def routine(config: dict):
 
 
 		## Append introduction page
-		content = [""]
+		intro_content: list[dict|str] = [""]
 		page_font = get_page_font(0)
 		font_providers.append({"type":"bitmap","file":f"{namespace}:font/page/_logo.png", "ascent": 0, "height": 40, "chars": [page_font]})
-		content.append({"text": config['manual_name'] + "\n", "underlined": True})
-		content.append({"text": MEDIUM_NONE_FONT * 2 + page_font, "font": FONT, "color": "white"})
+		intro_content.append({"text": config['manual_name'] + "\n", "underlined": True})
+		intro_content.append({"text": MEDIUM_NONE_FONT * 2 + page_font, "font": FONT, "color": "white"})
 		
 		# Create the image and load Minecraft font
 		icon_path = f"{config['assets_folder']}/original_icon.png"
@@ -458,16 +470,16 @@ def routine(config: dict):
 		logo = careful_resize(logo, 256)
 
 		# Write the introduction text
-		content.append("\n" * 6)
-		content.append(config['manual_first_page_text'])
+		intro_content.append("\n" * 6)
+		intro_content.append(config['manual_first_page_text'])
 
 		# Save image and insert in the manual pages
 		logo.save(f"{config['manual_path']}/font/page/_logo.png")
-		book_content.insert(0, content)
+		book_content.insert(0, intro_content)
 
 		## Optimize the book size
-		book_content_deepcopy = json.loads(json.dumps(book_content))	# Deepcopy to avoid sharing same components (such as clickEvent)
-		book_content = optimize_book(book_content_deepcopy)
+		book_content_deepcopy: list[dict|list|str] = deepcopy(book_content)	# Deepcopy to avoid sharing same components (such as clickEvent)
+		book_content: list[dict|list|str] = list(optimize_book(book_content_deepcopy))
 
 		## Insert at 2nd page the heavy workbench
 		if "heavy_workbench" in database:
