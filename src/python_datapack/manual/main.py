@@ -29,6 +29,7 @@ def main(config: dict):
 	finally:
 		shutil.rmtree(TEMPLATES_PATH, ignore_errors = True)
 
+@measure_time(info, "Added manual to the database")
 def routine(config: dict):
 	database: dict[str, dict] = config["database"]
 	namespace: str = config["namespace"]
@@ -568,6 +569,5 @@ def routine(config: dict):
 		del database["heavy_workbench"]
 		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/textures/item/heavy_workbench.png")
 		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/models/item/heavy_workbench.json")
-
-	info(f"Added manual to the database")
+	pass
 
