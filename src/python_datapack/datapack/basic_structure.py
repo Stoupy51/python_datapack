@@ -6,31 +6,30 @@ from ..utils.print import *
 def main(config: dict):
 	version: str = config['version']
 	namespace: str = config['namespace']
-	functions: str = f"{config['datapack_functions']}/v{version}"
-	tick: str = f"{functions}/tick.mcfunction"
-	tick_2 = f"{functions}/tick_2.mcfunction"
-	second = f"{functions}/second.mcfunction"
-	second_5 = f"{functions}/second_5.mcfunction"
-	minute = f"{functions}/minute.mcfunction"
+	functions: str = f"{config['build_datapack']}/data/{namespace}/function/v{version}"
+	tick_2: str = f"{functions}/tick_2.mcfunction"
+	second: str = f"{functions}/second.mcfunction"
+	second_5: str = f"{functions}/second_5.mcfunction"
+	minute: str = f"{functions}/minute.mcfunction"
 
 	# Prepend to tick_2, second, second_5, and minute if they exists
 	if is_in_write_queue(tick_2):
-		write_to_file(tick_2, f"""
+		write_to_versioned_file(config, "tick_2", f"""
 # Reset timer
 scoreboard players set #tick_2 {namespace}.data 1
 """, prepend = True)
 	if is_in_write_queue(second):
-		write_to_file(second, f"""
+		write_to_versioned_file(config, "second", f"""
 # Reset timer
 scoreboard players set #second {namespace}.data 0
 """, prepend = True)
 	if is_in_write_queue(second_5):
-		write_to_file(second_5, f"""
+		write_to_versioned_file(config, "second_5", f"""
 # Reset timer
 scoreboard players set #second_5 {namespace}.data -10
 """, prepend = True)
 	if is_in_write_queue(minute):
-		write_to_file(minute, f"""
+		write_to_versioned_file(config, "minute", f"""
 # Reset timer
 scoreboard players set #minute {namespace}.data 1
 """, prepend = True)
@@ -56,6 +55,6 @@ scoreboard players set #minute {namespace}.data 1
 		if is_in_write_queue(minute):
 			content += f"execute if score #minute {namespace}.data matches 1200.. run function {namespace}:v{version}/minute\n"
 		if content:
-			write_to_file(tick, content, prepend = True)
+			write_to_tick_file(config, content, prepend = True)
 
 

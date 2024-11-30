@@ -94,7 +94,7 @@ function {config['namespace']}:v{version}/load/confirm_load
 
 
 	# Tick verification
-	if is_in_write_queue(f"{config['datapack_functions']}/v{version}/tick.mcfunction"):
+	if is_in_write_queue(f"{config['build_datapack']}/data/{namespace}/function/v{version}/tick.mcfunction"):
 		write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/tick.json", super_json_dump({"values": [f"{namespace}:v{version}/load/tick_verification"]}))
 		write_to_versioned_file(config, "load/tick_verification", f"""
 execute if score #{namespace}.major load.status matches {major} if score #{namespace}.minor load.status matches {minor} if score #{namespace}.patch load.status matches {patch} run function {namespace}:v{version}/tick

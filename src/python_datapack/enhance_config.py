@@ -1,6 +1,7 @@
 
 # Imports
 from .utils.io import *
+from .resource_pack.source_lore_font import main as source_lore_font
 
 # Main function
 def main(config: dict) -> dict:
@@ -17,8 +18,10 @@ def main(config: dict) -> dict:
 
 	# Technical constants
 	config['build_datapack'] = f"{config['build_folder']}/datapack"										# Folder where the final datapack will be built
-	config['datapack_functions'] = f"{config['build_datapack']}/data/{config['namespace']}/function"	# Folder where the datapack functions are built
 	config['build_resource_pack'] = f"{config['build_folder']}/resource_pack"							# Folder where the final resource pack will be built
+
+	# If the source_lore has an ICON text component, make a font
+	config = source_lore_font(config)
 
 	return config
 

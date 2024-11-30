@@ -7,7 +7,6 @@ from ..constants import *
 def main(config: dict):
 	namespace: str = config['namespace']
 	build_datapack: str = config['build_datapack']
-	datapack_functions: str = config['datapack_functions']
 	database: dict = config['database']
 
 	# Stop if not custom block
@@ -21,7 +20,7 @@ def main(config: dict):
 		write_to_file(f"{build_datapack}/data/{namespace}/predicate/facing/{face}.json", super_json_dump(predicate))
 
 	# Get rotation function
-	write_to_file(f"{datapack_functions}/custom_blocks/get_rotation.mcfunction", f"""
+	write_to_function(config, f"{namespace}:custom_blocks/get_rotation", f"""
 # Set up score
 scoreboard players set #rotation {namespace}.data 0
 
@@ -50,7 +49,7 @@ execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:f
 		if data.get(VANILLA_BLOCK):
 			block = data[VANILLA_BLOCK]
 			block_id = block["id"]
-			path = f"{datapack_functions}/custom_blocks/{item}"
+			path = f"{namespace}:custom_blocks/{item}"
 			beautify_name: str = ""
 			if block_id in BLOCKS_WITH_INTERFACES:
 				if data.get("item_name"):
@@ -94,15 +93,13 @@ scoreboard players add #total_{item} {namespace}.data 1
 """
 
 			# Write the file
-			write_to_file(f"{path}/place_main.mcfunction", content)
+			write_to_function(config, f"{path}/place_main", content)
 
 			# Write the line in stats_custom_blocks
-			write_to_file(
-				f"{datapack_functions}/_stats_custom_blocks.mcfunction",
+			write_to_function(config, "_stats_custom_blocks",
 				f'tellraw @s [{{"text":"- Total \'{item_name}\': ","color":"gold"}},{{"score":{{"name":"#total_{item}","objective":"{namespace}.data"}},"color":"yellow"}}]\n'
 			)
-			write_to_file(
-				f"{datapack_functions}/_stats_custom_blocks.mcfunction",
+			write_to_function(config, "_stats_custom_blocks",
 				f'scoreboard players add #total_{item} {namespace}.data 0\n',
 				prepend = True
 			)
@@ -141,7 +138,7 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 				content += 'execute align xyz positioned ~.5 ~ ~.5 unless entity @e[type=marker,dx=-1,dy=-1,dz=-1,tag=furnace_nbt_recipes.furnace] run summon marker ~ ~ ~ {Tags:["furnace_nbt_recipes.furnace"]}\n'
 				
 			# Write file
-			write_to_file(f"{path}/place_secondary.mcfunction", content)
+			write_to_function(config, f"{path}/place_secondary", content)
 		pass
 
 	# Link the custom block library to the datapack
@@ -156,7 +153,7 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 		write_to_file(f"{build_datapack}/data/smithed.custom_block/tags/function/event/on_place.json", super_json_dump({"values": [f"{namespace}:custom_blocks/on_place"]}))
 
 		# Write the slot function
-		write_to_file(f"{datapack_functions}/custom_blocks/on_place.mcfunction", f"execute if data storage smithed.custom_block:main blockApi.__data.Items[0].components.\"minecraft:custom_data\".smithed.block{{from:\"{namespace}\"}} run function {namespace}:custom_blocks/place\n")
+		write_to_function(config, f"{namespace}:custom_blocks/on_place", f"execute if data storage smithed.custom_block:main blockApi.__data.Items[0].components.\"minecraft:custom_data\".smithed.block{{from:\"{namespace}\"}} run function {namespace}:custom_blocks/place\n")
 
 		# Write the function that will place the custom blocks
 		content = f"tag @s add {namespace}.placer\n"
@@ -164,7 +161,7 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 			if data.get("id") == CUSTOM_BLOCK_VANILLA:
 				content += f"execute if data storage smithed.custom_block:main blockApi{{id:\"{namespace}:{item}\"}} run function {namespace}:custom_blocks/{item}/place_main\n"
 		content += f"tag @s remove {namespace}.placer\n"
-		write_to_file(f"{datapack_functions}/custom_blocks/place.mcfunction", content)
+		write_to_function(config, f"{namespace}:custom_blocks/place", content)
 
 	# Sort unique blocks
 	unique_blocks = sorted(list(unique_blocks))
@@ -177,19 +174,17 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 		block_underscore = block_id.replace(":","_")
 		block_id = "#minecraft:cauldrons" if block_id == "minecraft:cauldron" else block_id
 		content += f"execute if {score_check} if entity @s[tag={namespace}.vanilla.{block_underscore}] unless block ~ ~ ~ {block_id} run function {namespace}:custom_blocks/_groups/{block_underscore}\n"
-	write_to_file(f"{datapack_functions}/custom_blocks/destroy.mcfunction", content + "\n")
+	write_to_function(config, f"{namespace}:custom_blocks/destroy", content + "\n")
 
 	# For each unique block, make the group function
 	for block_id in unique_blocks:
 
 		# Add a line in the stats_custom_blocks file
 		score_name: str = f"total_vanilla_{block_id.replace('minecraft:','')}"
-		write_to_file(
-			f"{datapack_functions}/_stats_custom_blocks.mcfunction",
+		write_to_function(config, "_stats_custom_blocks",
 			f'tellraw @s [{{"text":"- Vanilla \'{block_id}\': ","color":"gray"}},{{"score":{{"name":"#{score_name}","objective":"{namespace}.data"}},"color":"white"}}]\n'
 		)
-		write_to_file(
-			f"{datapack_functions}/_stats_custom_blocks.mcfunction",
+		write_to_function(config, "_stats_custom_blocks",
 			f'scoreboard players add #{score_name} {namespace}.data 0\n',
 			prepend = True
 		)
@@ -210,13 +205,14 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 				if this_block == block_underscore:
 					score_check: str = f"score #total_{item} {namespace}.data matches 1.."
 					content += f"execute if {score_check} if entity @s[tag={namespace}.{item}] run function {namespace}:custom_blocks/{item}/destroy\n"
-		write_to_file(f"{datapack_functions}/custom_blocks/_groups/{block_underscore}.mcfunction", content + "\n")
+		write_to_function(config, f"{namespace}:custom_blocks/_groups/{block_underscore}", content + "\n")
 
 	# For each custom block, make it's destroy function
 	for item, data in database.items():
+		data: dict
 		if data.get(VANILLA_BLOCK):
 			block = data[VANILLA_BLOCK]
-			path = f"{datapack_functions}/custom_blocks/{item}"
+			path = f"{namespace}:custom_blocks/{item}"
 			block_id: str = block["id"].split('[')[0].split('{')[0]
 			
 			# Destroy function
@@ -234,7 +230,7 @@ scoreboard players remove #total_{item} {namespace}.data 1
 """
 			
 			# Add the destroy function
-			write_to_file(f"{path}/destroy.mcfunction", content + "\n# Kill the custom block entity\nkill @s\n\n")
+			write_to_function(config, f"{path}/destroy", content + "\n# Kill the custom block entity\nkill @s\n\n")
 
 			# Replace item function
 			if block != VANILLA_BLOCK_FOR_ORES:
@@ -260,7 +256,7 @@ execute if score #is_silk_touch {namespace}.data matches 1 run data modify entit
 # Get item count in every case
 execute store result entity @s Item.count byte 1 run scoreboard players get #item_count {namespace}.data
 """
-			write_to_file(f"{path}/replace_item.mcfunction", content)
+			write_to_function(config, f"{path}/replace_item", content)
 
 
 	# Write the used_vanilla_blocks tag, the predicate to check the blocks with the tag and an advanced one
@@ -283,17 +279,16 @@ execute store result entity @s Item.count byte 1 run scoreboard players get #ite
 
 	# Write a destroy check every 2 ticks, every second, and every 5 seconds
 	ore_vanilla_block = VANILLA_BLOCK_FOR_ORES["id"].replace(':', '_')
-	version: str = config['version']
 	score_check: str = f"score #total_custom_blocks {namespace}.data matches 1.."
-	write_to_file(f"{datapack_functions}/v{version}/tick_2.mcfunction", f"""
+	write_to_versioned_file(config, "tick_2", f"""
 # 2 ticks destroy detection
 execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,tag=!{namespace}.vanilla.{ore_vanilla_block},predicate=!{namespace}:check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
-	write_to_file(f"{datapack_functions}/v{version}/second.mcfunction", f"""
+	write_to_versioned_file(config, "second", f"""
 # 1 second break detection
 execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,tag=!{namespace}.vanilla.{ore_vanilla_block},predicate=!{namespace}:advanced_check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
-	write_to_file(f"{datapack_functions}/v{version}/second_5.mcfunction", f"""
+	write_to_versioned_file(config, "second_5", f"""
 # 5 seconds break detection
 execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,predicate=!{namespace}:advanced_check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
@@ -303,11 +298,11 @@ execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,pr
 	## Custom ores break detection (if any custom ore)
 	if any(data.get(VANILLA_BLOCK) == VANILLA_BLOCK_FOR_ORES for data in database.values()):
 		write_to_file(f"{build_datapack}/data/common_signals/tags/function/signals/on_new_item.json", super_json_dump({"values": [f"{namespace}:calls/common_signals/new_item"]}))
-		write_to_file(f"{datapack_functions}/calls/common_signals/new_item.mcfunction", f"""
+		write_to_function(config, f"{namespace}:calls/common_signals/new_item", f"""
 # If the item is from a custom ore, launch the on_ore_destroyed function
 execute if data entity @s Item.components.\"minecraft:custom_data\".common_signals.temp at @s align xyz run function {namespace}:calls/common_signals/on_ore_destroyed
 """)
-		write_to_file(f"{datapack_functions}/calls/common_signals/on_ore_destroyed.mcfunction", f"""
+		write_to_function(config, f"{namespace}:calls/common_signals/on_ore_destroyed", f"""
 # Get in a score the item count and if it is a silk touch
 scoreboard players set #item_count {namespace}.data 0
 scoreboard players set #is_silk_touch {namespace}.data 0
@@ -320,12 +315,10 @@ execute as @e[tag={namespace}.custom_block,dx=0,dy=0,dz=0] at @s run function {n
 	
 
 	# Add line in the stats_custom_blocks file
-	write_to_file(
-		f"{datapack_functions}/_stats_custom_blocks.mcfunction",
+	write_to_function(config, "_stats_custom_blocks",
 		f'tellraw @s [{{"text":"- Total custom blocks: ","color":"dark_aqua"}},{{"score":{{"name":"#total_custom_blocks","objective":"{namespace}.data"}},"color":"aqua"}}]\n'
 	)
-	write_to_file(
-		f"{datapack_functions}/_stats_custom_blocks.mcfunction",
+	write_to_function(config, "_stats_custom_blocks",
 		f'scoreboard players add #total_custom_blocks {namespace}.data 0\n',
 		prepend = True
 	)
@@ -349,7 +342,7 @@ execute as @e[tag={namespace}.custom_block,dx=0,dy=0,dz=0] at @s run function {n
 					for z in range(-mid_z, mid_z + 1):
 						content += f"execute positioned ~{x} ~{y} ~{z} if data block ~ ~ ~ components.\"minecraft:custom_data\".{namespace}.{item} run function {namespace}:custom_blocks/{item}/place_main\n"
 			content += f"\n# Advancement\nadvancement revoke @s only {namespace}:custom_block_head/{item}\n\n"
-			write_to_file(f"{datapack_functions}/custom_blocks/_player_head/search_{item}.mcfunction", content)
+			write_to_function(config, f"{namespace}:custom_blocks/_player_head/search_{item}", content)
 
 	info("All customs blocks are now placeable and destroyable!")
 
