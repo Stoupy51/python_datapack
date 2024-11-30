@@ -88,6 +88,7 @@ def main(config: dict):
 					else:
 						# Verify format {"text":"..."} or "..."
 						if not (line.startswith('{') and line.endswith('}')) \
+							and not (line.startswith('[') and line.endswith(']')) \
 							and not (line.startswith('"') and line.endswith('"')) \
 							and not (line.startswith("'") and line.endswith("'")):
 							errors.append(f"Item '{item}' has a lore line that is not in a correct text component format: {line}\n We recommend using 'https://misode.github.io/text-component/' to generate the text component")

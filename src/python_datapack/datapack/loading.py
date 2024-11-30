@@ -57,17 +57,6 @@ execute unless score #{namespace}.loaded load.status matches 1 run function {nam
 tellraw @a[tag=convention.debug] {{"text":"[Loaded {config['project_name']} v{version}]","color":"green"}}
 scoreboard players set #{namespace}.loaded load.status 1
 """ + items_storage)
-	
-	# Register of the manual in the universal manual
-	if config.get('has_manual'):
-		project_name: str = config['project_name']
-		write_to_load_file(config, f"""
-# Register the manual to the universal manual
-execute unless data storage python_datapack:main universal_manual run data modify storage python_datapack:main universal_manual set value []
-data remove storage python_datapack:main universal_manual[{{"namespace":"{namespace}"}}]
-data modify storage python_datapack:main universal_manual append value {{"namespace":"{namespace}", "name":"{project_name}", "storage_path":"{namespace}:items all.manual"}}
-""")
-
 
 	info("All loading functions and tags created")
 

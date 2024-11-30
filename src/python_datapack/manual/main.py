@@ -287,7 +287,7 @@ def routine(config: dict):
 						if not config['manual_high_resolution']:
 							craft_font = get_next_font()	# Unique used font for the craft
 							generate_page_font(config, name, craft_font, craft, output_name = f"{name}_{i+1}")
-							hover_text: list[dict|list|str] = [""]
+							hover_text: list[dict|list] = [{"text":""}]
 							hover_text.append({"text": craft_font + "\n\n" * breaklines, "font": FONT, "color": "white"})
 						else:
 							l = generate_craft_content(config, craft, name, "")
@@ -295,7 +295,7 @@ def routine(config: dict):
 							remove_events(l)
 							for k, v in HOVER_EQUIVALENTS.items():
 								l[1] = l[1].replace(k, v)
-							hover_text = ["", l]
+							hover_text = [{"text":""}, l]
 
 						# Append ingredients
 						if craft.get("ingredient"):
@@ -457,7 +457,7 @@ def routine(config: dict):
 
 
 		## Append introduction page
-		intro_content: list[dict|str] = [""]
+		intro_content: list[dict] = [{"text":""}]
 		page_font = get_page_font(0)
 		font_providers.append({"type":"bitmap","file":f"{namespace}:font/page/_logo.png", "ascent": 0, "height": 40, "chars": [page_font]})
 		intro_content.append({"text": config['manual_name'] + "\n", "underlined": True})
@@ -471,7 +471,7 @@ def routine(config: dict):
 		logo = careful_resize(logo, 256)
 
 		# Write the introduction text
-		intro_content.append("\n" * 6)
+		intro_content.append({"text": "\n" * 6})
 		intro_content.append(config['manual_first_page_text'])
 
 		# Save image and insert in the manual pages
@@ -550,7 +550,7 @@ def routine(config: dict):
 				"author": config['author'],
 				"pages": [str(i).replace("\\\\", "\\") for i in book_content],
 			},
-			"lore": [json.dumps(config['source_lore']).replace('"', "'")],
+			"lore": [json.dumps(config['source_lore'], ensure_ascii=False).replace('"', "'")],
 			"item_model": f"{namespace}:manual",
 			"enchantment_glint_override": False,
 			"max_stack_size": 1
@@ -569,5 +569,18 @@ def routine(config: dict):
 		del database["heavy_workbench"]
 		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/textures/item/heavy_workbench.png")
 		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/models/item/heavy_workbench.json")
+
+
+	# Register of the manual in the universal manual
+	project_name: str = config['project_name']
+	first_page: str = json.dumps(book_content[0], ensure_ascii=False)
+	for r in [("\\n", "\\\\n"), (', "underlined": true','')]:
+		first_page = first_page.replace(*r)
+	write_to_load_file(config, f"""
+# Register the manual to the universal manual
+execute unless data storage python_datapack:main universal_manual run data modify storage python_datapack:main universal_manual set value []
+data remove storage python_datapack:main universal_manual[{{"name":"{project_name}"}}]
+data modify storage python_datapack:main universal_manual append value {{"name":"{project_name}","loot_table":"{namespace}:i/manual","hover":{first_page}}}
+""")
 	pass
 

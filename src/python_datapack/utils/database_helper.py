@@ -189,9 +189,9 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 		database[block][CATEGORY] = "material"				# Category
 		database[block]["custom_data"] = {"smithed":{}}		# Smithed convention
 		database[block]["custom_data"]["smithed"]["dict"] = {"block": {material_base: True}}
-		database[block][VANILLA_BLOCK] = VANILLA_BLOCK_FOR_ORES	# Placeholder for the base block (required for custom ores)
 		is_there_raw_material = f"raw_{material_base}.png" in config['textures_files']
 		if block.endswith("ore"):
+			database[block][VANILLA_BLOCK] = VANILLA_BLOCK_FOR_ORES	# Placeholder for the base block (required for custom ores)
 			database[block]["custom_data"]["smithed"]["dict"]["ore"] = {material_base: True}
 			if is_there_raw_material:
 				database[block][NO_SILK_TOUCH_DROP] = f"raw_{material_base}"			# Drop without silk touch (raw_steel is an item in the database)
