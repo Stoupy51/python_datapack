@@ -463,7 +463,7 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 		list:	The content of the craft, ex: [{"text": ...}]
 	"""
 	craft_type = craft["type"]
-	content = [{"text": "", "font": config['namespace'] + ':' + FONT_FILE, "color": "white"}]	# Make default font for every next component
+	content: list[dict|str] = [{"text": "", "font": config['namespace'] + ':' + FONT_FILE, "color": "white"}]	# Make default font for every next component
 
 	# Convert shapeless crafting to shaped crafting
 	if craft_type == "crafting_shapeless":
@@ -574,7 +574,7 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 	elif craft_type in FURNACES_RECIPES_TYPES:
 		
 		# Convert ingredient to its text component
-		formatted_ingredient = get_item_component(config, craft["ingredient"])
+		formatted_ingredient: dict = get_item_component(config, craft["ingredient"])
 
 		# Add the ingredient to the craft
 		for i in range(2):
@@ -598,6 +598,35 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 				content.append(copy)
 			content.append("\n")
 		content.append("\n\n")
+	
+	# If the type is special Pulverizing,
+	elif craft_type == PULVERIZING:
+
+		# Convert ingredient to its text component
+		formatted_ingredient: dict = get_item_component(config, craft["ingredient"])
+		content.append("\n\n")
+		for i in range(2):
+
+			# Add the ingredient to the craft
+			content.append(SMALL_NONE_FONT)
+			if i == 0:
+				content.append(formatted_ingredient)
+			else:
+				copy = formatted_ingredient.copy()
+				copy["text"] = INVISIBLE_ITEM_WIDTH
+				content.append(copy)
+		
+			# Add the result to the craft
+			content.append(SMALL_NONE_FONT * 4 + VERY_SMALL_NONE_FONT + INVISIBLE_ITEM_WIDTH)
+			if i == 0:
+				content.append(result_component)
+			else:
+				copy = result_component.copy()
+				copy["text"] = INVISIBLE_ITEM_WIDTH
+				content.append(copy)
+			content.append("\n")
+		content.append("\n")
+		pass
 
 	return content
 
@@ -626,7 +655,7 @@ def remove_unknown_crafts(crafts: list[dict]) -> list[dict]:
 	"""
 	supported_crafts = []
 	for craft in crafts:
-		if craft["type"] in CRAFTING_RECIPES_TYPES or craft["type"] in FURNACES_RECIPES_TYPES:
+		if craft["type"] in CRAFTING_RECIPES_TYPES or craft["type"] in FURNACES_RECIPES_TYPES or craft["type"] in SPECIAL_RECIPES_TYPES:
 			supported_crafts.append(craft)
 	return supported_crafts
 
@@ -786,6 +815,8 @@ def high_res_font_from_craft(craft: dict) -> str:
 			return SHAPED_3X3_FONT
 		else:
 			return SHAPED_2X2_FONT
+	elif craft["type"] == PULVERIZING:
+		return PULVERIZING_FONT
 	else:
 		error(f"Unknown craft type '{craft['type']}'")
 		return ""

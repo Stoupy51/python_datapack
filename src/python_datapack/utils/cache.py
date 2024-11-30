@@ -1,7 +1,9 @@
 
+# Imports
+from typing import Callable
 
 # Easy cache function
-def simple_cache(func: callable):
+def simple_cache(func: Callable):
 
 	# Create the cache dict
 	cache_dict = {}

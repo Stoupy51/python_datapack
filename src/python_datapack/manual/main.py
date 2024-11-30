@@ -79,9 +79,10 @@ def routine(config: dict):
 	super_copy(f"{TEMPLATES_PATH}/wiki_result_of_craft.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_result_of_craft.png")
 	super_copy(f"{TEMPLATES_PATH}/wiki_ingredient_of_craft.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_ingredient_of_craft.png")
 	if config['manual_high_resolution']:
-		super_copy(f"{TEMPLATES_PATH}/furnace.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/furnace.png")
 		super_copy(f"{TEMPLATES_PATH}/shaped_2x2.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/shaped_2x2.png")
 		super_copy(f"{TEMPLATES_PATH}/shaped_3x3.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/shaped_3x3.png")
+		super_copy(f"{TEMPLATES_PATH}/furnace.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/furnace.png")
+		super_copy(f"{TEMPLATES_PATH}/pulverizing.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/pulverizing.png")
 
 	# If the manual cache is enabled and we have a cache file, load it
 	if config['cache_manual_pages'] and os.path.exists(config['manual_debug']) and os.path.exists(f"{config['manual_path']}/font/manual.json"):
@@ -243,7 +244,7 @@ def routine(config: dict):
 				blue_crafts: list[dict] = [craft for craft in crafts if not craft.get("result")]
 				if blue_crafts:
 					first_craft: dict = blue_crafts[0]
-					l: list[dict] = generate_craft_content(config, first_craft, name, page_font)
+					l: list[dict|str] = generate_craft_content(config, first_craft, name, page_font)
 					if l:
 						content += l
 				
@@ -291,11 +292,12 @@ def routine(config: dict):
 							hover_text: list[dict|list] = [{"text":""}]
 							hover_text.append({"text": craft_font + "\n\n" * breaklines, "font": FONT, "color": "white"})
 						else:
-							l = generate_craft_content(config, craft, name, "")
+							l: list[dict|str] = generate_craft_content(config, craft, name, "")
 							l = [l[0]] + l[2:]	# Remove craft title
 							remove_events(l)
 							for k, v in HOVER_EQUIVALENTS.items():
-								l[1] = l[1].replace(k, v)
+								if isinstance(l[1], str):
+									l[1] = l[1].replace(k, v)
 							hover_text = [{"text":""}, l]
 
 						# Append ingredients
@@ -510,9 +512,11 @@ def routine(config: dict):
 			font_providers.append({"type":"bitmap","file":f"{namespace}:font/shaped_3x3.png", "ascent": 1, "height": 58, "chars": [SHAPED_3X3_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{namespace}:font/shaped_2x2.png", "ascent": 1, "height": 58, "chars": [SHAPED_2X2_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{namespace}:font/furnace.png", "ascent": 1, "height": 58, "chars": [FURNACE_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{namespace}:font/pulverizing.png", "ascent": 4, "height": 58, "chars": [PULVERIZING_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{namespace}:font/shaped_3x3.png", "ascent": -4, "height": 58, "chars": [HOVER_SHAPED_3X3_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{namespace}:font/shaped_2x2.png", "ascent": -2, "height": 58, "chars": [HOVER_SHAPED_2X2_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{namespace}:font/furnace.png", "ascent": -3, "height": 58, "chars": [HOVER_FURNACE_FONT]})
+			font_providers.append({"type":"bitmap","file":f"{namespace}:font/pulverizing.png", "ascent": -3, "height": 58, "chars": [HOVER_PULVERIZING_FONT]})
 		fonts = {"providers": font_providers}
 		with super_open(f"{config['manual_path']}/font/manual.json", "w") as f:
 			f.write(super_json_dump(fonts).replace("\\\\", "\\"))

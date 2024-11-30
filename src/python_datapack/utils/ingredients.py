@@ -6,8 +6,9 @@ from .cache import simple_cache
 from ..constants import *
 
 # Recipes constants
-FURNACES_RECIPES_TYPES = ("smelting", "blasting", "smoking", "campfire_cooking")
-CRAFTING_RECIPES_TYPES = ("crafting_shaped", "crafting_shapeless")
+FURNACES_RECIPES_TYPES: tuple[str, ...] = ("smelting", "blasting", "smoking", "campfire_cooking")
+CRAFTING_RECIPES_TYPES: tuple[str, ...] = ("crafting_shaped", "crafting_shapeless")
+SPECIAL_RECIPES_TYPES: tuple[str, ...] = (PULVERIZING, )
 
 # Function mainly used for database generation
 @simple_cache
@@ -23,11 +24,11 @@ def ingr_repr(id: str, ns: str|None = None, count: int|None = None) -> dict:
 			ex: {"item": "minecraft:stick"}
 	"""
 	if ":" in id:
-		to_return = {"item": id}
+		to_return: dict = {"item": id}
 	else:
 		if ns is None:
 			error(f"Namespace must be specified for custom ingredient '{id}', or you may be missing 'minecraft:'")
-		to_return = {"components":{"minecraft:custom_data":{ns:{id:True}}}}
+		to_return: dict = {"components":{"minecraft:custom_data":{ns:{id:True}}}}
 	if count is not None:
 		to_return["count"] = count
 	return to_return
@@ -43,10 +44,10 @@ def item_to_id_ingr_repr(ingr: dict) -> dict:
 	if ingr.get("item") is None:
 		return ingr
 	if "Slot" in ingr:
-		r = {"Slot": ingr["Slot"], "id": ingr["item"]}
+		r: dict = {"Slot": ingr["Slot"], "id": ingr["item"]}
 	else:
-		r = {"id": ingr["item"]}
-	copy = ingr.copy()
+		r: dict = {"id": ingr["item"]}
+	copy: dict = ingr.copy()
 	copy.pop("item")
 	r.update(copy)
 	return r
