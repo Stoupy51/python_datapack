@@ -12,6 +12,7 @@ from ..resource_pack.item_models import handle_item		# Handle new items models (
 def deepcopy(x):
 	return json.loads(json.dumps(x))
 
+@measure_time(info, "Added manual to the database")
 def main(config: dict):
 	# Copy everything in the manual assets folder to the templates folder
 	os.makedirs(TEMPLATES_PATH, exist_ok = True)
@@ -29,7 +30,6 @@ def main(config: dict):
 	finally:
 		shutil.rmtree(TEMPLATES_PATH, ignore_errors = True)
 
-@measure_time(info, "Added manual to the database")
 def routine(config: dict):
 	database: dict[str, dict] = config["database"]
 	namespace: str = config["namespace"]
@@ -239,16 +239,17 @@ def routine(config: dict):
 				crafts = remove_unknown_crafts(crafts)
 				crafts = unique_crafts(crafts)
 
-				# If there are crafts, generate the content for the first craft
-				if crafts:
-					first_craft = crafts[0]
-					l = generate_craft_content(config, first_craft, name, page_font)
+				# If there are blue crafts, generate the content for the first craft
+				blue_crafts: list[dict] = [craft for craft in crafts if not craft.get("result")]
+				if blue_crafts:
+					first_craft: dict = blue_crafts[0]
+					l: list[dict] = generate_craft_content(config, first_craft, name, page_font)
 					if l:
 						content += l
 				
 				# Else, generate the content for the single item in a big box
 				else:
-					if not page_font:
+					if page_font == "":
 						page_font = get_page_font(number)
 					generate_page_font(config, name, page_font, craft = None)
 					component = get_item_component(config, name)

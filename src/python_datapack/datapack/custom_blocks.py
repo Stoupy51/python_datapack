@@ -4,6 +4,7 @@ from ..utils.io import *
 from ..utils.print import *
 from ..constants import *
 
+@measure_time(info, "All customs blocks are now placeable and destroyable!")
 def main(config: dict):
 	namespace: str = config['namespace']
 	build_datapack: str = config['build_datapack']
@@ -343,6 +344,4 @@ execute as @e[tag={namespace}.custom_block,dx=0,dy=0,dz=0] at @s run function {n
 						content += f"execute positioned ~{x} ~{y} ~{z} if data block ~ ~ ~ components.\"minecraft:custom_data\".{namespace}.{item} run function {namespace}:custom_blocks/{item}/place_main\n"
 			content += f"\n# Advancement\nadvancement revoke @s only {namespace}:custom_block_head/{item}\n\n"
 			write_to_function(config, f"{namespace}:custom_blocks/_player_head/search_{item}", content)
-
-	info("All customs blocks are now placeable and destroyable!")
 

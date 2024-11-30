@@ -3,6 +3,8 @@
 from ..utils.io import *
 from ..utils.print import *
 
+
+@measure_time(info, "Basic structure generated")
 def main(config: dict):
 	version: str = config['version']
 	namespace: str = config['namespace']

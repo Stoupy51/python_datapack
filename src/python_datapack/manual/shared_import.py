@@ -19,31 +19,31 @@ def get_next_font() -> str:	# Returns an incrementing value for each craft
 
 
 # Constants
-SQUARE_SIZE = 32
-MANUAL_ASSETS_PATH = clean_path(os.path.dirname(os.path.realpath(__file__)) + "/")
-TEMPLATES_PATH = MANUAL_ASSETS_PATH + "templates"
-FONT_FILE = "manual"
-BORDER_COLOR = 0xB64E2F
-BORDER_COLOR = (BORDER_COLOR >> 16) & 0xFF, (BORDER_COLOR >> 8) & 0xFF, BORDER_COLOR & 0xFF, 255
-BORDER_SIZE = 2
-HEAVY_WORKBENCH_CATEGORY = "__private_heavy_workbench"
-NONE_FONT = get_font(0x0000)
-MEDIUM_NONE_FONT = get_font(0x0001)
-SMALL_NONE_FONT = get_font(0x0002)
-VERY_SMALL_NONE_FONT = get_font(0x0003)
-MICRO_NONE_FONT = get_font(0x0004)
-WIKI_NONE_FONT = get_font(0x0005)
-WIKI_INFO_FONT = get_font(0x0006)
-WIKI_RESULT_OF_CRAFT_FONT = get_font(0x0007)
-WIKI_INGR_OF_CRAFT_FONT = get_font(0x0008)
-SHAPED_2X2_FONT = get_font(0x0009)
-SHAPED_3X3_FONT = get_font(0x000A)
-FURNACE_FONT = get_font(0x000B)
-HOVER_SHAPED_2X2_FONT = get_font(0x000C)
-HOVER_SHAPED_3X3_FONT = get_font(0x000D)
-HOVER_FURNACE_FONT = get_font(0x000E)
-INVISIBLE_ITEM_FONT = get_font(0x000F)	# Invisible item to place
-INVISIBLE_ITEM_WIDTH = INVISIBLE_ITEM_FONT + MICRO_NONE_FONT
+SQUARE_SIZE: int = 32
+MANUAL_ASSETS_PATH: str = clean_path(os.path.dirname(os.path.realpath(__file__)) + "/")
+TEMPLATES_PATH: str = MANUAL_ASSETS_PATH + "templates"
+FONT_FILE: str = "manual"
+BORDER_COLOR_HEX: int = 0xB64E2F
+BORDER_COLOR: tuple[int, int, int, int] = (BORDER_COLOR_HEX >> 16) & 0xFF, (BORDER_COLOR_HEX >> 8) & 0xFF, BORDER_COLOR_HEX & 0xFF, 255
+BORDER_SIZE: int = 2
+HEAVY_WORKBENCH_CATEGORY: str = "__private_heavy_workbench"
+NONE_FONT: str =					get_font(0x0000)
+MEDIUM_NONE_FONT: str =				get_font(0x0001)
+SMALL_NONE_FONT: str =				get_font(0x0002)
+VERY_SMALL_NONE_FONT: str =			get_font(0x0003)
+MICRO_NONE_FONT: str =				get_font(0x0004)
+WIKI_NONE_FONT: str =				get_font(0x0005)
+WIKI_INFO_FONT: str =				get_font(0x0006)
+WIKI_RESULT_OF_CRAFT_FONT: str =	get_font(0x0007)
+WIKI_INGR_OF_CRAFT_FONT: str =		get_font(0x0008)
+SHAPED_2X2_FONT: str =				get_font(0x0009)
+SHAPED_3X3_FONT: str =				get_font(0x000A)
+FURNACE_FONT: str =					get_font(0x000B)
+HOVER_SHAPED_2X2_FONT: str =		get_font(0x000C)
+HOVER_SHAPED_3X3_FONT: str =		get_font(0x000D)
+HOVER_FURNACE_FONT: str =			get_font(0x000E)
+INVISIBLE_ITEM_FONT: str =			get_font(0x000F)	# Invisible item to place
+INVISIBLE_ITEM_WIDTH: str =			INVISIBLE_ITEM_FONT + MICRO_NONE_FONT
 
 HOVER_EQUIVALENTS: dict[str, str] = {
 	SHAPED_2X2_FONT: HOVER_SHAPED_2X2_FONT,
@@ -52,9 +52,9 @@ HOVER_EQUIVALENTS: dict[str, str] = {
 }
 
 # Global variables
-next_craft_font = 0x8000
-font_providers = []
-manual_pages = []
+next_craft_font: int = 0x8000
+font_providers: list = []
+manual_pages: list = []
 
 # Get page number
 def get_page_number(item_id: str) -> int:

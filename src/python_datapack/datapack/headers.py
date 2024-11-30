@@ -4,6 +4,7 @@ from ..utils.io import *
 from ..utils.print import *
 import json
 
+@measure_time(info, "Headers added to all mcfunction files")
 def main(config: dict):
 
 	# Get all mcfunctions paths
@@ -109,5 +110,4 @@ def main(config: dict):
 
 		# Re-write the file
 		FILES_TO_WRITE[data["path"]] = header + content
-	info("Headers added to all mcfunction files")
 

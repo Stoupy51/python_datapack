@@ -22,8 +22,8 @@ def find_text_end_backslash(text: str, used_char: str) -> int:
 			return text_end - 1
 
 # Main function
+@measure_time(info, "Lang file generated")
 def main(config: dict):
-	start_time: float = time.perf_counter()
 
 	# Prepare lang dictionnary and lang_format function
 	lang = {}
@@ -111,6 +111,4 @@ def main(config: dict):
 	# Write the lang file
 	path: str = f"{config['build_resource_pack']}/assets/minecraft/lang/en_us.json"
 	FILES_TO_WRITE[path] = json.dumps(lang, indent = '\t', ensure_ascii = True)
-	end_time: float = time.perf_counter()
-	info(f"Lang file generated at '{path}' in {end_time - start_time:.5f}s")
 

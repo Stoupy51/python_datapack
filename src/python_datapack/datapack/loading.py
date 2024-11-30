@@ -4,6 +4,7 @@ from ..utils.io import *
 from ..utils.print import *
 from ..constants import *
 
+@measure_time(info, "Loading functions and tags created")
 def main(config: dict):
 	version: str = config['version']
 	namespace: str = config['namespace']
@@ -57,6 +58,4 @@ execute unless score #{namespace}.loaded load.status matches 1 run function {nam
 tellraw @a[tag=convention.debug] {{"text":"[Loaded {config['project_name']} v{version}]","color":"green"}}
 scoreboard players set #{namespace}.loaded load.status 1
 """ + items_storage)
-
-	info("All loading functions and tags created")
 

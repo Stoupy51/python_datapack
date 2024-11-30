@@ -5,9 +5,9 @@ from .custom_blocks import main as custom_blocks_main
 from .loot_tables import main as loot_tables_main
 from ..utils.print import *
 
+@measure_time(info, "Datapack successfully generated")
 def main(config: dict):
 	print()
-	start_time: float = time.perf_counter()
 
 	# Generate datapack loading
 	loading_main(config)
@@ -19,8 +19,4 @@ def main(config: dict):
 
 		# Generate items loot tables
 		loot_tables_main(config)
-
-	# Info print
-	total_time: float = time.perf_counter() - start_time
-	info(f"Datapack successfully generated in {total_time:.5f} seconds!")
 

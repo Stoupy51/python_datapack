@@ -3,7 +3,8 @@
 from ..utils.print import *
 from ..utils.io import *
 
-# Setup custom blocks ticks and second functions calls
+
+@measure_time(info, "Custom blocks ticks and second functions calls")
 def custom_blocks_ticks_and_second_functions(config: dict) -> None:
 	""" Setup custom blocks ticks and second functions calls\n
 	It will seek for "second.mcfunction" and "tick.mcfunction" files in the custom_blocks folder\n

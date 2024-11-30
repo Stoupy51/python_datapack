@@ -7,6 +7,7 @@ from ..utils.cache import simple_cache
 from ..constants import *
 
 # Generate recipes
+@measure_time(info, "Recipes generated")
 def main(config: dict):
 	namespace: str = config['namespace']
 	build_datapack: str = config['build_datapack']
@@ -393,7 +394,5 @@ advancement revoke @s only {namespace}:unlock_recipes
 				content += f"execute if score #success {namespace}.data matches 1 run recipe give @s {namespace}:{recipe}\n"
 			content += "\n"
 		write_to_file(func_path, content)
-
-	# Final print
-	info("Recipes generated")
+	pass
 
