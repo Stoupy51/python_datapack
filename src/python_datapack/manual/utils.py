@@ -156,7 +156,7 @@ def generate_all_iso_renders(config: dict):
 	# Launch model resolvers for remaining blocks
 	if len(for_model_resolver) > 0:
 		load_dir = Path(config['build_resource_pack'])
-		debug("Generating iso renders for %d items" % len(for_model_resolver))
+		debug(f"Generating iso renders for {len(for_model_resolver)} items...")
 		model_resolver_main(
 			render_size = config['opengl_resolution'],
 			load_dir = load_dir,
@@ -165,6 +165,14 @@ def generate_all_iso_renders(config: dict):
 			minecraft_version = "latest",
 			__special_filter__ = for_model_resolver
 		)
+
+		# TODO: Update to latest model_resolver
+		# from model_resolver import Render
+		# with run_beet() as ctx:
+		# 	render = Render(ctx)
+		# 	for rp_path, dst_path in for_model_resolver.items():
+		# 		render.add_model_task(rp_path, path=dst_path)
+		# 	render.run()
 	debug("Generated iso renders for all items, or used cached renders")
 
 	## Copy every used vanilla items

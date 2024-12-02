@@ -23,11 +23,8 @@ def main(config: dict) -> dict:
 		)
 
 		# Copy the original icon to the resource pack
-		img: Image.Image = Image.open(original_icon).convert("RGBA")
-		img = img.resize((32, 32), Image.Resampling.NEAREST)
 		destination: str = f"{config['build_resource_pack']}/assets/{namespace}/textures/font/original_icon.png"
-		os.makedirs(os.path.dirname(destination), exist_ok=True)
-		img.save(destination)
+		super_copy(original_icon, destination)
 
 		# Replace every ICON text component with the original icon
 		for component in source_lore:

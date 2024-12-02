@@ -5,6 +5,7 @@ import sys
 import time
 import traceback
 from typing import Callable
+from functools import wraps
 
 # Decorator that make a function silent (disable stdout)
 def silent(func: Callable, mute_stderr: bool = False):
@@ -13,6 +14,7 @@ def silent(func: Callable, mute_stderr: bool = False):
 		func			(Callable):		Function to make silent
 		mute_stderr		(bool):			Whether to mute stderr or not
 	"""
+	@wraps(func)
 	def wrapper(*args, **kwargs):
 
 		# Disable stdout and stderr
@@ -36,13 +38,13 @@ def silent(func: Callable, mute_stderr: bool = False):
 
 
 # Colors constants
-RESET = "\033[0m"
-RED = "\033[91m"
-GREEN = "\033[92m"
-YELLOW = "\033[93m"
-BLUE = "\033[94m"
-MAGENTA = "\033[95m"
-CYAN = "\033[96m"
+RESET: str   = "\033[0m"
+RED: str     = "\033[91m"
+GREEN: str   = "\033[92m"
+YELLOW: str  = "\033[93m"
+BLUE: str    = "\033[94m"
+MAGENTA: str = "\033[95m"
+CYAN: str    = "\033[96m"
 
 # Print functions
 def current_time() -> str:
@@ -78,6 +80,12 @@ def error(*values: object, exit: bool = True, prefix: str = "", **print_kwargs) 
 			sys.exit(1)
 
 def whatisit(*values: object, print_function: Callable = debug, prefix: str = "") -> None:
+	""" Print the type of each value and the value itself\n
+	Args:
+		values			(object):		Values to print
+		print_function	(Callable):	Function to use to print the values
+		prefix			(str):		Prefix to add to the values
+	"""
 	if len(values) > 1:
 		print_function("(What is it?)", prefix=prefix)
 		for value in values:
@@ -93,6 +101,8 @@ def measure_time(print_func: Callable = debug, message: str = "", perf_counter: 
 		print_func		(Callable):	Function to use to print the execution time
 		message			(str):		Message to display with the execution time (e.g. "Execution time of Something"), defaults to "Execution time of {func.__name__}"
 		perf_counter	(bool):		Whether to use time.perf_counter_ns or time.time_ns
+	Returns:
+		Callable:	Decorator to measure the time of the function.
 	"""
 	ns: Callable = time.perf_counter_ns if perf_counter else time.time_ns
 	def decorator(func: Callable) -> Callable:
@@ -102,6 +112,7 @@ def measure_time(print_func: Callable = debug, message: str = "", perf_counter: 
 		if not message:
 			message = f"Execution time of {func.__name__}"
 
+		@wraps(func)
 		def wrapper(*args, **kwargs) -> object:
 
 			# Measure the execution time (nanoseconds and seconds)
@@ -131,13 +142,6 @@ def measure_time(print_func: Callable = debug, message: str = "", perf_counter: 
 						hours: int = hours % 24
 						print_func(f"{message}: {days}d {hours}h {minutes}m {seconds}s")
 			return result
-
-		# Preserve the docstring and other attributes for doctest
-		wrapper.__doc__ = func.__doc__
-		wrapper.__name__ = func.__name__
-		wrapper.__module__ = func.__module__
-		wrapper.__dict__.update(func.__dict__)
-		
 		return wrapper
 	return decorator
 
@@ -155,7 +159,8 @@ def handle_error(exceptions: tuple[type[Exception], ...] = (Exception,), message
 			msg = f"{message}:\n"
 		else:
 			msg = message
-			
+
+		@wraps(func)
 		def wrapper(*args, **kwargs) -> object:
 			try:
 				return func(*args, **kwargs)

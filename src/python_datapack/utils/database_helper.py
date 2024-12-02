@@ -163,14 +163,17 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 		And return a list of generated items if you want to do something with it.
 	Args:
 		database			(dict[str, dict]):		The database to update
-		material			(str):					The ore/material to generate everything about (ex: "adamantium_fragment", "steel_ingot", "minecraft:emerald", "minecraft:copper_ingot")
+		material			(str):					The ore/material to generate everything about (ex: "adamantium_fragment", "steel_ingot", "minecraft:emerald", "minecraft:copper_ingot", "awakened_stardust!")
+													When the material ends with "!", the material base will be the material without the "!"
 		equipments_config	(EquipmentsConfig):	The base multiplier to apply
 	"""
 	namespace: str = config['namespace']
 	# Constants
-	if '_' in material:
+	if '_' in material and not material.endswith("!"):
 		material_base = "_".join(material.split(":")[-1].split("_")[:-1])			# Get the base material name (ex: "adamantium" from "adamantium_fragment")
 	else:
+		if material.endswith("!"):	# Remove the "!" if present
+			material = material[:-1]
 		material_base = material.split(":")[-1]										# Get the base material name (ex: "adamantium" from "adamantium_fragment")
 	main_ingredient = ingr_repr(material, namespace) 						# Get the main ingredient for recipes
 	if equipments_config:
