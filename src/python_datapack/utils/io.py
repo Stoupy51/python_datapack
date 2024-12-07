@@ -304,6 +304,8 @@ def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend
 
 	# If file doesn't exists or overwrite is true, made it empty
 	if file_path not in FILES_TO_WRITE or overwrite:
+		if is_in_initial_files(file_path):
+			remove_initial_file(file_path)
 		FILES_TO_WRITE[file_path] = ""
 	
 	# If the file already exists as JSON and the content is a dict, merge both dict

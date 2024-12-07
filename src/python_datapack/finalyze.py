@@ -47,7 +47,8 @@ def main(config: dict, user_code: Callable|None = None):
 						build_dict = json.loads(FILES_TO_WRITE[build_path])
 						
 						# Write the merged dictionnaries to the build file
-						FILES_TO_WRITE[build_path] = super_json_dump(super_merge_dict(build_dict, merge_dict), max_level = -1)
+						merged_dict = super_merge_dict(build_dict, merge_dict)
+						write_to_file(build_path, super_json_dump(merged_dict), overwrite = True)
 				else:
 					# Get content of .mcfunction file to correctly append headers
 					if file.endswith((".json",".mcfunction",".mcmeta")):
