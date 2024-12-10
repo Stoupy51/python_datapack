@@ -45,41 +45,111 @@ YELLOW: str  = "\033[93m"
 BLUE: str    = "\033[94m"
 MAGENTA: str = "\033[95m"
 CYAN: str    = "\033[96m"
+LINE_UP: str = "\033[1A"
 
 # Print functions
+previous_args_kwards: tuple = (None, None)
+nb_values: int = 0
+
+def is_same_print(*args, **kwargs) -> bool:
+	""" Checks if the current print call is the same as the previous one.\n
+	Args:
+		args (tuple): The arguments passed to the print function.
+		kwargs (dict): The keyword arguments passed to the print function.
+	Returns:
+		bool: True if the current print call is the same as the previous one, False otherwise.
+	"""
+	global previous_args_kwards, nb_values
+	if previous_args_kwards == (args, kwargs):
+		nb_values += 1
+		return True
+	else:
+		previous_args_kwards = (args, kwargs)
+		nb_values = 0
+		return False
+
 def current_time() -> str:
+	""" Get the current time in the format HH:MM:SS	"""
 	return time.strftime("%H:%M:%S")
 
-def info(*values: object, prefix: str = "", **print_kwargs) -> None:
-	print(f"{prefix}{GREEN}[INFO  {current_time()}]", *values, RESET, **print_kwargs)
+def info(*values, prefix: str = "", **print_kwargs) -> None:
+	""" Print an information message looking like "[INFO HH:MM:SS] message"\n
+	Args:
+		values			(object):	Values to print (like the print function)
+		prefix			(str):		Prefix to add to the values
+		print_kwargs	(dict):		Keyword arguments to pass to the print function
+	"""
+	if not is_same_print(*values, **print_kwargs):
+		print(f"{prefix}{GREEN}[INFO  {current_time()}]", *values, RESET, **print_kwargs)
+	else:
+		print(f"{LINE_UP}{prefix}{GREEN}[INFO  {current_time()}] (x{nb_values})", *values, RESET, **print_kwargs)
 
-def debug(*values: object, prefix: str = "", **print_kwargs) -> None:
-	print(f"{prefix}{BLUE}[DEBUG {current_time()}]", *values, RESET, **print_kwargs)
+def debug(*values, prefix: str = "", **print_kwargs) -> None:
+	""" Print a debug message looking like "[DEBUG HH:MM:SS] message"\n
+	Args:
+		values			(object):		Values to print (like the print function)
+		prefix			(str):		Prefix to add to the values
+		print_kwargs	(dict):		Keyword arguments to pass to the print function
+	"""
+	if not is_same_print(*values, **print_kwargs):
+		print(f"{prefix}{BLUE}[DEBUG {current_time()}]", *values, RESET, **print_kwargs)
+	else:
+		print(f"{LINE_UP}{prefix}{BLUE}[DEBUG {current_time()}] (x{nb_values})", *values, RESET, **print_kwargs)
 
-def suggestion(*values: object, prefix: str = "", **print_kwargs) -> None:
-	print(f"{prefix}{CYAN}[SUGGESTION {current_time()}]", *values, RESET, **print_kwargs)
+def suggestion(*values, prefix: str = "", **print_kwargs) -> None:
+	""" Print a suggestion message looking like "[SUGGESTION HH:MM:SS] message"\n
+	Args:
+		values			(object):		Values to print (like the print function)
+		prefix			(str):		Prefix to add to the values
+		print_kwargs	(dict):		Keyword arguments to pass to the print function
+	"""
+	if not is_same_print(*values, **print_kwargs):
+		print(f"{prefix}{CYAN}[SUGGESTION {current_time()}]", *values, RESET, **print_kwargs)
+	else:
+		print(f"{LINE_UP}{prefix}{CYAN}[SUGGESTION {current_time()}] (x{nb_values})", *values, RESET, **print_kwargs)
 
-def progress(*values: object, prefix: str = "", **print_kwargs) -> None:
-	print(f"{prefix}{MAGENTA}[PROGRESS {current_time()}]", *values, RESET, **print_kwargs)
+def progress(*values, prefix: str = "", **print_kwargs) -> None:
+	""" Print a progress message looking like "[PROGRESS HH:MM:SS] message"\n
+	Args:
+		values			(object):		Values to print (like the print function)
+		prefix			(str):		Prefix to add to the values
+		print_kwargs	(dict):		Keyword arguments to pass to the print function
+	"""
+	if not is_same_print(*values, **print_kwargs):
+		print(f"{prefix}{MAGENTA}[PROGRESS {current_time()}]", *values, RESET, **print_kwargs)
+	else:
+		print(f"{LINE_UP}{prefix}{MAGENTA}[PROGRESS {current_time()}] (x{nb_values})", *values, RESET, **print_kwargs)
 
-def warning(*values: object, prefix: str = "", **print_kwargs) -> None:
-	print(f"{prefix}{YELLOW}[WARNING {current_time()}]", *values, RESET, **print_kwargs)
+def warning(*values, prefix: str = "", **print_kwargs) -> None:
+	""" Print a warning message looking like "[WARNING HH:MM:SS] message"\n
+	Args:
+		values			(object):		Values to print (like the print function)
+		prefix			(str):		Prefix to add to the values
+		print_kwargs	(dict):		Keyword arguments to pass to the print function
+	"""
+	if not is_same_print(*values, **print_kwargs):
+		print(f"{prefix}{YELLOW}[WARNING {current_time()}]", *values, RESET, **print_kwargs)
+	else:
+		print(f"{LINE_UP}{prefix}{YELLOW}[WARNING {current_time()}] (x{nb_values})", *values, RESET, **print_kwargs)
 
-def error(*values: object, exit: bool = True, prefix: str = "", **print_kwargs) -> None:
+def error(*values, exit: bool = True, prefix: str = "", **print_kwargs) -> None:
 	""" Print an error message and optionally ask the user to continue or stop the program\n
 	Args:
 		values			(object):		Values to print (like the print function)
 		exit			(bool):			Whether to ask the user to continue or stop the program, false to ignore the error automatically and continue
 		print_kwargs	(dict):			Keyword arguments to pass to the print function
 	"""
-	print(f"{prefix}{RED}[ERROR {current_time()}]", *values, RESET, **print_kwargs)
+	if not is_same_print(*values, **print_kwargs):
+		print(f"{prefix}{RED}[ERROR {current_time()}]", *values, RESET, **print_kwargs)
+	else:
+		print(f"{LINE_UP}{prefix}{RED}[ERROR {current_time()}] (x{nb_values})", *values, RESET, **print_kwargs)
 	if exit:
 		try:
 			input("Press enter to ignore error and continue or 'CTRL+C' to stop the program... ")
 		except KeyboardInterrupt:
 			sys.exit(1)
 
-def whatisit(*values: object, print_function: Callable = debug, prefix: str = "") -> None:
+def whatisit(*values, print_function: Callable = debug, prefix: str = "") -> None:
 	""" Print the type of each value and the value itself\n
 	Args:
 		values			(object):		Values to print
@@ -150,9 +220,9 @@ def measure_time(print_func: Callable = debug, message: str = "", perf_counter: 
 def handle_error(exceptions: tuple[type[Exception], ...] = (Exception,), message: str = "", error_log: int = 3) -> Callable:
 	""" Decorator that handle an error with different log levels.\n
 	Args:
-		exceptions		(tuple[Exception]):	Exceptions to handle
-		message			(str):				Message to display with the error. (e.g. "Error during something")
-		error_log		(int):				Log level for the errors (0: None, 1: Show as warning, 2: Show as warning with traceback, 3: Show as error with traceback, 4: Raise exception)
+		exceptions		(tuple[type[Exception]], ...):	Exceptions to handle
+		message			(str):							Message to display with the error. (e.g. "Error during something")
+		error_log		(int):							Log level for the errors (0: None, 1: Show as warning, 2: Show as warning with traceback, 3: Show as error with traceback, 4: Raise exception)
 	"""
 	def decorator(func: Callable) -> Callable:
 		if message != "":
@@ -175,4 +245,18 @@ def handle_error(exceptions: tuple[type[Exception], ...] = (Exception,), message
 					raise e
 		return wrapper
 	return decorator
+
+
+if __name__ == "__main__":
+	info("Hello", "World")
+	time.sleep(1)
+	info("Hello", "World")
+	time.sleep(1)
+	info("Hello", "World")
+	time.sleep(1)
+	info("Hello", "World")
+	time.sleep(1)
+	info("Hello", "World")
+	time.sleep(1)
+	info("Hello", "World")
 
