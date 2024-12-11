@@ -253,7 +253,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 		write_to_file(shaped_func_tag, super_json_dump({"values": [f"{namespace}:calls/smithed_crafter/shaped_recipes"]}))
 
 	# Generate recipes with vanilla input (no components)
-	vanilla_generated_recipes = []
+	vanilla_generated_recipes: list[tuple[str, str]] = []
 	for item, data in items:
 		crafts: list[dict] = list(data.get(RESULT_OF_CRAFTING, []))
 		crafts += list(data.get(USED_FOR_CRAFTING, []))
@@ -281,7 +281,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					r = vanilla_shapeless_recipe(recipe, item)
 					write_to_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", super_json_dump(r, max_level = 5))
 					i += 1
-					vanilla_generated_recipes.append(name)
+					vanilla_generated_recipes.append((name, item))
 				
 				# Custom ingredients recipe
 				write_to_file(SMITHED_SHAPELESS_PATH, smithed_shapeless_recipe(recipe, result_loot_table))
@@ -294,7 +294,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					r = vanilla_shaped_recipe(recipe, item)
 					write_to_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", super_json_dump(r, max_level = 5))
 					i += 1
-					vanilla_generated_recipes.append(name)
+					vanilla_generated_recipes.append((name, item))
 				
 				# Custom ingredients recipe
 				write_to_file(SMITHED_SHAPED_PATH, smithed_shaped_recipe(recipe, result_loot_table))
@@ -307,7 +307,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					r = vanilla_furnace_recipe(recipe, item)
 					write_to_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", super_json_dump(r, max_level = 5))
 					i += 1
-					vanilla_generated_recipes.append(name)
+					vanilla_generated_recipes.append((name, item))
 				
 				if furnace_nbt_used and recipe["type"] in SMELTING:
 					if recipe.get("result"):
@@ -355,17 +355,17 @@ scoreboard players reset #count furnace_nbt_recipes.data
 
 	# Create a function that will give all recipes
 	content = "\n# Get all recipes\n"
-	for recipe in vanilla_generated_recipes:
-		content += f"recipe give @s {namespace}:{recipe}\n"
+	for recipe_file, _ in vanilla_generated_recipes:
+		content += f"recipe give @s {namespace}:{recipe_file}\n"
 	write_to_function(config, f"{namespace}:utils/get_all_recipes", content + "\n")
 
 
 	# Unlock vanilla recipes when at least one of the ingredient is in inventory
 	if vanilla_generated_recipes:
-		ingredients: dict[str, set[str]] = {}
+		ingredients: dict = {}
 
 		# For each recipe, get the ingredients and link them to the recipe
-		for recipe_name in vanilla_generated_recipes:
+		for recipe_name, _ in vanilla_generated_recipes:
 			recipe_path: str = f"{build_datapack}/data/{namespace}/recipe/{recipe_name}.json"
 			recipe: dict = json.loads(read_file(recipe_path))
 			for ingr in get_ingredients_from_recipe(recipe):
@@ -378,14 +378,15 @@ scoreboard players reset #count furnace_nbt_recipes.data
 		adv_json: dict = {"criteria":{"requirement":{"trigger":"minecraft:inventory_changed"}},"rewards":{"function":f"{namespace}:advancements/unlock_recipes"}}
 		write_to_file(adv_path, super_json_dump(adv_json, max_level = -1))
 
-		# Write the function that will unlock the recipes
-		func_path: str = f"{build_datapack}/data/{namespace}/function/advancements/unlock_recipes.mcfunction"
+		## Write the function that will unlock the recipes
+		# Prepare the function
 		content = f"""
 # Revoke advancement
 advancement revoke @s only {namespace}:unlock_recipes
 
 ## For each ingredient in inventory, unlock the recipes
 """
+		# Add ingredients
 		for ingr, recipes in ingredients.items():
 			recipes: list = sorted(recipes)
 			
@@ -393,6 +394,12 @@ advancement revoke @s only {namespace}:unlock_recipes
 			for recipe in recipes:
 				content += f"execute if score #success {namespace}.data matches 1 run recipe give @s {namespace}:{recipe}\n"
 			content += "\n"
-		write_to_file(func_path, content)
+		
+		# Add result items
+		content += "## Add result items\n"
+		for recipe_name, item in vanilla_generated_recipes:
+			content += f"""execute if items entity @s container.* *[custom_data~{{"{namespace}": {{"{item}":true}} }}] run recipe give @s {namespace}:{recipe_name}\n"""
+
+		write_to_function(config, f"{namespace}:advancements/unlock_recipes", content)
 	pass
 
