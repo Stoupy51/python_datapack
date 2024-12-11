@@ -1,11 +1,11 @@
 
 [build-system]
-requires = ["hatchling", "requests", "pillow", "smithed", "model_resolver", "mutagen", "watchdog", "pyperclip"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "python_datapack"
-version = "1.21.3.71"
+version = "1.21.4.73"
 authors = [
 	{ name="Stoupy51", email="stoupy51@gmail.com" },
 ]
