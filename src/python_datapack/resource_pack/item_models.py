@@ -26,7 +26,7 @@ def model_in_variants(models: list[str], variants: list[str]) -> bool:
 	return valid
 
 # Function to handle item
-def handle_item(config: dict, item: str, data: dict, used_textures: set|None = None, ignore_textures: bool = False):
+def handle_item(config: dict, item: str, data: dict, used_textures: set|None = None, ignore_textures: bool = False) -> None:
 	""" Generate custom models for an item or block\n
 	Args:
 		config			(dict):		The config dict containing all the data
@@ -35,6 +35,10 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		used_textures	(set):		The set to add used textures to (if any)
 		ignore_textures	(bool):		Whether to ignore textures or not (default: False, only used for the heavy workbench for NBT recipes)
 	"""
+	# If no item model, return
+	if not data.get("item_model"):
+		return
+
 	# Initialize variables
 	block_or_item: str = "item"
 	if data.get("id") == CUSTOM_BLOCK_VANILLA or any("block" in x for x in data.get(OVERRIDE_MODEL, {}).values()):
@@ -188,9 +192,15 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 			dump: str = super_json_dump(content, max_level = 4)
 		else:
 			dump: str = "{}\n"
-		write_to_file(f"{dest_base_model}/{item}{on_off}.json", dump)
-		if data.get("item_model"):
-			config['rendered_item_models'].append(data["item_model"])
+		item_model_path: str = f"{dest_base_model}/{item}{on_off}.json"
+		write_to_file(item_model_path, dump)
+		config['rendered_item_models'].append(data["item_model"])
+	
+		# Generate the json file required in items/
+		model_path: str = item_model_path.replace("models/item", "items")
+		items_model = {"model": {"type": "minecraft:model", "model": f"{config['namespace']}:item/{item}{on_off}"}}
+		write_to_file(model_path, super_json_dump(items_model, max_level = 4))
+
 
 
 def main(config: dict):

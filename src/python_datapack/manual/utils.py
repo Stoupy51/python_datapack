@@ -398,8 +398,7 @@ def convert_shapeless_to_shaped(craft: dict) -> dict:
 
 
 # Convert ingredient to formatted JSON for book
-COMPONENTS_TO_IGNORE = NOT_COMPONENTS + ["custom_data", "count", "profile", "dyed_color", "container"]
-def get_item_component(config: dict, ingredient: dict|str, only_those_components: list[str] = None, count: int = 1) -> dict:
+def get_item_component(config: dict, ingredient: dict|str, only_those_components: list[str] = [], count: int = 1) -> dict:
 	""" Generate item hover text for a craft ingredient
 	Args:
 		ingredient (dict|str): The ingredient
@@ -443,7 +442,7 @@ def get_item_component(config: dict, ingredient: dict|str, only_those_components
 					components[key] = item[key]
 		else:
 			for key, value in item.items():
-				if key not in COMPONENTS_TO_IGNORE:
+				if key in COMPONENTS_TO_INCLUDE:
 					components[key] = value
 		formatted["hoverEvent"]["contents"]["components"] = components
 

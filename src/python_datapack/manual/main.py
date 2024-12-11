@@ -40,6 +40,7 @@ def routine(config: dict):
 		database["heavy_workbench"] = {
 			"id": CUSTOM_BLOCK_VANILLA,
 			"item_name": "'Heavy Workbench'",
+			"item_model": f"{namespace}:heavy_workbench",
 			"category": HEAVY_WORKBENCH_CATEGORY,
 			OVERRIDE_MODEL: {
 				"parent":"minecraft:block/cube",
@@ -202,7 +203,7 @@ def routine(config: dict):
 					x += simple_case.size[0]
 
 					# Add the clickEvent part to the line and add the 2 times the line if enough items
-					component = get_item_component(config, item, ["custom_model_data", "item_name", "custom_name"])
+					component = get_item_component(config, item, only_those_components=["item_name", "custom_name"])
 					component["text"] = MEDIUM_NONE_FONT if not config['manual_high_resolution'] else high_res_font
 					line.append(component)
 					if len(line) == config['max_items_per_row']:
@@ -243,6 +244,10 @@ def routine(config: dict):
 				# If there are blue crafts, generate the content for the first craft
 				blue_crafts: list[dict] = [craft for craft in crafts if not craft.get("result")]
 				if blue_crafts:
+					# Sort crafts by result_count in reverse order
+					blue_crafts.sort(key=lambda craft: craft.get("result_count", 0), reverse=True)
+
+					# Get the first craft and generate the content
 					first_craft: dict = blue_crafts[0]
 					l: list[dict|str] = generate_craft_content(config, first_craft, name, page_font)
 					if l:

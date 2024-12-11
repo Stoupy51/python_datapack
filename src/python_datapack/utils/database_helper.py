@@ -216,7 +216,7 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 			destination: str = f"{namespace_rp}/textures/entity/equipment/{humanoid_type}/{layer_file}"
 			super_copy(source, destination)
 			
-			model_file: str = f"{namespace_rp}/models/equipment/{material_base}.json"
+			model_file: str = f"{namespace_rp}/equipment/{material_base}.json"
 			model_data: dict = {"layers": {humanoid_type: [{"texture": f"{namespace}:{layer_file.replace('.png', '')}"}]}}
 			write_to_file(model_file, super_json_dump(model_data))
 			return True
@@ -241,25 +241,25 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 			gear_config = VanillaEquipments.HELMET.value[equivalent_to]
 			database[armor]["max_damage"] = int(gear_config["durability"] * durability_factor)
 			if top_layer:
-				database[armor]["equippable"] = {"slot":"head", "model":f"{namespace}:{material_base}"}
+				database[armor]["equippable"] = {"slot":"head", "asset_id":f"{namespace}:{material_base}"}
 		elif gear == "chestplate":
 			database[armor][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"category":"equipment","shape":["X X","XXX","XXX"],"ingredients":{"X": main_ingredient}}]
 			gear_config = VanillaEquipments.CHESTPLATE.value[equivalent_to]
 			database[armor]["max_damage"] = int(gear_config["durability"] * durability_factor)
 			if top_layer:
-				database[armor]["equippable"] = {"slot":"chest", "model":f"{namespace}:{material_base}"}
+				database[armor]["equippable"] = {"slot":"chest", "asset_id":f"{namespace}:{material_base}"}
 		elif gear == "leggings":
 			database[armor][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"category":"equipment","shape":["XXX","X X","X X"],"ingredients":{"X": main_ingredient}}]
 			gear_config = VanillaEquipments.LEGGINGS.value[equivalent_to]
 			database[armor]["max_damage"] = int(gear_config["durability"] * durability_factor)
 			if bottom_layer:
-				database[armor]["equippable"] = {"slot":"legs", "model":f"{namespace}:{material_base}"}
+				database[armor]["equippable"] = {"slot":"legs", "asset_id":f"{namespace}:{material_base}"}
 		elif gear == "boots":
 			database[armor][RESULT_OF_CRAFTING] = [{"type":"crafting_shaped","result_count":1,"category":"equipment","shape":["X X","X X"],"ingredients":{"X": main_ingredient}}]
 			gear_config = VanillaEquipments.BOOTS.value[equivalent_to]
 			database[armor]["max_damage"] = int(gear_config["durability"] * durability_factor)
 			if bottom_layer:
-				database[armor]["equippable"] = {"slot":"feet", "model":f"{namespace}:{material_base}"}
+				database[armor]["equippable"] = {"slot":"feet", "asset_id":f"{namespace}:{material_base}"}
 		database[armor]["attribute_modifiers"] = format_attributes(config, armor_attributes, SLOTS[gear], gear_config)
 
 	# Tools (sword, pickaxe, axe, shovel, hoe)
