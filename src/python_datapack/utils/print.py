@@ -217,29 +217,40 @@ def measure_time(print_func: Callable = debug, message: str = "", perf_counter: 
 
 
 # Decorator that handle an error with different log levels
-def handle_error(exceptions: tuple[type[Exception], ...] = (Exception,), message: str = "", error_log: int = 3) -> Callable:
+class LOG_LEVELS:
+	NONE = 0
+	WARNING = 1
+	WARNING_TRACEBACK = 2
+	ERROR_TRACEBACK = 3
+	RAISE_EXCEPTION = 4
+
+def handle_error(exceptions: tuple[type[Exception], ...]|type[Exception] = (Exception,), message: str = "", error_log: int = LOG_LEVELS.ERROR_TRACEBACK) -> Callable:
 	""" Decorator that handle an error with different log levels.\n
 	Args:
 		exceptions		(tuple[type[Exception]], ...):	Exceptions to handle
 		message			(str):							Message to display with the error. (e.g. "Error during something")
 		error_log		(int):							Log level for the errors (0: None, 1: Show as warning, 2: Show as warning with traceback, 3: Show as error with traceback, 4: Raise exception)
 	"""
+	# Convert the exceptions to a tuple if not already
+	if not isinstance(exceptions, tuple):
+		exceptions = (exceptions,)
+
 	def decorator(func: Callable) -> Callable:
 		if message != "":
-			msg = f"{message}:\n"
+			msg: str = f"{message}, "
 		else:
-			msg = message
+			msg: str = message
 
 		@wraps(func)
 		def wrapper(*args, **kwargs) -> object:
 			try:
 				return func(*args, **kwargs)
 			except exceptions as e:
-				if error_log == 1:
-					warning(f"{msg}Error during {func.__name__}:\n {e}")
-				elif error_log == 2:
+				if error_log == LOG_LEVELS.WARNING:
+					warning(f"{msg}Error during {func.__name__}: ({type(e).__name__}) {e}")
+				elif error_log == LOG_LEVELS.WARNING_TRACEBACK:
 					warning(f"{msg}Error during {func.__name__}:\n{traceback.format_exc()}")
-				elif error_log == 3:
+				elif error_log == LOG_LEVELS.ERROR_TRACEBACK:
 					error(f"{msg}Error during {func.__name__}:\n{traceback.format_exc()}", exit=True)
 				else:
 					raise e

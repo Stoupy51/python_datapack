@@ -141,11 +141,29 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 				if data_id.startswith("leather_"):
 					textures["layer1"] = textures["layer0"]
 
-				# Check for bow pulling textures
+				# Check for bow pulling textures, in order to write the items/bow.json file
 				elif data_id.endswith("bow"):
 					sorted_pull_variants: list[str] = sorted([v for v in variants if "_pulling_" in v], key=lambda x: int(x.split("_")[-1]))
+					items_content: dict = {}
 					if sorted_pull_variants:
-						content["overrides"] = [{"predicate": {"pulling": 1},"model": f"{config['namespace']}:item/{item}_pulling_0"}]
+						items_content["model"] = {
+							"type": "minecraft:condition",
+							"on_false": {
+								"type": "minecraft:model",
+								"model": f"{config['namespace']}:item/{item}"
+							},
+							"on_true": {
+								"type": "minecraft:range_dispatch",
+								"entries": [],
+								"fallback": {
+									"type": "minecraft:model",
+									"model": f"{config['namespace']}:item/{item}_pulling_0"
+								},
+								"property": "minecraft:use_duration",
+								"scale": 0.05
+							},
+							"property": "minecraft:using_item"
+						}
 
 						# Add override for each pulling state (pulling_0 = 0, pulling_1 = 0.65, pulling_2 = 0.9)
 						for i, variant in enumerate(sorted_pull_variants):
@@ -156,7 +174,16 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 							if i < (len(sorted_pull_variants) - 1):
 								pull: float = 0.65 + (0.25 * i)
 								model: str = f"{config['namespace']}:item/{item}_pulling_{i + 1}"
-								content["overrides"].append({"predicate": {"pulling": 1, "pull": pull},"model": model})
+								items_content["model"]["on_true"]["entries"].append({
+									"model": {
+										"type": "minecraft:model",
+										"model": model
+									},
+									"threshold": pull
+								})
+						
+						# Write the items/bow.json file
+						write_to_file(f"{dest_base_model}/{item}{on_off}.json".replace("models/item", "items"), super_json_dump(items_content, max_level = 4))
 
 		# Add overrides
 		for key, value in overrides.items():
@@ -197,9 +224,10 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		config['rendered_item_models'].append(data["item_model"])
 	
 		# Generate the json file required in items/
-		model_path: str = item_model_path.replace("models/item", "items")
-		items_model = {"model": {"type": "minecraft:model", "model": f"{config['namespace']}:item/{item}{on_off}"}}
-		write_to_file(model_path, super_json_dump(items_model, max_level = 4))
+		if not data["id"].endswith("bow"):
+			model_path: str = item_model_path.replace("models/item", "items")
+			items_model = {"model": {"type": "minecraft:model", "model": f"{config['namespace']}:item/{item}{on_off}"}}
+			write_to_file(model_path, super_json_dump(items_model, max_level = 4))
 
 
 
