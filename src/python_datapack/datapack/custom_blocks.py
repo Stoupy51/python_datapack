@@ -97,10 +97,10 @@ scoreboard players add #total_{item} {namespace}.data 1
 			write_to_function(config, f"{path}/place_main", content)
 
 			# Write the line in stats_custom_blocks
-			write_to_function(config, "_stats_custom_blocks",
+			write_to_function(config, f"{namespace}:_stats_custom_blocks",
 				f'tellraw @s [{{"text":"- Total \'{item_name}\': ","color":"gold"}},{{"score":{{"name":"#total_{item}","objective":"{namespace}.data"}},"color":"yellow"}}]\n'
 			)
-			write_to_function(config, "_stats_custom_blocks",
+			write_to_function(config, f"{namespace}:_stats_custom_blocks",
 				f'scoreboard players add #total_{item} {namespace}.data 0\n',
 				prepend = True
 			)
@@ -182,10 +182,10 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 
 		# Add a line in the stats_custom_blocks file
 		score_name: str = f"total_vanilla_{block_id.replace('minecraft:','')}"
-		write_to_function(config, "_stats_custom_blocks",
+		write_to_function(config, f"{namespace}:_stats_custom_blocks",
 			f'tellraw @s [{{"text":"- Vanilla \'{block_id}\': ","color":"gray"}},{{"score":{{"name":"#{score_name}","objective":"{namespace}.data"}},"color":"white"}}]\n'
 		)
-		write_to_function(config, "_stats_custom_blocks",
+		write_to_function(config, f"{namespace}:_stats_custom_blocks",
 			f'scoreboard players add #{score_name} {namespace}.data 0\n',
 			prepend = True
 		)
@@ -316,10 +316,10 @@ execute as @e[tag={namespace}.custom_block,dx=0,dy=0,dz=0] at @s run function {n
 	
 
 	# Add line in the stats_custom_blocks file
-	write_to_function(config, "_stats_custom_blocks",
+	write_to_function(config, f"{namespace}:_stats_custom_blocks",
 		f'tellraw @s [{{"text":"- Total custom blocks: ","color":"dark_aqua"}},{{"score":{{"name":"#total_custom_blocks","objective":"{namespace}.data"}},"color":"aqua"}}]\n'
 	)
-	write_to_function(config, "_stats_custom_blocks",
+	write_to_function(config, f"{namespace}:_stats_custom_blocks",
 		f'scoreboard players add #total_custom_blocks {namespace}.data 0\n',
 		prepend = True
 	)

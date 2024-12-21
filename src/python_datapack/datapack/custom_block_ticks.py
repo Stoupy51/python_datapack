@@ -49,9 +49,8 @@ def custom_blocks_ticks_and_second_functions(config: dict) -> None:
 		write_to_file(f"{custom_blocks}/second.mcfunction", content)
 
 		# Write in stats_custom_blocks
-		write_to_file(f"{functions}/_stats_custom_blocks.mcfunction",f'scoreboard players add #second_entities {namespace}.data 0\n', prepend = True)
-		write_to_file(
-			f"{functions}/_stats_custom_blocks.mcfunction",
+		write_to_function(config, f"{namespace}:_stats_custom_blocks",f'scoreboard players add #second_entities {namespace}.data 0\n', prepend = True)
+		write_to_function(config, f"{namespace}:_stats_custom_blocks",
 			f'tellraw @s [{{"text":"- \'second\' tag function: ","color":"green"}},{{"score":{{"name":"#second_entities","objective":"{namespace}.data"}},"color":"dark_green"}}]\n'
 		)
 
@@ -64,9 +63,8 @@ def custom_blocks_ticks_and_second_functions(config: dict) -> None:
 		write_to_file(f"{custom_blocks}/tick.mcfunction", content)
 
 		# Write in stats_custom_blocks
-		write_to_file(f"{functions}/_stats_custom_blocks.mcfunction",f'scoreboard players add #tick_entities {namespace}.data 0\n', prepend = True)
-		write_to_file(
-			f"{functions}/_stats_custom_blocks.mcfunction",
+		write_to_function(config, f"{namespace}:_stats_custom_blocks",f'scoreboard players add #tick_entities {namespace}.data 0\n', prepend = True)
+		write_to_function(config, f"{namespace}:_stats_custom_blocks",
 			f'tellraw @s [{{"text":"- \'tick\' tag function: ","color":"green"}},{{"score":{{"name":"#tick_entities","objective":"{namespace}.data"}},"color":"dark_green"}}]\n'
 		)
 
