@@ -119,23 +119,33 @@ def main(config: dict):
 				else:
 					recipes[i].append({"Slot": slot, "id": "minecraft:air"})
 
-		# Generate the dump
+		# Initialize the dump string
 		dump: str = "{"
+		# Iterate through each layer and its ingredients
 		for l, ingrs in recipes.items():
-			dump += f"{l}:["
+			dump += f"{l}:["  # Start of layer definition
+
+			# Ensure each layer has exactly 3 ingredients by adding missing slots
+			for i in range(len(ingrs), 3):
+				ingrs.append({"Slot": i, "id": "minecraft:air"})
+
+			# Process each ingredient in the layer
 			for ingr in ingrs:
-				ingr = ingr.copy()
-				slot: int = ingr.pop("Slot")
-				ingr = json.dumps(ingr)[1:-1]
-				dump += f'{{"Slot":{slot}b, {ingr}}},'
+				ingr = ingr.copy()  # Create a copy to modify
+				slot: int = ingr.pop("Slot")  # Extract the slot number
+				ingr = json.dumps(ingr)[1:-1]  # Convert to JSON string without brackets
+				dump += f'{{"Slot":{slot}b, {ingr}}},'  # Add the ingredient to the dump with its slot
+			# Remove the trailing comma if present
 			if dump[-1] == ',':
-				dump = dump[:-1] + "],"
+				dump = dump[:-1] + "],"  # End of layer definition
 			else:
-				dump += "],"
+				dump += "],"  # End of layer definition without trailing comma
+
+		# Remove the trailing comma if present and close the dump string
 		if dump[-1] == ',':
-			dump = dump[:-1] + "}"
+			dump = dump[:-1] + "}"  # Close the dump string
 		else:
-			dump += "}"
+			dump += "}"  # Close the dump string without trailing comma
 		
 		# Return the line
 		line = f"execute if score @s smithed.data matches 0 store result score @s smithed.data if data storage smithed.crafter:input recipe{dump}"
