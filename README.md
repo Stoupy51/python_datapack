@@ -1,6 +1,6 @@
 
 # 📦 Package Link
-[https://pypi.org/project/python-datapack/](https://pypi.org/project/python-datapack/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/python_datapack?logo=python&label=PyPI%20downloads)](https://pypi.org/project/python_datapack/)
 
 # 🐍 Python Datapack
 Here is a template to a GitHub repository using this Python package: 📝
