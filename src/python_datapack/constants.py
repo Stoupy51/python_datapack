@@ -54,6 +54,33 @@ BLOCKS_WITH_INTERFACES: list[str] = [	# List of blocks that are containers and h
 	"minecraft:crafter",
 ]
 
+# Conventions constants
+class Conventions:
+	""" Defines conventions for tags used in datapacks. """
+	NO_KILL_TAGS: list[str] = ["smithed.strict", "global.ignore.kill"]
+	""" List of tags that prevent entities from being killed. """
+	ENTITY_TAGS: list[str] = ["smithed.entity", "global.ignore"]
+	""" List of tags applicable to custom entities. """
+	BLOCK_TAGS: list[str] = ["smithed.block"] + ENTITY_TAGS
+	""" List of tags applicable to custom blocks. """
+	ENTITY_TAGS_NO_KILL: list[str] = ENTITY_TAGS + NO_KILL_TAGS
+	""" Combined list of entity tags and no kill tags. """
+	BLOCK_TAGS_NO_KILL: list[str] = BLOCK_TAGS + NO_KILL_TAGS
+	""" Combined list of block tags and no kill tags. """
+
+	AVOID_NO_KILL: str = ",".join(f"tag=!{tag}" for tag in NO_KILL_TAGS)
+	""" String of tags to avoid when killing entities. Example of use: execute as @e[{Conventions.AVOID_NO_KILL}] run function your_namespace:kill_entity """
+	AVOID_ENTITY_TAGS: str = ",".join(f"tag=!{tag}" for tag in ENTITY_TAGS)
+	""" String of tags to avoid when executing an entity command. Example of use: execute as @e[{Conventions.AVOID_ENTITY_TAGS}] run function your_namespace:kill_entity """
+	AVOID_BLOCK_TAGS: str = ",".join(f"tag=!{tag}" for tag in BLOCK_TAGS)
+	""" String of tags to avoid when executing a block command. Example of use: execute as @e[{Conventions.AVOID_BLOCK_TAGS}] run function your_namespace:kill_entity """
+	AVOID_ENTITY_TAGS_NO_KILL: str = ",".join(f"tag=!{tag}" for tag in ENTITY_TAGS_NO_KILL)
+	""" String of tags to avoid when executing an entity command. Example of use: execute as @e[{Conventions.AVOID_ENTITY_TAGS_NO_KILL}] run function your_namespace:kill_entity """
+	AVOID_BLOCK_TAGS_NO_KILL: str = ",".join(f"tag=!{tag}" for tag in BLOCK_TAGS_NO_KILL)
+	""" String of tags to avoid when executing a block command. Example of use: execute as @e[{Conventions.AVOID_BLOCK_TAGS_NO_KILL}] run function your_namespace:kill_entity """
+
+
+
 # Automatically handled dependencies for supported libs with additional key "is_used" that is True when the lib is found to be used.
 def official_lib_used(lib: str) -> bool:
 	is_used: bool = OFFICIAL_LIBS[lib]["is_used"]
