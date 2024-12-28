@@ -279,6 +279,11 @@ def routine(config: dict):
 					])
 				else:
 					if raw_data.get(WIKI_COMPONENT):
+						wiki_component = raw_data[WIKI_COMPONENT]
+						if (isinstance(wiki_component, dict) and "'" in wiki_component["text"]) \
+							or (isinstance(wiki_component, list) and any("'" in text["text"] for text in wiki_component)) \
+							or (isinstance(wiki_component, str) and "'" in wiki_component):
+							error(f"Wiki component for '{name}' should not contain single quotes are they fuck up the json files:\n{wiki_component}")
 						info_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data[WIKI_COMPONENT]}})
 
 					# For each craft (except smelting dupes),
@@ -480,7 +485,12 @@ def routine(config: dict):
 
 		# Write the introduction text
 		intro_content.append({"text": "\n" * 6})
-		intro_content.append(config['manual_first_page_text'])
+		first_page_config: dict|list = config['manual_first_page_text']
+		if isinstance(first_page_config, list):
+			for e in first_page_config:
+				intro_content.append(e)
+		else:
+			intro_content.append(first_page_config)
 
 		# Save image and insert in the manual pages
 		logo.save(f"{config['manual_path']}/font/page/_logo.png")
