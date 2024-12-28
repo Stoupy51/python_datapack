@@ -1,4 +1,5 @@
 
 import os
-os.system("py -m pip install --upgrade pip setuptools build twine")
+import sys
+os.system(f"{sys.executable} -m pip install --upgrade pip setuptools build twine")
 

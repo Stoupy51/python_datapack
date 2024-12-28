@@ -1,4 +1,5 @@
 
 import os
-os.system("py -m build")
+import sys
+os.system(f"{sys.executable} -m build")
 
