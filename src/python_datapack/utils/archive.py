@@ -21,12 +21,24 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] = [
 			file_path: str = clean_path(os.path.join(root, file))
 			if file_path not in FILES_TO_WRITE:
 				not_known_files.append(file_path)
-    
-    # Get the constant time for the archive
-	constant_time: tuple = (2024, 1, 1, 0, 0, 0)	# default time: 2024-01-01 00:00:00
+
+	# Get the constant time for the archive
+	constant_time: tuple[int, ...] = (2024, 1, 1, 0, 0, 0)	# default time: 2024-01-01 00:00:00
 	for file in FILES_TO_WRITE:
 		if file.endswith("pack.mcmeta"):
-			time_float = os.path.getmtime(file)		# Get the time of the pack.mcmeta file
+
+			# Get the pack folder (and the data and assets folders paths)
+			pack_folder: str = os.path.dirname(file)
+			data_folder: str = f"{pack_folder}/data"
+			assets_folder: str = f"{pack_folder}/assets"
+
+			# Get the time of the data or assets folder if it exists, else get the time of the pack.mcmeta file
+			if os.path.exists(data_folder):
+				time_float: float = os.path.getmtime(data_folder)
+			elif os.path.exists(assets_folder):
+				time_float: float = os.path.getmtime(assets_folder)
+			else:
+				time_float: float = os.path.getmtime(file)
 			constant_time = time.localtime(time_float)[:6]
 			break
 

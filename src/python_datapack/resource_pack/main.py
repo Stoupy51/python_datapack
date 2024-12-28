@@ -18,5 +18,6 @@ def main(config: dict):
 	check_all_textures_power_of_2(config)
 
 	# Write resource pack files to write
-	write_all_files(contains = config['build_resource_pack'])
+	build_rp: str = config['build_resource_pack']
+	write_all_files(contains=f"{build_rp}/assets")
 

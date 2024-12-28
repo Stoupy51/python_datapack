@@ -40,8 +40,21 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 
 	# Get the constant time for the archive
 	constant_time: tuple = (2024, 1, 1, 0, 0, 0)	# default time: 2024-01-01 00:00:00
-	if os.path.exists(f"{config['build_datapack']}/pack.mcmeta"):
-		time_float = os.path.getmtime(f"{config['build_datapack']}/pack.mcmeta")
+	mcmeta_path: str = f"{config['build_datapack']}/pack.mcmeta"
+	if os.path.exists(mcmeta_path):
+
+		# Get the pack folder (and the data and assets folders paths)
+		pack_folder: str = os.path.dirname(mcmeta_path)
+		data_folder: str = f"{pack_folder}/data"
+		assets_folder: str = f"{pack_folder}/assets"
+
+		# Get the time of the data or assets folder if it exists, else get the time of the pack.mcmeta file
+		if os.path.exists(data_folder):
+			time_float: float = os.path.getmtime(data_folder)
+		elif os.path.exists(assets_folder):
+			time_float: float = os.path.getmtime(assets_folder)
+		else:
+			time_float: float = os.path.getmtime(mcmeta_path)
 		constant_time = time.localtime(time_float)[:6]
 
 	# Make the new zip file with fixed pack.mcmeta and pack.png
@@ -56,8 +69,12 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 					info.date_time = constant_time
 					zip.writestr(info, temp_zip.read(file))
 
-			# Add the fixed pack.mcmeta to the final zip
-			zip.write(f"{config['build_datapack']}/pack.mcmeta", "pack.mcmeta")
+			# Add the fixed pack.mcmeta to the final zip with constant_time
+			info: ZipInfo = ZipInfo("pack.mcmeta")
+			info.compress_type = ZIP_DEFLATED
+			info.date_time = constant_time
+			with open(mcmeta_path, "rb") as f:
+				zip.writestr(info, f.read())
 
 			# Check if pack.png exists and add it to the final zip if it does
 			if os.path.exists(f"{config['build_datapack']}/pack.png"):
@@ -108,8 +125,21 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 
 	# Get the constant time for the archive
 	constant_time: tuple = (2024, 1, 1, 0, 0, 0)	# default time: 2024-01-01 00:00:00
-	if os.path.exists(f"{config['build_resource_pack']}/pack.mcmeta"):
-		time_float = os.path.getmtime(f"{config['build_resource_pack']}/pack.mcmeta")
+	mcmeta_path: str = f"{config['build_resource_pack']}/pack.mcmeta"
+	if os.path.exists(mcmeta_path):
+
+		# Get the pack folder (and the data and assets folders paths)
+		pack_folder: str = os.path.dirname(mcmeta_path)
+		data_folder: str = f"{pack_folder}/data"
+		assets_folder: str = f"{pack_folder}/assets"
+
+		# Get the time of the data or assets folder if it exists, else get the time of the pack.mcmeta file
+		if os.path.exists(data_folder):
+			time_float: float = os.path.getmtime(data_folder)
+		elif os.path.exists(assets_folder):
+			time_float: float = os.path.getmtime(assets_folder)
+		else:
+			time_float: float = os.path.getmtime(mcmeta_path)
 		constant_time = time.localtime(time_float)[:6]
 
 	# Make the new zip file with fixed pack.mcmeta and pack.png
@@ -124,8 +154,12 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 					info.date_time = constant_time
 					zip.writestr(info, temp_zip.read(file))
 
-			# Add the fixed pack.mcmeta to the final zip
-			zip.write(f"{config['build_resource_pack']}/pack.mcmeta", "pack.mcmeta")
+			# Add the fixed pack.mcmeta to the final zip with constant_time
+			info: ZipInfo = ZipInfo("pack.mcmeta")
+			info.compress_type = ZIP_DEFLATED
+			info.date_time = constant_time
+			with open(mcmeta_path, "rb") as f:
+				zip.writestr(info, f.read())
 
 			# Check if pack.png exists and add it to the final zip if it does
 			if os.path.exists(f"{config['build_resource_pack']}/pack.png"):
