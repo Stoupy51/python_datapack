@@ -196,14 +196,20 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 				if (texture.split("/")[-1] + on_off) in variants:
 					content["textures"][key] = texture + on_off
 
-		# Add used textures
+		# Add used textures (ignore minecraft namespace)
 		if used_textures is not None and content.get("textures") and not ignore_textures:
 			for texture in content["textures"].values():
+				if texture.startswith("minecraft:"):
+					continue
 				used_textures.add(texture)
 
 		# Copy used textures
 		if content.get("textures") and not ignore_textures:
 			for texture in content["textures"].values():
+				# Ignore if minecraft namespace
+				if texture.startswith("minecraft:"):
+					continue
+
 				texture_path = "/".join(texture.split(":")[-1].split("/")[1:])	# Remove namespace and block/item
 				source = f"{config['assets_folder']}/textures/{texture_path}.png"
 				destination = f"{dest_base_textu}/{texture_path}.png"
