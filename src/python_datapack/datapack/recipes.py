@@ -121,8 +121,17 @@ def main(config: dict):
 
 		# Initialize the dump string
 		dump: str = "{"
+
 		# Iterate through each layer and its ingredients
+		for i in range(3):
+			if (i not in recipes) or (all(ingr.get("id") == "minecraft:air" for ingr in recipes[i])):
+				recipes[i] = []
 		for l, ingrs in recipes.items():
+			# If the list is empty, continue
+			if not ingrs:
+				dump += f"{l}:[],"
+				continue
+
 			dump += f"{l}:["  # Start of layer definition
 
 			# Ensure each layer has exactly 3 ingredients by adding missing slots
