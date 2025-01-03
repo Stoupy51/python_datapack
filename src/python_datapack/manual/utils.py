@@ -130,6 +130,10 @@ def generate_all_iso_renders(config: dict):
 	# For every item, get the model path and the destination path
 	for_model_resolver: dict[str, str] = {}
 	for item, data in database.items():
+
+		# Skip items that don't have models
+		if not data.get("item_model"):
+			continue
 		
 		# If it's not a block, simply copy the texture
 		try:

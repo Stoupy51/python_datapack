@@ -7,6 +7,7 @@ from .shared_import import *
 from .book_optimizer import *
 from ..constants import *
 from ..resource_pack.item_models import handle_item		# Handle new items models (used for the manual and the heavy workbench)
+from ..utils.database_helper import add_item_name_and_lore_if_missing
 
 # Utility functions
 def deepcopy(x):
@@ -98,7 +99,7 @@ def routine(config: dict):
 		for item, data in database.items():
 
 			if CATEGORY not in data:
-				warning(f"Item '{item}' has no category key. Skipping.")
+				suggestion(f"Item '{item}' has no category key. Skipping.")
 				continue
 
 			category = data[CATEGORY]
@@ -570,7 +571,6 @@ def routine(config: dict):
 				"author": config['author'],
 				"pages": [str(i).replace("\\\\", "\\") for i in book_content],
 			},
-			"lore": [json.dumps(config['source_lore'], ensure_ascii=False).replace('"', "'")],
 			"item_model": f"{namespace}:manual",
 			"enchantment_glint_override": False,
 			"max_stack_size": 1
@@ -578,7 +578,9 @@ def routine(config: dict):
 	}
 	if not database.get("manual"):
 		database["manual"] = manual_database["manual"]
-	database["manual"].update(manual_database["manual"])
+	else:
+		database["manual"] = super_merge_dict(manual_database["manual"], database["manual"])
+	add_item_name_and_lore_if_missing(config, database, black_list=[item for item in database if item != "manual"])
 
 	# Add the model to the resource pack if it doesn't already exist
 	if not manual_already_exists:
