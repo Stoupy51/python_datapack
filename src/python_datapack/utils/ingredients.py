@@ -178,6 +178,8 @@ def loot_table_from_ingredient(config: dict, result_ingredient: dict, result_cou
 
 	# If item from another datapack, generate the loot table
 	path: str = f"{config['build_datapack']}/data/{config['namespace']}/loot_table/recipes/{namespace}/{item}.json"
+	if result_count > 1:
+		path = path.replace(".json", f"_x{result_count}.json")
 	if namespace != "minecraft":
 		file: dict = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:loot_table","value": f"{config['namespace']}:external/{namespace}/{item}"}] }] }
 	else:
