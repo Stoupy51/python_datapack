@@ -42,14 +42,14 @@ execute unless score #{namespace}.loaded load.status matches 1 run function {nam
 	if config['database']:
 		items_storage += f"\n# Items storage\ndata modify storage {namespace}:items all set value {{}}\n"
 		for item, data in config['database'].items():
-			mc_data = {"id":"","count":1, "components":{"custom_model_data":-1}}
+			mc_data = {"id":"","count":1, "components":{"item_model":""}}
 			for k, v in data.items():
 				if k not in NOT_COMPONENTS:
 					mc_data["components"][k] = v
 				elif k == "id":
 					mc_data[k] = v
-			if mc_data["components"]["custom_model_data"] == -1:
-				del mc_data["components"]["custom_model_data"]
+			if mc_data["components"]["item_model"] == "":
+				del mc_data["components"]["item_model"]
 			items_storage += f"data modify storage {namespace}:items all.{item} set value " + super_json_dump(mc_data, max_level = 0)
 		pass
 
