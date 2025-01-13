@@ -435,7 +435,7 @@ def routine(config: dict):
 				x += simple_case.size[0]
 
 				# Add the clickEvent part to the line and add the 2 times the line if enough items
-				component = get_item_component(config, item, ["item_model"])
+				component = get_item_component(config, item)
 				component["hoverEvent"]["contents"]["components"]["item_name"] = str({"text": page["name"], "color": "white"})
 				component["clickEvent"]["value"] = str(page["number"])
 				if not config['manual_high_resolution']:
