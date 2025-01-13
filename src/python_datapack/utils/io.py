@@ -1,10 +1,10 @@
 
 from .print import *
+from typing import IO, Literal
 import shutil
 import json
 import os
 import io
-from typing import IO
 
 
 # Utility function to clean the path
@@ -258,11 +258,12 @@ def read_file(file_path: str) -> str:
 	# Else, return an empty string
 	return ""
 
-def function_path_to_file_path(config: dict, function_path: str) -> str:
-	""" Convert a function path to a file path\n
+def path_to_file_path(config: dict, path: str, folder: Literal["function", "advancement"]) -> str:
+	""" Convert a relative path to a file path\n
 	Args:
-		config (dict): The main configuration
-		function_path (str): The path to the function (ex: "namespace:folder/function_name")
+		config		(dict): The main configuration
+		path		(str): The path (ex: "namespace:folder/name")
+		folder		(Literal["function", "advancement"]): The folder to put the file in
 	Returns:
 		str: The file path
 	"""
@@ -270,11 +271,16 @@ def function_path_to_file_path(config: dict, function_path: str) -> str:
 		error(f"The first argument should be the configuration dict, not a string. You probably swapped the arguments.")
 
 	# Get the namespace (if any)
-	namespace: str = function_path.split(":")[0] if ":" in function_path else "minecraft"
-	function_path = function_path.split(":")[-1] if ":" in function_path else function_path
+	namespace: str = path.split(":")[0] if ":" in path else "minecraft"
+	path = path.split(":")[-1] if ":" in path else path
 
-	# Return the file path
-	return f"{config['build_datapack']}/data/{namespace}/function/{function_path}.mcfunction"
+	# Return the file path based on folder
+	extension: str = ""
+	if folder == "function":
+		extension = ".mcfunction"
+	else:
+		extension = ".json"
+	return f"{config['build_datapack']}/data/{namespace}/{folder}/{path}{extension}"
 
 def read_function(config: dict, function_path: str) -> str:
 	""" Read the function at the given path\n
@@ -284,7 +290,7 @@ def read_function(config: dict, function_path: str) -> str:
 	Returns:
 		str: The content of the function
 	"""
-	return read_file(function_path_to_file_path(config, function_path))
+	return read_file(path_to_file_path(config, function_path, "function"))
 
 def write_to_file(file_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
 	""" Write the content to the file at the given path\n
@@ -333,8 +339,18 @@ def write_to_function(config: dict, function_path: str, content: str, overwrite:
 		overwrite		(bool):	If the file should be overwritten (default: Append the content)
 		prepend			(bool):	If the content should be prepended instead of appended (not used if overwrite is True)
 	"""
-	write_to_file(function_path_to_file_path(config, function_path), content, overwrite, prepend)
+	write_to_file(path_to_file_path(config, function_path, "function"), content, overwrite, prepend)
 
+def write_to_advancement(config: dict, advancement_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
+	""" Write the content to the advancement at the given path\n
+	Args:
+		config				(dict):	The main configuration
+		advancement_path	(str):	The path to the advancement (ex: "namespace:folder/advancement_name")
+		content				(str):	The content to write
+		overwrite			(bool):	If the file should be overwritten (default: Append the content)
+		prepend				(bool):	If the content should be prepended instead of appended (not used if overwrite is True)
+	"""
+	write_to_file(path_to_file_path(config, advancement_path, "advancement"), content, overwrite, prepend)
 
 def delete_file(file_path: str, clean_on_disk: bool = True) -> bool:
 	""" Delete the file at the given path\n
