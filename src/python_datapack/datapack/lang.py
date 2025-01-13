@@ -89,7 +89,7 @@ def main(config: dict):
 
 				# If key for lang is too short or not alphanumeric, skip
 				key_for_lang, verif = lang_format(text_breaklines_replaced)
-				if len(verif) < 3 or not verif.isalnum() or "\\u" in text:
+				if len(verif) < 3 or not verif.isalnum() or "\\u" in text or "$(" in text:
 					continue
 
 				# Get the lang format and add the key value to the dictionnary
