@@ -11,6 +11,7 @@ authors = [
 ]
 description = "Python package to help generating advanced Minecraft datapack contents"
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.10"
 classifiers = [
 	"Programming Language :: Python :: 3",
@@ -34,4 +35,7 @@ Issues = "https://github.com/Stoupy51/python_datapack/issues"
 
 [tool.pyright]
 typeCheckingMode = "basic"
+
+[tool.setuptools]
+license-files = ["LICENSE"]
 
