@@ -60,7 +60,7 @@ def main(config: dict):
 	# Make a give all command that gives chests with all the items
 	CHEST_SIZE = 27
 	total_chests = (len(database) + CHEST_SIZE - 1) // CHEST_SIZE
-	lore = json.dumps(config['source_lore']).replace('"', "'")
+	lore = config["source_lore"]
 	chests = []
 	database_copy = list(database.items())
 	for i in range(total_chests):
@@ -79,6 +79,6 @@ def main(config: dict):
 			json_content = super_json_dump(data, max_level = 0).replace("\n","")
 			chest_contents.append(f'{{slot:{j},item:{{count:1,id:"{id}",components:{json_content}}}}}')
 		joined_content = ",".join(chest_contents)
-		chests.append(f'give @s chest[container=[{joined_content}],custom_name=\'{{"text":"Chest [{i+1}/{total_chests}]","color":"yellow"}}\',lore=["{lore}"]]')
+		chests.append(f'give @s chest[container=[{joined_content}],custom_name={{"text":"Chest [{i+1}/{total_chests}]","color":"yellow"}},lore=["{lore}"]]')
 	write_to_function(config, f"{namespace}:_give_all", "\n" + "\n\n".join(chests) + "\n\n")
 

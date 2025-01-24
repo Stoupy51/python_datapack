@@ -461,8 +461,8 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 		database[record] = {
 			"id": CUSTOM_ITEM_VANILLA,
 			"custom_data": {config['namespace']:{record: True}, "smithed":{"dict":{"record": {record: True}}}},
-			"item_name": "{'text':'Music Disc', 'italic': false}",
-			"jukebox_playable": {"song": f"{config['namespace']}:{record}", "show_in_tooltip": True},
+			"item_name": {"text":"Music Disc", "italic": False},
+			"jukebox_playable": f"{config['namespace']}:{record}",
 			"max_stack_size": 1,
 			"rarity": "rare",
 		}
@@ -530,7 +530,7 @@ def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], i
 		is_external	(bool):				Whether the database is the external one or not (meaning the namespace is in the item name).
 		black_list	(list[str]):		The list of items to ignore.
 	"""
-	lore = json.dumps(config['source_lore']) if len(config['source_lore']) > 1 else json.dumps(config['source_lore'][0])
+	lore: dict|list[dict] = config["source_lore"]
 	for item, data in database.items():
 		if item in black_list:
 			continue
@@ -541,7 +541,7 @@ def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], i
 				item_str = item.replace("_"," ").title()
 			else:
 				item_str = item.split(":")[-1].replace("_"," ").title()
-			data["item_name"] = json.dumps( {"text": item_str, "italic": False, "color":"white"} )
+			data["item_name"] = {"text": item_str, "italic": False, "color":"white"}
 
 		# Apply namespaced lore if none
 		if not data.get("lore"):
@@ -551,7 +551,7 @@ def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], i
 				data["lore"].append(lore)
 		else:
 			ns = item.split(":")[0].replace("_"," ").title()
-			ns_lore  = json.dumps(config['source_lore']).replace('"', "'").replace(config['project_name'], ns)
+			ns_lore = json.loads(json.dumps(config['source_lore']).replace(config["project_name"], ns))
 			if not data["lore"] or data["lore"][-1] != ns_lore:
 				data["lore"].append(ns_lore)
 	return

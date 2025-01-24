@@ -18,7 +18,7 @@ def main(config: dict):
 
 	# Export database to JSON for debugging generation
 	with super_open(config['database_debug'], "w") as f:
-		super_json_dump(config['database'], f)
+		super_json_dump(database, file = f)
 	debug(f"Received database exported to '{config['database_debug']}'")
 
 	# Check every single thing in the database
@@ -74,8 +74,10 @@ def main(config: dict):
 			errors.append(f"NO_SILK_TOUCH_DROP key should be a string for '{item}', ex: \"adamantium_fragment\" or \"minecraft:stone\"")
 
 		# Force the use of "item_name" key for every item
-		if not data.get("item_name") or not isinstance(data["item_name"], str):
-			errors.append(f"'item_name' key missing or not a string for '{item}'")
+		if not data.get("item_name"):
+			errors.append(f"'item_name' key missing for '{item}', should be a dict or a list (SNBT), ex: {{\"text\":\"This is an Item Name\"}} or [\"This is an Item Name\"]")
+		elif not isinstance(data["item_name"], dict|list|str):
+			errors.append(f"'item_name' key should be a dict or a list (SNBT) for '{item}'")
 		
 		# Force the use of "lore" key to be in a correct format
 		if data.get("lore"):
@@ -83,10 +85,11 @@ def main(config: dict):
 				errors.append(f"'lore' key should be a list for '{item}'")
 			else:
 				for i, line in enumerate(data["lore"]):
-					if not isinstance(line, str):
-						errors.append(f"Line #{i} in 'lore' key should be a string for '{item}', ex: '{{\"text\":\"This is a lore line\"}}'")
+					if not isinstance(line, (dict, list, str)):
+						errors.append(f"Line #{i} in 'lore' key should be a dict or a list (SNBT) for '{item}', ex: {{\"text\":\"This is a lore line\"}} or [\"This is a lore line\"]")
 					else:
 						# Verify format {"text":"..."} or "..."
+						line = str(line)
 						if not (line.startswith('{') and line.endswith('}')) \
 							and not (line.startswith('[') and line.endswith(']')) \
 							and not (line.startswith('"') and line.endswith('"')) \
@@ -177,7 +180,14 @@ def main(config: dict):
 
 
 	# Add additional data to the custom blocks
-	for item, data in config['database'].items():
+	for item, data in database.items():
 		if data.get("id") == CUSTOM_BLOCK_VANILLA:
 			data["container"] = [{"slot": 0, "item": {"id": "minecraft:stone", "count": 1,"components": {"minecraft:custom_data": {"smithed": {"block": {"id": f"{config['namespace']}:{item}", "from": config['namespace']}}}}}}]
+
+			# Hide the container tooltip
+			if not data.get("tooltip_display"):
+				data["tooltip_display"] = {"hidden_components": []}
+			elif not data["tooltip_display"].get("hidden_components"):
+				data["tooltip_display"]["hidden_components"] = []
+			data["tooltip_display"]["hidden_components"].append("minecraft:container")
 
