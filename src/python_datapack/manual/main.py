@@ -9,7 +9,6 @@ from ..constants import *
 from ..resource_pack.item_models import handle_item		# Handle new items models (used for the manual and the heavy workbench)
 from ..utils.database_helper import add_item_name_and_lore_if_missing
 from .image_utils import careful_resize, add_border
-from .book_components import get_item_component
 from .book_optimizer import optimize_element, remove_events
 
 # Utility functions
