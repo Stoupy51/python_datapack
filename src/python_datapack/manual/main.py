@@ -451,7 +451,7 @@ def routine(config: dict):
 
 				# Add the click_event part to the line and add the 2 times the line if enough items
 				component = get_item_component(config, item, ["item_name"])
-				component["hover_event"]["text"]["components"]["item_name"] = {"text": page["name"], "color": "white"}
+				component["hover_event"]["components"]["item_name"] = {"text": page["name"], "color": "white"}
 				component["click_event"]["page"] = page["number"]
 				if not config['manual_high_resolution']:
 					component["text"] = MEDIUM_NONE_FONT
