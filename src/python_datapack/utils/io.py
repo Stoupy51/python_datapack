@@ -130,11 +130,11 @@ def super_json_load(file_path: str) -> dict:
 		return json.load(f)
 
 # JSON dump with indentation for levels
-def super_json_dump(data: dict|list, file: io.TextIOWrapper|None = None, max_level: int = 2) -> str:
+def super_json_dump(data: dict|list, file: IO|None = None, max_level: int = 2) -> str:
 	""" Dump the given data to a JSON file with indentation for only 2 levels by default
 	Args:
 		data (dict|list): 			The data to dump
-		file (io.TextIOWrapper): 	The file to dump the data to, if None, the data is returned as a string
+		file (IO|None): 			The file to dump the data to, if None, the data is returned as a string
 		max_level (int):			The level of where indentation should stop (-1 for infinite)
 	Returns:
 		str: The content of the file in every case

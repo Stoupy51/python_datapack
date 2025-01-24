@@ -10,7 +10,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from model_resolver.cli import main as model_resolver_main
 import requests
-
+from typing import Any
 # Generate high res simple case no border
 def load_simple_case_no_border(high_res: bool) -> Image.Image:
 	path = f"{TEMPLATES_PATH}/simple_case_no_border.png"
@@ -39,10 +39,10 @@ def careful_resize(image: Image.Image, max_result_size: int) -> Image.Image:
 	"""
 	if image.size[0] >= image.size[1]:
 		factor = max_result_size / image.size[0]
-		return image.resize((max_result_size, int(image.size[1] * factor)), Image.NEAREST)
+		return image.resize((max_result_size, int(image.size[1] * factor)), Image.Resampling.NEAREST)
 	else:
 		factor = max_result_size / image.size[1]
-		return image.resize((int(image.size[0] * factor), max_result_size), Image.NEAREST)
+		return image.resize((int(image.size[0] * factor), max_result_size), Image.Resampling.NEAREST)
 
 # Generate a border for a given Image
 def add_border(image: Image.Image, border_color: tuple, border_size: int, is_rectangle_shape: bool) -> Image.Image:
@@ -56,8 +56,8 @@ def add_border(image: Image.Image, border_color: tuple, border_size: int, is_rec
 		Image: The image with the border
 	"""
 	# Convert image to RGBA and load
-	image = image.convert("RGBA")
-	pixels = image.load()
+	image: Image.Image = image.convert("RGBA")
+	pixels: Any = image.load()
 
 	# Method 1: Image shape is not a rectangle
 	if not is_rectangle_shape:
@@ -411,13 +411,21 @@ def get_item_component(config: dict, ingredient: dict|str, only_those_components
 			ex: "adamantium_fragment"	# Only available for the datapack items
 	Returns:
 		dict: The text component
-			ex: {"text":NONE_FONT,"color":"white","hoverEvent":{"action":"show_item","contents":{"id":"minecraft:command_block", "components": {...}}},"clickEvent":{"action":"change_page","value":"8"}}
-			ex: {"text":NONE_FONT,"color":"white","hoverEvent":{"action":"show_item","contents":{"id":"minecraft:stick"}}}
+			ex: {"text":NONE_FONT,"color":"white","hover_event":{"action":"show_item","id":"minecraft:command_block", "components": {...}},"click_event":{"action":"change_page","value":"8"}}
+			ex: {"text":NONE_FONT,"color":"white","hover_event":{"action":"show_item","id":"minecraft:stick"}}
 	"""
 	# Get the item id
-	formatted = {"text": NONE_FONT, "hoverEvent":{"action":"show_item","contents":{"id":""}}}	# Default hoverEvent
+	formatted: dict = {
+		"text": NONE_FONT, 
+		"hover_event": {
+			"action": "show_item",
+			"id": "",  # Inline contents field
+			"components": {}  # Will be added if needed
+		}
+	}
+
 	if isinstance(ingredient, dict) and ingredient.get("item"):
-		formatted["hoverEvent"]["contents"]["id"] = ingredient["item"]
+		formatted["hover_event"]["id"] = ingredient["item"]
 	else:
 		# Get the item in the database
 		if isinstance(ingredient, str):
@@ -438,7 +446,7 @@ def get_item_component(config: dict, ingredient: dict|str, only_those_components
 			error("Item not found in database or external database: " + str(ingredient))
 		
 		# Copy id and components
-		formatted["hoverEvent"]["contents"]["id"] = item["id"].replace("minecraft:", "")
+		formatted["hover_event"]["id"] = item["id"].replace("minecraft:", "")
 		components = {}
 		if only_those_components:
 			for key in only_those_components:
@@ -448,15 +456,18 @@ def get_item_component(config: dict, ingredient: dict|str, only_those_components
 			for key, value in item.items():
 				if key in COMPONENTS_TO_INCLUDE:
 					components[key] = value
-		formatted["hoverEvent"]["contents"]["components"] = components
+		formatted["hover_event"]["components"] = components
 
 		# If item is from my datapack, get its page number
 		page_number = get_page_number(id)
 		if page_number != -1:
-			formatted["clickEvent"] = {"action":"change_page","value":str(page_number)}
+			formatted["click_event"] = {
+				"action": "change_page",
+				"page": page_number
+			}
 	
 	# High resolution
-	if config['manual_high_resolution']:
+	if config["manual_high_resolution"]:
 		formatted["text"] = high_res_font_from_ingredient(config, ingredient, count)
 
 	# Return
@@ -499,8 +510,8 @@ def generate_craft_content(config: dict, craft: dict, name: str, page_font: str)
 		result_component = get_item_component(config, name, count = result_count)
 	else:
 		result_component = get_item_component(config, craft["result"], count = result_count)
-	if result_component.get("clickEvent"):
-		del result_component["clickEvent"]	# Remove clickEvent for result item (as we already are on the page)
+	if result_component.get("click_event"):
+		del result_component["click_event"]	# Remove click_event for result item (as we already are on the page)
 	result_component["text"] = MICRO_NONE_FONT + result_component["text"]	# Left adjustment
 
 	# If the craft is shaped

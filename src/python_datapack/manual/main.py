@@ -203,7 +203,7 @@ def routine(config: dict):
 					page_image.paste(resized, (x + 2, y + 2), mask)
 					x += simple_case.size[0]
 
-					# Add the clickEvent part to the line and add the 2 times the line if enough items
+					# Add the click_event part to the line and add the 2 times the line if enough items
 					component = get_item_component(config, item, only_those_components=["item_name", "custom_name"])
 					component["text"] = MEDIUM_NONE_FONT if not config['manual_high_resolution'] else high_res_font
 					line.append(component)
@@ -285,7 +285,13 @@ def routine(config: dict):
 							or (isinstance(wiki_component, list) and any("'" in text["text"] for text in wiki_component)) \
 							or (isinstance(wiki_component, str) and "'" in wiki_component):
 							error(f"Wiki component for '{name}' should not contain single quotes are they fuck up the json files:\n{wiki_component}")
-						info_buttons.append({"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": raw_data[WIKI_COMPONENT]}})
+						info_buttons.append({
+							"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, 
+							"hover_event": {
+								"action": "show_text",
+								"value": raw_data[WIKI_COMPONENT]
+							}
+						})
 
 					# For each craft (except smelting dupes),
 					for i, craft in enumerate(crafts):
@@ -340,23 +346,32 @@ def routine(config: dict):
 
 						# Add the craft to the content
 						result_or_ingredient = WIKI_RESULT_OF_CRAFT_FONT if "result" not in craft else generate_wiki_font_for_ingr(config, name, craft)
-						info_buttons.append({"text": result_or_ingredient + VERY_SMALL_NONE_FONT * 2, "hoverEvent": {"action": "show_text", "contents": hover_text}})
+						info_buttons.append({
+							"text": result_or_ingredient + VERY_SMALL_NONE_FONT * 2, 
+							"hover_event": {
+								"action": "show_text",
+								"value": hover_text
+							}
+						})
 
-						# If there is a result to the craft, try to add the clickEvent that change to that page
+						# If there is a result to the craft, try to add the click_event that change to that page
 						if "result" in craft:
 							result_item = ingr_to_id(craft["result"], False)
 							if result_item in database:
-								info_buttons[-1]["clickEvent"] = {"action": "change_page", "value": str(get_page_number(result_item))}
+								info_buttons[-1]["click_event"] = {
+									"action": "change_page",
+									"page": get_page_number(result_item)
+								}
 				
 				# Add wiki buttons 5 by 5
 				if info_buttons:
 					
-					# If too many buttons, remove all the blue ones (no clickEvent) except the last one
+					# If too many buttons, remove all the blue ones (no click_event) except the last one
 					if len(info_buttons) > 15:
 						first_index: int = 0 if not raw_data.get(WIKI_COMPONENT) else 1
 						last_index: int = -1
 						for i, button in enumerate(info_buttons):
-							if isinstance(button, dict) and not button.get("clickEvent") and i != first_index:
+							if isinstance(button, dict) and not button.get("click_event") and i != first_index:
 								last_index = i
 						
 						# If there are more than 1 blue button, remove them except the last one
@@ -374,7 +389,7 @@ def routine(config: dict):
 							# Remove VERY_SMALL_NONE_FONT from last button to prevent automatic break line
 							content[-1]["text"] = content[-1]["text"].replace(VERY_SMALL_NONE_FONT, "")
 
-							# Re-add last 5 buttons (for good hoverEvent) but we replace the wiki font by the small font
+							# Re-add last 5 buttons (for good hover_event) but we replace the wiki font by the small font
 							content += ["\n"] + [x.copy() for x in content[-5:]]
 							for j in range(5):
 								content[-5 + j]["text"] = WIKI_NONE_FONT + VERY_SMALL_NONE_FONT * (2 if j != 4 else 0)
@@ -434,10 +449,10 @@ def routine(config: dict):
 				page_image.paste(resized, (x + 2, y + 2), mask)
 				x += simple_case.size[0]
 
-				# Add the clickEvent part to the line and add the 2 times the line if enough items
+				# Add the click_event part to the line and add the 2 times the line if enough items
 				component = get_item_component(config, item, ["item_name"])
-				component["hoverEvent"]["contents"]["components"]["item_name"] = str({"text": page["name"], "color": "white"})
-				component["clickEvent"]["value"] = str(page["number"])
+				component["hover_event"]["text"]["components"]["item_name"] = {"text": page["name"], "color": "white"}
+				component["click_event"]["page"] = page["number"]
 				if not config['manual_high_resolution']:
 					component["text"] = MEDIUM_NONE_FONT
 				else:
@@ -498,7 +513,7 @@ def routine(config: dict):
 		book_content.insert(0, intro_content)
 
 		## Optimize the book size
-		book_content_deepcopy: list[dict|list|str] = deepcopy(book_content)	# Deepcopy to avoid sharing same components (such as clickEvent)
+		book_content_deepcopy: list[dict|list|str] = deepcopy(book_content)	# Deepcopy to avoid sharing same components (such as click_event)
 		book_content: list[dict|list|str] = list(optimize_book(book_content_deepcopy))
 
 		## Insert at 2nd page the heavy workbench
@@ -509,9 +524,9 @@ def routine(config: dict):
 			# Increase every change_page click event by 1
 			for page in book_content:
 				for component in page:
-					if isinstance(component, dict) and "clickEvent" in component and component["clickEvent"].get("action") == "change_page":
-						current_value: int = int(component["clickEvent"]["value"])
-						component["clickEvent"]["value"] = str(current_value + 1)
+					if isinstance(component, dict) and "click_event" in component and component["click_event"].get("action") == "change_page":
+						current_value: int = int(component["click_event"]["page"])
+						component["click_event"]["page"] = current_value + 1
 
 		# Add fonts
 		font_providers.append({"type":"bitmap","file":f"{namespace}:font/none.png", "ascent": 8, "height": 20, "chars": [NONE_FONT]})
@@ -569,7 +584,7 @@ def routine(config: dict):
 			"written_book_content": {
 				"title": config.get("manual_name", "Manual"),
 				"author": config['author'],
-				"pages": [str(i).replace("\\\\", "\\") for i in book_content],
+				"pages": book_content,
 			},
 			"item_model": f"{namespace}:manual",
 			"enchantment_glint_override": False,
