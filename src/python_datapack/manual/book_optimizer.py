@@ -75,7 +75,7 @@ def optimize_element(content: list|dict|str) -> list|dict|str:
 	return new_content
 
 # Remove events recursively
-EVENTS = ["hover_event", "click_event"]
+EVENTS: list[str] = ["hover_event", "click_event"]
 def remove_events(compound: dict|list):
 	""" Remove events from a compound recursively
 	Args:
@@ -93,12 +93,12 @@ def remove_events(compound: dict|list):
 		remove_events(value)
 
 # Function
-def optimize_book(book_content: list) -> list|dict|str:
+def optimize_book(book_content: list|dict|str) -> list|dict|str:
 	""" Optimize the book content by associating compounds when possible
 	Args:
-		book_content (list): The book content
+		book_content (list|dict|str): The book content
 	Returns:
-		list: The optimized book content
+		list|dict|str: The optimized book content
 	"""
 	if not isinstance(book_content, list):
 		book_content = [book_content]
@@ -118,5 +118,4 @@ def optimize_book(book_content: list) -> list|dict|str:
 
 	# For each page, optimize the array
 	return optimize_element(book_content)
-
 

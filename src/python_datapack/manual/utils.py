@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 from model_resolver.cli import main as model_resolver_main
 import requests
 from typing import Any
+
 # Generate high res simple case no border
 def load_simple_case_no_border(high_res: bool) -> Image.Image:
 	path = f"{TEMPLATES_PATH}/simple_case_no_border.png"
