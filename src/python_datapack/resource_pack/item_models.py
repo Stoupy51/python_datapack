@@ -45,7 +45,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		block_or_item = "block"
 	dest_base_textu = f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/item"
 	overrides: dict = data.get(OVERRIDE_MODEL, {})
-	textures_files: list[str] = config['textures_files']
+	textures_files: list[str] = config.get('textures_files', [])
 
 	# Get powered states (if any)
 	powered = [""]
