@@ -1,11 +1,11 @@
 
 # Imports
-from ..constants import *
-from ..utils.print import *
-from ..utils.io import *
+import stouputils as stp
+from ..constants import OFFICIAL_LIBS, DATA_VERSION, MINECRAFT_VERSION, official_lib_used
+from ..utils.io import write_to_file, write_to_function, write_to_versioned_function, is_in_write_queue, FILES_TO_WRITE
 
 # This folder path
-OFFICIAL_LIBS_PATH = clean_path(os.path.dirname(os.path.realpath(__file__)))
+OFFICIAL_LIBS_PATH: str = stp.get_root_path(__file__)
 
 # Util function for checking version
 def check_version(config: dict, lib_ns: str, data: dict, run_command: str) -> str:
@@ -25,6 +25,7 @@ def check_version(config: dict, lib_ns: str, data: dict, run_command: str) -> st
 	return checks
 
 # Main function called on finalization process
+@stp.measure_time(stp.info, "Dependencies generated")
 def main(config: dict) -> None:
 	namespace: str = config['namespace']
 	version: str = config['version']
@@ -35,7 +36,7 @@ def main(config: dict) -> None:
 		for file_content in FILES_TO_WRITE.values():
 			if "common_signals" in file_content:
 				if not official_lib_used("common_signals"):
-					info("Found the use of official supported library 'common_signals', adding it to the datapack")
+					stp.info("Found the use of official supported library 'common_signals', adding it to the datapack")
 				break
 	
 	# Find if itemio is used
@@ -43,7 +44,7 @@ def main(config: dict) -> None:
 		for file_content in FILES_TO_WRITE.values():
 			if "itemio" in file_content:
 				if not official_lib_used("itemio"):
-					info("Found the use of official supported library 'itemio', adding it to the datapack")
+					stp.info("Found the use of official supported library 'itemio', adding it to the datapack")
 				break
 
 	# Get all dependencies (official and custom)
@@ -52,9 +53,9 @@ def main(config: dict) -> None:
 		dependencies += list(config['dependencies'].items())
 
 	# Setup Lantern Load
-	write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/load.json", super_json_dump({"values": ["#load:_private/load"]}))
-	write_to_file(f"{config['build_datapack']}/data/load/tags/function/_private/init.json", super_json_dump({"values": ["load:_private/init"]}))
-	write_to_file(f"{config['build_datapack']}/data/load/tags/function/_private/load.json", super_json_dump({"values": ["#load:_private/init",{"id":"#load:pre_load","required":False},{"id":"#load:load","required":False},{"id":"#load:post_load","required":False}]}))
+	write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/load.json", stp.super_json_dump({"values": ["#load:_private/load"]}))
+	write_to_file(f"{config['build_datapack']}/data/load/tags/function/_private/init.json", stp.super_json_dump({"values": ["load:_private/init"]}))
+	write_to_file(f"{config['build_datapack']}/data/load/tags/function/_private/load.json", stp.super_json_dump({"values": ["#load:_private/init",{"id":"#load:pre_load","required":False},{"id":"#load:load","required":False},{"id":"#load:post_load","required":False}]}))
 	write_to_function(config, f"load:_private/init", f"""
 # Reset scoreboards so packs can set values accurate for current load.
 scoreboard objectives add load.status dummy
@@ -63,14 +64,14 @@ scoreboard players reset * load.status
 
 
 	# Setup load json files
-	write_to_file(f"{config['build_datapack']}/data/load/tags/function/load.json", super_json_dump({"values": [f"#{namespace}:load"]}))
+	write_to_file(f"{config['build_datapack']}/data/load/tags/function/load.json", stp.super_json_dump({"values": [f"#{namespace}:load"]}))
 	values: list[str | dict] = [f"#{namespace}:enumerate", f"#{namespace}:resolve"]
 	if dependencies:
 		values.insert(0, {"id":f"#{namespace}:dependencies","required":False})
-	write_to_file(f"{config['build_datapack']}/data/{namespace}/tags/function/load.json", super_json_dump({"values": values}, max_level = 3))
+	write_to_file(f"{config['build_datapack']}/data/{namespace}/tags/function/load.json", stp.super_json_dump({"values": values}, max_level = 3))
 	if dependencies:
 		calls = [{"id":f"#{namespace}:load", "required": False} for namespace, _ in dependencies]
-		write_to_file(f"{config['build_datapack']}/data/{namespace}/tags/function/dependencies.json", super_json_dump({"values": calls}))
+		write_to_file(f"{config['build_datapack']}/data/{namespace}/tags/function/dependencies.json", stp.super_json_dump({"values": calls}))
 
 	# Write secondary function
 	authors = config['author'].split(" ")
@@ -90,13 +91,13 @@ function {config['namespace']}:v{version}/load/valid_dependencies
 # Confirm load
 function {config['namespace']}:v{version}/load/confirm_load
 """
-	write_to_versioned_file(config, "load/secondary", content)
+	write_to_versioned_function(config, "load/secondary", content)
 
 
 	# Tick verification
 	if is_in_write_queue(f"{config['build_datapack']}/data/{namespace}/function/v{version}/tick.mcfunction"):
-		write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/tick.json", super_json_dump({"values": [f"{namespace}:v{version}/load/tick_verification"]}))
-		write_to_versioned_file(config, "load/tick_verification", f"""
+		write_to_file(f"{config['build_datapack']}/data/minecraft/tags/function/tick.json", stp.super_json_dump({"values": [f"{namespace}:v{version}/load/tick_verification"]}))
+		write_to_versioned_function(config, "load/tick_verification", f"""
 execute if score #{namespace}.major load.status matches {major} if score #{namespace}.minor load.status matches {minor} if score #{namespace}.patch load.status matches {patch} run function {namespace}:v{version}/tick
 
 """)
@@ -108,13 +109,13 @@ execute if score #{namespace}.major load.status matches {major} if score #{names
 			if FILES_TO_WRITE.get(function_path):
 				json_file: dict = {"values": [f"{namespace}:calls/smart_ore_generation/{function_tag}"]}
 				path: str = f"{config['build_datapack']}/data/smart_ore_generation/tags/function/v1/signals/{function_tag}.json"
-				write_to_file(path, super_json_dump(json_file))
+				write_to_file(path, stp.super_json_dump(json_file))
 
 
 	# For each used library, show message
 	used_libs: list[str] = [data['name'] for data in OFFICIAL_LIBS.values() if data["is_used"]]
 	if used_libs:
-		info(f"Summary of the official supported libraries used in the datapack: {', '.join(used_libs)}\n")
+		stp.info(f"Summary of the official supported libraries used in the datapack: {', '.join(used_libs)}\n")
 
 	## Write check_dependencies and valid_dependencies functions now that we have all the dependencies
 	encoder_checks = ""
@@ -133,7 +134,7 @@ execute if score #{namespace}.major load.status matches {major} if score #{names
 
 	# Write check_dependencies.mcfunction
 	if dependencies:
-		write_to_versioned_file(config, "load/check_dependencies", f"""
+		write_to_versioned_function(config, "load/check_dependencies", f"""
 ## Check if {config['project_name']} is loadable (dependencies)
 scoreboard players set #dependency_error {namespace}.data 0
 {encoder_checks}
@@ -141,7 +142,7 @@ scoreboard players set #dependency_error {namespace}.data 0
 
 	# Waiting for player
 	if dependencies:
-		write_to_versioned_file(config, "load/valid_dependencies", f"""
+		write_to_versioned_function(config, "load/valid_dependencies", f"""
 # Waiting for a player to get the game version, but stop function if no player found
 execute unless entity @p run schedule function {namespace}:v{version}/load/valid_dependencies 1t replace
 execute unless entity @p run return 0

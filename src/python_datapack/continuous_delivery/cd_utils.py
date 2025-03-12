@@ -1,6 +1,6 @@
 
 # Imports
-from ..utils.print import *
+import stouputils as stp
 from ..constants import MINECRAFT_VERSION
 import requests
 import json
@@ -12,7 +12,7 @@ def replace_tilde(path: str) -> str:
 	return path.replace("~", os.path.expanduser("~"))
 
 # Load credentials from file
-@handle_error((ValueError, FileNotFoundError), error_log=3)
+@stp.handle_error((ValueError, FileNotFoundError))
 def load_credentials(credentials_path: str) -> dict[str, str]:
 	""" Load credentials from a JSON or YAML file into a dictionary\n
 	The file must be in the following format (JSON example, you can imagine the YAML format):

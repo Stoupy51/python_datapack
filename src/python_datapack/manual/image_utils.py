@@ -1,9 +1,9 @@
-"""
-Handles image manipulation utilities for the manual
-"""
+
+# Imports
+import os
 from PIL import Image, ImageDraw, ImageFont
 from typing import Any, Tuple
-from .shared_import import *
+from .shared_import import TEMPLATES_PATH, MICRO_NONE_FONT, font_providers, get_next_font
 
 
 # Generate high res simple case no border

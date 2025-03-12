@@ -1,9 +1,8 @@
 
 # Imports
-from ..constants import MINECRAFT_VERSION
-from ..utils.print import *
-from .cd_utils import *
+import os
 import pyperclip
+import stouputils as stp
 
 # Constants
 MARKDOWN_TO_BBCODE_URL: list[str] = ["https://ricolovefeng.github.io/"]
@@ -43,15 +42,15 @@ def upload_version(project_url: str, version: str, changelog: str) -> None:
 
 	# Copy the changelog text to the clipboard
 	pyperclip.copy(changelog)
-	info("Changelog text copied to the clipboard!")
+	stp.info("Changelog text copied to the clipboard!")
 
 	# Wait for the user to know if the upload is successful
-	progress("Press Enter if you have uploaded the new version")
+	stp.progress("Press Enter if you have uploaded the new version")
 	input()
 
 
-@measure_time(progress, "Uploading to PlanetMinecraft took")
-@handle_error(error_log=3)
+@stp.measure_time(stp.progress, "Uploading to PlanetMinecraft took")
+@stp.handle_error()
 def upload_to_pmc(pmc_config: dict, changelog: str = "") -> None:
 	""" Upload the project to PlanetMinecraft using the configuration\n
 	Disclaimer:
@@ -61,6 +60,6 @@ def upload_to_pmc(pmc_config: dict, changelog: str = "") -> None:
 		changelog		(str):		Changelog text for the release
 	"""
 	project_url, version = validate_config(pmc_config)
-	suggestion(f"We suggest you updating your project description by using one of the following url (to convert markdown to bbcode): {MARKDOWN_TO_BBCODE_URL}")
+	stp.suggestion(f"We suggest you updating your project description by using one of the following url (to convert markdown to bbcode): {MARKDOWN_TO_BBCODE_URL}")
 	upload_version(project_url, version, changelog)
 

@@ -1,8 +1,14 @@
 
 # Imports
-from .shared_import import *
-from .image_utils import *
-from ..utils.ingredients import *
+import os
+import stouputils as stp
+from PIL import Image
+from .shared_import import (
+	TEMPLATES_PATH, SQUARE_SIZE, BORDER_COLOR, BORDER_SIZE, WIKI_INGR_OF_CRAFT_FONT,
+	font_providers, get_next_font
+)
+from .image_utils import careful_resize, add_border, image_count
+from ..utils.ingredients import FURNACES_RECIPES_TYPES, ingr_to_id
 
 # Generate page font function (called in utils)
 def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None = None, output_name: str = "") -> None:
@@ -21,7 +27,7 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 	# Get result texture (to place later)
 	image_path = f"{config['manual_path']}/items/{config['namespace']}/{name}.png"
 	if not os.path.exists(image_path):
-		error(f"Missing item texture at '{image_path}'")
+		stp.error(f"Missing item texture at '{image_path}'")
 	result_texture = Image.open(image_path)
 
 	# If recipe result is specified, take the right texture
@@ -64,7 +70,7 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 						item = item.replace(":", "/")
 						image_path = f"{config['manual_path']}/items/{item}.png"
 						if not os.path.exists(image_path):
-							error(f"Missing item texture at '{image_path}'")
+							stp.error(f"Missing item texture at '{image_path}'")
 						item_texture = Image.open(image_path)
 						item_texture = careful_resize(item_texture, SQUARE_SIZE)
 						coords = (
@@ -100,7 +106,7 @@ def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None
 			input_item = input_item.replace(":", "/")
 			image_path = f"{config['manual_path']}/items/{input_item}.png"
 			if not os.path.exists(image_path):
-				error(f"Missing item texture at '{image_path}'")
+				stp.error(f"Missing item texture at '{image_path}'")
 			item_texture = Image.open(image_path)
 			item_texture = careful_resize(item_texture, SQUARE_SIZE)
 			mask = item_texture.convert("RGBA").split()[3]
@@ -185,7 +191,7 @@ def generate_wiki_font_for_ingr(config: dict, name: str, craft: dict) -> str:
 		font_providers.append({"type":"bitmap","file":f"{config['namespace']}:font/wiki_icons/{result_item}.png", "ascent": 8, "height": 16, "chars": [font]})
 
 	except Exception as e:
-		warning(f"Failed to generate craft icon for {name}: {e}\nreturning default font...")
+		stp.warning(f"Failed to generate craft icon for {name}: {e}\nreturning default font...")
 		pass
 
 	# Return the font

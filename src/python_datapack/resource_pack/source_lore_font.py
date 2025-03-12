@@ -1,8 +1,8 @@
 
 # Imports
-from ..utils.io import *
-from ..utils.print import *
-from ..constants import *
+import os
+import stouputils as stp
+from ..utils.io import write_to_file
 from PIL import Image
 
 # Utility functions
@@ -19,7 +19,7 @@ def main(config: dict) -> dict:
 		# Create the font file
 		write_to_file(
 			f"{config['build_resource_pack']}/assets/{namespace}/font/icons.json",
-			super_json_dump({"providers": [{"type": "bitmap","file": f"{namespace}:font/original_icon.png","ascent": 8,"height": 9,"chars": ["I"]}]})
+			stp.super_json_dump({"providers": [{"type": "bitmap","file": f"{namespace}:font/original_icon.png","ascent": 8,"height": 9,"chars": ["I"]}]})
 		)
 
 		# Copy the original icon to the resource pack

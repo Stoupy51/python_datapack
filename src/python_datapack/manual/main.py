@@ -1,21 +1,38 @@
 
 # Imports
-from ..utils.io import *
-from ..utils.print import *
-from .utils import *
-from .shared_import import *
-from .book_optimizer import *
-from ..constants import *
+import stouputils as stp
+import os
+import shutil
+import json
+from PIL import Image
 from ..resource_pack.item_models import handle_item		# Handle new items models (used for the manual and the heavy workbench)
 from ..utils.database_helper import add_item_name_and_lore_if_missing
-from .image_utils import careful_resize, add_border
+from ..utils.ingredients import ingr_repr, ingr_to_id
+from ..utils.io import super_copy, write_all_files, super_merge_dict, delete_file, write_to_load_file
+from ..constants import CUSTOM_BLOCK_VANILLA, OVERRIDE_MODEL, RESULT_OF_CRAFTING, USED_FOR_CRAFTING, OFFICIAL_LIBS, CATEGORY, WIKI_COMPONENT
+from .shared_import import (
+	TEMPLATES_PATH, MANUAL_ASSETS_PATH, HEAVY_WORKBENCH_CATEGORY, FONT_FILE, SMALL_NONE_FONT,
+	MEDIUM_NONE_FONT, NONE_FONT, WIKI_INFO_FONT, VERY_SMALL_NONE_FONT, BORDER_COLOR, BORDER_SIZE,
+	HEAVY_WORKBENCH_CATEGORY, HOVER_EQUIVALENTS, WIKI_RESULT_OF_CRAFT_FONT, WIKI_INGR_OF_CRAFT_FONT,
+	WIKI_NONE_FONT, MICRO_NONE_FONT, SHAPED_3X3_FONT, SHAPED_2X2_FONT, INVISIBLE_ITEM_FONT, FURNACE_FONT,
+	PULVERIZING_FONT, HOVER_SHAPED_3X3_FONT, HOVER_SHAPED_2X2_FONT, HOVER_FURNACE_FONT, HOVER_PULVERIZING_FONT,
+	manual_pages, font_providers,
+	get_page_font, get_next_font, get_page_number
+)
 from .book_optimizer import optimize_element, remove_events
+from .iso_renders import generate_all_iso_renders
+from .image_utils import careful_resize, add_border, load_simple_case_no_border, generate_high_res_font
+from .book_components import get_item_component
+from .book_optimizer import optimize_element, remove_events
+from .page_font import generate_page_font, generate_wiki_font_for_ingr
+from .other_utils import generate_otherside_crafts, remove_unknown_crafts, convert_shapeless_to_shaped
+from .craft_content import generate_craft_content
 
 # Utility functions
 def deepcopy(x):
 	return json.loads(json.dumps(x))
 
-@measure_time(info, "Added manual to the database")
+@stp.measure_time(stp.info, "Added manual to the database")
 def main(config: dict):
 	# Copy everything in the manual assets folder to the templates folder
 	os.makedirs(TEMPLATES_PATH, exist_ok = True)
@@ -90,7 +107,7 @@ def routine(config: dict):
 
 	# If the manual cache is enabled and we have a cache file, load it
 	if config['cache_manual_pages'] and os.path.exists(config['manual_debug']) and os.path.exists(f"{config['manual_path']}/font/manual.json"):
-		with super_open(config['manual_debug'], "r") as f:
+		with stp.super_open(config['manual_debug'], "r") as f:
 			book_content = json.load(f)
 
 	# Else, generate all
@@ -101,7 +118,7 @@ def routine(config: dict):
 		for item, data in database.items():
 
 			if CATEGORY not in data:
-				suggestion(f"Item '{item}' has no category key. Skipping.")
+				stp.suggestion(f"Item '{item}' has no category key. Skipping.")
 				continue
 
 			category = data[CATEGORY]
@@ -111,7 +128,7 @@ def routine(config: dict):
 
 		# Error message if there is too many categories
 		if len(categories) > MAX_ITEMS_PER_PAGE:
-			error(f"Too many categories ({len(categories)}). Maximum is {MAX_ITEMS_PER_PAGE}. Please reduce the number of item categories.")
+			stp.error(f"Too many categories ({len(categories)}). Maximum is {MAX_ITEMS_PER_PAGE}. Please reduce the number of item categories.")
 
 		# Debug categories and sizes
 		s = ""
@@ -122,7 +139,7 @@ def routine(config: dict):
 			if len(items) > MAX_ITEMS_PER_PAGE:
 				s += f" (splitted into {len(items) // MAX_ITEMS_PER_PAGE + 1} pages)"
 		nb_categories: int = len(categories) - (1 if HEAVY_WORKBENCH_CATEGORY in categories else 0)
-		debug(f"Found {nb_categories} categories:{s}")
+		stp.debug(f"Found {nb_categories} categories:{s}")
 
 		# Split up categories into pages
 		categories_pages = {}
@@ -191,7 +208,7 @@ def routine(config: dict):
 					if os.path.exists(texture_path):
 						item_image = Image.open(texture_path)
 					else:
-						warning(f"Missing texture at '{texture_path}', using empty texture")
+						stp.warning(f"Missing texture at '{texture_path}', using empty texture")
 						item_image = Image.new("RGBA", (1, 1), (0, 0, 0, 0))
 					if not config['manual_high_resolution']:
 						resized = careful_resize(item_image, 32)
@@ -242,7 +259,7 @@ def routine(config: dict):
 				crafts += generate_otherside_crafts(config, name)
 				crafts = [craft for craft in crafts if craft["type"] not in ["blasting", "smoking", "campfire_cooking"]]	# Remove smelting dupes
 				crafts = remove_unknown_crafts(crafts)
-				crafts = unique_crafts(crafts)
+				crafts = stp.unique_list(crafts)
 
 				# If there are blue crafts, generate the content for the first craft
 				blue_crafts: list[dict] = [craft for craft in crafts if not craft.get("result")]
@@ -286,7 +303,7 @@ def routine(config: dict):
 						if (isinstance(wiki_component, dict) and "'" in wiki_component["text"]) \
 							or (isinstance(wiki_component, list) and any("'" in text["text"] for text in wiki_component)) \
 							or (isinstance(wiki_component, str) and "'" in wiki_component):
-							error(f"Wiki component for '{name}' should not contain single quotes are they fuck up the json files:\n{wiki_component}")
+							stp.error(f"Wiki component for '{name}' should not contain single quotes are they fuck up the json files:\n{wiki_component}")
 						info_buttons.append({
 							"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, 
 							"hover_event": {
@@ -437,7 +454,7 @@ def routine(config: dict):
 				if os.path.exists(texture_path):
 					item_image = Image.open(texture_path)
 				else:
-					warning(f"Missing texture at '{texture_path}', using empty texture")
+					stp.warning(f"Missing texture at '{texture_path}', using empty texture")
 					item_image = Image.new("RGBA", (1, 1), (0, 0, 0, 0))
 				if not config['manual_high_resolution']:
 					resized = careful_resize(item_image, 32)
@@ -497,7 +514,7 @@ def routine(config: dict):
 		# Create the image and load Minecraft font
 		icon_path = f"{config['assets_folder']}/original_icon.png"
 		if not os.path.exists(icon_path):
-			error(f"Missing icon path at '{icon_path}' (needed for the manual)")
+			stp.error(f"Missing icon path at '{icon_path}' (needed for the manual)")
 		logo = Image.open(icon_path)
 		logo = careful_resize(logo, 256)
 
@@ -551,13 +568,13 @@ def routine(config: dict):
 			font_providers.append({"type":"bitmap","file":f"{namespace}:font/furnace.png", "ascent": -3, "height": 58, "chars": [HOVER_FURNACE_FONT]})
 			font_providers.append({"type":"bitmap","file":f"{namespace}:font/pulverizing.png", "ascent": -3, "height": 58, "chars": [HOVER_PULVERIZING_FONT]})
 		fonts = {"providers": font_providers}
-		with super_open(f"{config['manual_path']}/font/manual.json", "w") as f:
-			f.write(super_json_dump(fonts))
+		with stp.super_open(f"{config['manual_path']}/font/manual.json", "w") as f:
+			f.write(stp.super_json_dump(fonts))
 				
 		# Debug book_content
-		with super_open(config['manual_debug'], "w") as f:
-			f.write(super_json_dump(book_content))
-			debug(f"Debug book_content at '{config['manual_debug']}'")
+		with stp.super_open(config['manual_debug'], "w") as f:
+			f.write(stp.super_json_dump(book_content))
+			stp.debug(f"Debug book_content at '{config['manual_debug']}'")
 
 
 	# Copy the font provider and the generated textures to the resource pack
@@ -574,9 +591,9 @@ def routine(config: dict):
 			path: str = fp["file"]
 			path = path.replace(namespace + ':', f"{config['build_resource_pack']}/assets/{namespace}/textures/")
 			if not os.path.exists(path):
-				error(f"Missing font provider at '{path}' for {fp})")
+				stp.error(f"Missing font provider at '{path}' for {fp})")
 			if len(fp["chars"]) < 1 or (len(fp["chars"]) == 1 and not fp["chars"][0]):
-				error(f"Font provider '{path}' has no chars")
+				stp.error(f"Font provider '{path}' has no chars")
 
 	# Finally, prepend the manual to the database
 	manual_already_exists: bool = "manual" in database

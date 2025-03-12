@@ -1,12 +1,16 @@
 
 # Imports
-from ..utils.cache import simple_cache
-from ..utils.ingredients import *
-from .shared_import import *
+import stouputils as stp
+from ..constants import PULVERIZING, RESULT_OF_CRAFTING
+from .shared_import import FURNACE_FONT, SHAPED_3X3_FONT, SHAPED_2X2_FONT, PULVERIZING_FONT
+from ..utils.ingredients import (
+	CRAFTING_RECIPES_TYPES, FURNACES_RECIPES_TYPES, SPECIAL_RECIPES_TYPES,
+	ingr_repr, ingr_to_id
+)
 
 
 # Convert craft function
-@simple_cache
+@stp.simple_cache()
 def convert_shapeless_to_shaped(craft: dict) -> dict:
 	""" Convert a shapeless craft to a shaped craft
 	Args:
@@ -56,7 +60,7 @@ def convert_shapeless_to_shaped(craft: dict) -> dict:
 
 
 # Util function
-@simple_cache
+@stp.simple_cache()
 def high_res_font_from_craft(craft: dict) -> str:
 	if craft["type"] in FURNACES_RECIPES_TYPES:
 		return FURNACE_FONT
@@ -68,26 +72,8 @@ def high_res_font_from_craft(craft: dict) -> str:
 	elif craft["type"] == PULVERIZING:
 		return PULVERIZING_FONT
 	else:
-		error(f"Unknown craft type '{craft['type']}'")
+		stp.error(f"Unknown craft type '{craft['type']}'")
 		return ""
-
-
-# Extract unique crafts from a craft list
-def unique_crafts(crafts: list[dict]) -> list[dict]:
-	""" Get unique crafts from a list of crafts
-	Args:
-		list (list[dict]): The list of crafts
-	Returns:
-		list[dict]: The unique crafts
-	"""
-	unique = []
-	strings = []
-	for craft in crafts:
-		if str(craft) not in strings:
-			unique.append(craft)
-			strings.append(str(craft))
-	return unique
-
 
 def remove_unknown_crafts(crafts: list[dict]) -> list[dict]:
 	""" Remove crafts that are not recognized by the program

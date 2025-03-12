@@ -1,9 +1,9 @@
 
 # Imports
-from ..utils.print import *
-from ..utils.io import *
-from ..utils.ingredients import *
-from ..constants import *
+import stouputils as stp
+from ..utils.io import write_to_file
+from ..utils.ingredients import ingr_to_id
+from ..constants import RESULT_OF_CRAFTING
 
 # Get result count of an item
 def get_result_count(config: dict, item: str, ingr_to_seek: str) -> int:
@@ -23,15 +23,15 @@ def get_result_count(config: dict, item: str, ingr_to_seek: str) -> int:
 			# If crafting shaped and only one ingredient, return the result count if the ingredient is the ingot item
 			if recipe["type"] == "crafting_shaped" and len(recipe["ingredients"]) == 1:
 				ingredient: dict = list(recipe["ingredients"].values())[0]
-				ingredient: str = ingr_to_id(ingredient, add_namespace = False)
-				if ingredient == ingr_to_seek:
+				ingr_str: str = ingr_to_id(ingredient, add_namespace = False)
+				if ingr_str == ingr_to_seek:
 					return recipe["result_count"]
 
 			# If crafting shapeless and only one ingredient, return the result count if the ingredient is the ingot item
 			elif recipe["type"] == "crafting_shapeless" and len(recipe["ingredients"]) == 1:
 				ingredient: dict = recipe["ingredients"][0]
-				ingredient: str = ingr_to_id(ingredient, add_namespace = False)
-				if ingredient == ingr_to_seek:
+				ingr_str: str = ingr_to_id(ingredient, add_namespace = False)
+				if ingr_str == ingr_to_seek:
 					return recipe["result_count"]
 	return 9
 
@@ -64,7 +64,7 @@ def main(config: dict):
 
 				# Get ingot item if any
 				ingot_types: list = [material_base, f"{material_base}_ingot", f"{material_base}_fragment"]
-				ingot_type: str = None
+				ingot_type: str | None = None
 				for ingot in ingot_types:
 					if ingot in database:
 						ingot_type = ingot
@@ -85,7 +85,7 @@ def main(config: dict):
 		# Link function tag
 		path: str = f"{config['build_datapack']}/data/simpledrawer/tags/function/material.json"
 		json_file: dict = {"values": [f"{namespace}:calls/simpledrawer/material"]}
-		write_to_file(path, super_json_dump(json_file))
+		write_to_file(path, stp.super_json_dump(json_file))
 		
 		# Write material function
 		path: str = f"{config['build_datapack']}/data/{namespace}/function/calls/simpledrawer/material.mcfunction"
@@ -114,8 +114,8 @@ def main(config: dict):
 					write_to_file(path, content)
 
 			# Get ingot and nugget conversions if any
-			ingot_in_block: int = get_result_count(config, material.get("ingot"), material.get("block"))
-			nugget_in_ingot: int = get_result_count(config, material.get("nugget"), material.get("ingot"))
+			ingot_in_block: int = get_result_count(config, material.get("ingot", ""), material.get("block", ""))
+			nugget_in_ingot: int = get_result_count(config, material.get("nugget", ""), material.get("ingot", ""))
 
 			# Make main function
 			path: str = f"{material_folder}/main.mcfunction"
@@ -138,5 +138,5 @@ data modify storage simpledrawer:io material set value {{material: "{namespace}.
 			write_to_file(path, content)
 
 		# Final print
-		debug("Special datapack compatibility done for SimpleDrawer's compacting drawer!")
+		stp.debug("Special datapack compatibility done for SimpleDrawer's compacting drawer!")
 

@@ -1,10 +1,10 @@
 
 # Imports
-from ..utils.io import *
-from ..utils.print import *
+import stouputils as stp
+from ..utils.io import is_in_write_queue, write_to_versioned_function, write_to_tick_file
 
 
-@measure_time(info, "Basic structure generated")
+@stp.measure_time(stp.info, "Basic structure generated")
 def main(config: dict):
 	version: str = config['version']
 	namespace: str = config['namespace']
@@ -16,22 +16,22 @@ def main(config: dict):
 
 	# Prepend to tick_2, second, second_5, and minute if they exists
 	if is_in_write_queue(tick_2):
-		write_to_versioned_file(config, "tick_2", f"""
+		write_to_versioned_function(config, "tick_2", f"""
 # Reset timer
 scoreboard players set #tick_2 {namespace}.data 1
 """, prepend = True)
 	if is_in_write_queue(second):
-		write_to_versioned_file(config, "second", f"""
+		write_to_versioned_function(config, "second", f"""
 # Reset timer
 scoreboard players set #second {namespace}.data 0
 """, prepend = True)
 	if is_in_write_queue(second_5):
-		write_to_versioned_file(config, "second_5", f"""
+		write_to_versioned_function(config, "second_5", f"""
 # Reset timer
 scoreboard players set #second_5 {namespace}.data -10
 """, prepend = True)
 	if is_in_write_queue(minute):
-		write_to_versioned_file(config, "minute", f"""
+		write_to_versioned_function(config, "minute", f"""
 # Reset timer
 scoreboard players set #minute {namespace}.data 1
 """, prepend = True)

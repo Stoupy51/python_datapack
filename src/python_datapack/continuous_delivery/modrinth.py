@@ -1,8 +1,10 @@
 
 # Imports
-from ..constants import MINECRAFT_VERSION
-from ..utils.print import *
-from .cd_utils import *
+import os
+import json
+import requests
+import stouputils as stp
+from .cd_utils import handle_response, get_supported_versions
 
 # Constants
 MODRINTH_API_URL: str = "https://api.modrinth.com/v2"
@@ -69,7 +71,7 @@ def get_project(slug: str, headers: dict[str, str]) -> dict:
 	Returns:
 		dict: Project data
 	"""
-	progress(f"Getting project {slug} from Modrinth")
+	stp.progress(f"Getting project {slug} from Modrinth")
 	search_response = requests.get(f"{PROJECT_ENDPOINT}/{slug}", headers=headers)
 	handle_response(search_response, f"Project not found on Modrinth, with namespace {slug}, please create it manually on https://modrinth.com/")
 	return search_response.json()
@@ -82,7 +84,7 @@ def update_project_description(slug: str, description: str, summary: str, header
 		summary (str): Project summary
 		headers (dict[str, str]): Headers for Modrinth API requests
 	"""
-	progress(f"Updating project description")
+	stp.progress(f"Updating project description")
 	update_response = requests.patch(
 		f"{PROJECT_ENDPOINT}/{slug}", 
 		headers=headers, 
@@ -101,16 +103,16 @@ def handle_existing_version(slug: str, version: str, headers: dict[str, str]) ->
 	"""
 	version_response = requests.get(f"{PROJECT_ENDPOINT}/{slug}/version/{version}", headers=headers)
 	if version_response.status_code == 200:
-		warning(f"Version {version} already exists on Modrinth, do you want to delete it? (y/N)")
+		stp.warning(f"Version {version} already exists on Modrinth, do you want to delete it? (y/N)")
 		if input().lower() != "y":
 			return False
 		version_id: str = version_response.json()["id"]
 		delete_response = requests.delete(f"{VERSION_ENDPOINT}/{version_id}", headers=headers)
 		handle_response(delete_response, "Failed to delete the version")
 	elif version_response.status_code == 404:
-		info(f"Version {version} not found on Modrinth, uploading...")
+		stp.info(f"Version {version} not found on Modrinth, uploading...")
 	else:
-		handle_response(version_response, "Failed to check if the version already exists")
+		stp.handle_response(version_response, "Failed to check if the version already exists")
 	return True
 
 def get_file_parts(project_name: str, build_folder: str) -> list[str]:
@@ -159,10 +161,10 @@ def upload_version(
 	Returns:
 		dict: Upload response data
 	"""
-	progress(f"Creating version {version}")
+	stp.progress(f"Creating version {version}")
 	files: dict[str, bytes] = {}
 	for file_part in file_parts:
-		progress(f"Reading file {os.path.basename(file_part)}")
+		stp.progress(f"Reading file {os.path.basename(file_part)}")
 		with open(file_part, "rb") as file:
 			files[os.path.basename(file_part)] = file.read()
 		
@@ -200,7 +202,7 @@ def set_resource_pack_required(version_id: str, resource_pack_hash: str, headers
 		resource_pack_hash (str): SHA1 hash of resource pack
 		headers (dict[str, str]): Headers for Modrinth API requests
 	"""
-	progress("Setting resource pack as required")
+	stp.progress("Setting resource pack as required")
 	version_response = requests.patch(
 		f"{VERSION_ENDPOINT}/{version_id}",
 		headers=headers,
@@ -208,8 +210,8 @@ def set_resource_pack_required(version_id: str, resource_pack_hash: str, headers
 	)
 	handle_response(version_response, "Failed to put the resource pack as required")
 
-@measure_time(progress, "Uploading to modrinth took")
-@handle_error(error_log=3)
+@stp.measure_time(stp.progress, "Uploading to modrinth took")
+@stp.handle_error()
 def upload_to_modrinth(credentials: dict[str, str], modrinth_config: dict, changelog: str = "") -> None:
 	""" Upload the project to Modrinth using the credentials and the configuration\n
 	Args:
@@ -239,5 +241,6 @@ def upload_to_modrinth(credentials: dict[str, str], modrinth_config: dict, chang
 		resource_pack_hash: str = json_response["files"][1]["hashes"]["sha1"]
 		set_resource_pack_required(json_response["id"], resource_pack_hash, headers)
 
-	info(f"Project {project_name} updated on Modrinth!")
+	stp.info(f"Project {project_name} updated on Modrinth!")
+
 

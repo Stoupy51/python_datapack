@@ -1,9 +1,12 @@
 """
 Handles generation of book components and content
 """
-from ..utils.ingredients import *
-from .image_utils import *
-
+import os
+import stouputils as stp
+from PIL import Image
+from ..utils.ingredients import ingr_to_id
+from .image_utils import generate_high_res_font
+from .shared_import import NONE_FONT, COMPONENTS_TO_INCLUDE, get_page_number
 
 # Call the previous function
 def high_res_font_from_ingredient(config: dict, ingredient: str|dict, count: int = 1) -> str:
@@ -16,18 +19,22 @@ def high_res_font_from_ingredient(config: dict, ingredient: str|dict, count: int
 	"""
 	# Decode the ingredient
 	if isinstance(ingredient, dict):
-		ingredient = ingr_to_id(ingredient, add_namespace = True)
-	if ':' in ingredient:
-		image_path = f"{config['manual_path']}/items/{ingredient.replace(':', '/')}.png"
-		if not os.path.exists(image_path):
-			error(f"Missing item texture at '{image_path}'")
-		item_image = Image.open(image_path)
-		ingredient = ingredient.split(":")[1]
+		ingr_str: str = ingr_to_id(ingredient, add_namespace = True)
 	else:
-		item_image = Image.open(f"{config['manual_path']}/items/{config['namespace']}/{ingredient}.png")
+		ingr_str = ingredient
+
+	# Get the item image
+	if ':' in ingr_str:
+		image_path = f"{config['manual_path']}/items/{ingr_str.replace(':', '/')}.png"
+		if not os.path.exists(image_path):
+			stp.error(f"Missing item texture at '{image_path}'")
+		item_image = Image.open(image_path)
+		ingr_str = ingr_str.split(":")[1]
+	else:
+		item_image = Image.open(f"{config['manual_path']}/items/{config['namespace']}/{ingr_str}.png")
 	
 	# Generate the high res font
-	return generate_high_res_font(config, ingredient, item_image, count)
+	return generate_high_res_font(config, ingr_str, item_image, count)
 
 
 # Convert ingredient to formatted JSON for book
@@ -72,7 +79,7 @@ def get_item_component(config: dict, ingredient: dict|str, only_those_components
 					if item:
 						break
 		if not item:
-			error("Item not found in database or external database: " + str(ingredient))
+			stp.error("Item not found in database or external database: " + str(ingredient))
 		
 		# Copy id and components
 		formatted["hover_event"]["id"] = item["id"].replace("minecraft:", "")

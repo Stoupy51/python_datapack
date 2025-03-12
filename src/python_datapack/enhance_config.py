@@ -1,6 +1,7 @@
 
 # Imports
-from .utils.io import *
+import os
+import stouputils as stp
 from .resource_pack.source_lore_font import main as source_lore_font
 
 # Main function
@@ -8,7 +9,7 @@ def main(config: dict) -> dict:
 
 	# Assets files
 	if config.get('assets_folder'):
-		config['assets_files'] = [clean_path(f"{root}/{f}") for root, _, files in os.walk(config['assets_folder']) for f in files]
+		config['assets_files'] = [stp.clean_path(f"{root}/{f}") for root, _, files in os.walk(config['assets_folder']) for f in files]
 		textures: str = f"{config['assets_folder']}/textures"
 		if os.path.exists(textures):
 			config['textures_files'] = [path.split(f"{textures}/")[1] for path in config['assets_files'] if path.startswith(textures) and path.endswith(".png")]

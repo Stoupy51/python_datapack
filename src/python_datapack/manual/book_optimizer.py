@@ -1,7 +1,4 @@
 
-# Imports
-from .utils import *
-
 # Page optimizer
 def optimize_element(content: list|dict|str) -> list|dict|str:
 	""" Optimize the page content by merging compounds when possible

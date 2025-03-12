@@ -3,7 +3,7 @@
 from .sounds import main as sounds_main
 from .item_models import main as item_models_main
 from .power_of_2 import main as check_all_textures_power_of_2
-from ..utils.io import *
+from ..utils.io import write_all_files
 
 def main(config: dict):
 	print()
@@ -18,6 +18,6 @@ def main(config: dict):
 	check_all_textures_power_of_2(config)
 
 	# Write resource pack files to write
-	build_rp: str = config['build_resource_pack']
+	build_rp: str = config["build_resource_pack"]
 	write_all_files(contains=f"{build_rp}/assets")
 

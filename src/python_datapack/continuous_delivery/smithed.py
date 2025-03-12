@@ -1,8 +1,10 @@
 
 # Imports
-from ..constants import MINECRAFT_VERSION
-from ..utils.print import *
-from .cd_utils import *
+import os
+import json
+import requests
+import stouputils as stp
+from .cd_utils import handle_response, get_supported_versions
 
 # Constants
 SMITHED_API_URL: str = "https://api.smithed.dev/v2/packs"
@@ -60,7 +62,7 @@ def upload_version(project_id: str, project_name: str, version: str, api_key: st
 		api_key			(str):				API key for Smithed
 		author			(str):				Author (for the github link)
 	"""
-	progress(f"Creating version {version}")
+	stp.progress(f"Creating version {version}")
 	post_url: str = f"{SMITHED_API_URL}/{project_id}/versions"
 	data: dict = {
 		"name": version,
@@ -91,8 +93,8 @@ def upload_version(project_id: str, project_name: str, version: str, api_key: st
 	handle_response(response, "Failed to create version on Smithed")
 
 
-@measure_time(progress, "Uploading to smithed took")
-@handle_error(error_log=2)
+@stp.measure_time(stp.progress, "Uploading to smithed took")
+@stp.handle_error(error_log=stp.LogLevels.WARNING_TRACEBACK)
 def upload_to_smithed(credentials: dict[str, str], smithed_config: dict, changelog: str = "") -> None:
 	""" Upload the project to Smithed using the credentials and the configuration\n
 	Args:
@@ -105,5 +107,6 @@ def upload_to_smithed(credentials: dict[str, str], smithed_config: dict, changel
 
 	upload_version(project_id, project_name, version, api_key, author)
 
-	info(f"Project {project_name} updated on Smithed!")
+	stp.info(f"Project {project_name} updated on Smithed!")
+
 

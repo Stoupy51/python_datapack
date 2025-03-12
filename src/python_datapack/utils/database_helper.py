@@ -2,13 +2,12 @@
 # Imports
 from __future__ import annotations
 from enum import Enum
-from PIL import Image
 from mutagen.oggvorbis import OggVorbis
+import stouputils as stp
 
 # Import utils
 from ..constants import *
 from .ingredients import *
-from .print import *
 from .io import *
 
 # Constants
@@ -109,11 +108,11 @@ class EquipmentsConfig():
 		self.attributes = attributes
 		for key in attributes.keys():
 			if "player." in key:
-				warning(f"Since 1.21.3, the 'player.' prefix is no longer written in attributes!!!")
+				stp.warning(f"Since 1.21.3, the 'player.' prefix is no longer written in attributes!!!")
 			elif "generic." in key:
-				warning(f"Since 1.21.3, the 'generic.' prefix is no longer written in attributes!!!")
+				stp.warning(f"Since 1.21.3, the 'generic.' prefix is no longer written in attributes!!!")
 			if "knockback_resistance" in key and attributes[key] >= 1:
-				warning(f"You are setting the Knockback Resistance of an equipment to {attributes[key]}. Be aware that Minecraft automatically multiplies it by 10 when applied to an equipment.")
+				stp.warning(f"You are setting the Knockback Resistance of an equipment to {attributes[key]}. Be aware that Minecraft automatically multiplies it by 10 when applied to an equipment.")
 
 	def getter(self) -> tuple[DEFAULT_ORE, int, dict[str, float]]:
 		return self.equivalent_to, self.pickaxe_durability, self.attributes
@@ -218,7 +217,7 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 			
 			model_file: str = f"{namespace_rp}/equipment/{material_base}.json"
 			model_data: dict = {"layers": {humanoid_type: [{"texture": f"{namespace}:{layer_file.replace('.png', '')}"}]}}
-			write_to_file(model_file, super_json_dump(model_data))
+			write_to_file(model_file, stp.super_json_dump(model_data))
 			return True
 		return False
 	top_layer: bool = handle_armor_layer(1, ["helmet", "chestplate"], "humanoid")
@@ -377,7 +376,7 @@ def add_recipes_for_dust(config: dict, database: dict[str, dict], material: str,
 	"""
 	dust = material + "_dust"
 	if f"{dust}.png" not in config['textures_files']:
-		error(f"Error during dust recipe generation: texture '{dust}.png' not found (required for '{material}' dust)")
+		stp.error(f"Error during dust recipe generation: texture '{dust}.png' not found (required for '{material}' dust)")
 		return
 	
 	# Add dust to the database if not found
@@ -439,23 +438,23 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 	"""
 	# Check records format,
 	if records and not (isinstance(records, dict) or records in ["auto", "all"]):
-		error(f"Error during custom record generation: records must be a dictionary, 'auto', or 'all' (got {type(records).__name__})")
+		stp.error(f"Error during custom record generation: records must be a dictionary, 'auto', or 'all' (got {type(records).__name__})")
 
 	# If no records specified, search in the records folder
 	if not records or records in ["auto", "all"]:
 		
 		songs: list[str] = [x for x in os.listdir(config["assets_folder"] + "/records") if x.endswith((".ogg",".wav"))]
 		records_to_check: dict[str, str] = { clean_record_name(file): file for file in songs }
-		debug(f"No records specified, searching in '{config['assets_folder']}/records' folder. Found {len(records_to_check)} records.")
+		stp.debug(f"No records specified, searching in '{config['assets_folder']}/records' folder. Found {len(records_to_check)} records.")
 	else:
 		records_to_check = records # type: ignore
 
 	# For each record, add it to the database
 	for record, sound in records_to_check.items():
 		if not isinstance(sound, str):
-			error(f"Error during custom record generation: sound '{sound}' is not a string, got {type(sound).__name__}")
+			stp.error(f"Error during custom record generation: sound '{sound}' is not a string, got {type(sound).__name__}")
 		if not sound.endswith(".ogg"):
-			warning(f"Error during custom record generation: sound '{sound}' is not an ogg file")
+			stp.warning(f"Error during custom record generation: sound '{sound}' is not an ogg file")
 			continue
 		item_name = ".".join(sound.split(".")[:-1])	# Remove the file extension
 		database[record] = {
@@ -477,21 +476,21 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 				
 				# Set jukebox song
 				json_song = {"comparator_output": duration % 16, "length_in_seconds": duration + 1, "sound_event": {"sound_id":f"{config['namespace']}:{record}"}, "description": {"text": item_name}}
-				write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/jukebox_song/{record}.json", super_json_dump(json_song))
+				write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/jukebox_song/{record}.json", stp.super_json_dump(json_song))
 
 				# Copy sound to resource pack
 				super_copy(file_path, f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds/{record}.ogg")
 
 				json_sound = {"category": "music", "sounds": [{"name": f"{config['namespace']}:{record}","stream": True}]}
 				json_sound = {record: json_sound}
-				write_to_file(f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds.json", super_json_dump(json_sound))
+				write_to_file(f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds.json", stp.super_json_dump(json_sound))
 
 			except KeyboardInterrupt as e:
 				raise e
 			except Exception as e:
-				error(f"Error during custom record generation of '{file_path}', make sure it is using proper Ogg format: {e}")
+				stp.error(f"Error during custom record generation of '{file_path}', make sure it is using proper Ogg format: {e}")
 		else:
-			warning(f"Error during custom record generation: path '{file_path}' does not exist")
+			stp.warning(f"Error during custom record generation: path '{file_path}' does not exist")
 
 
 
@@ -504,7 +503,7 @@ def deterministic_custom_model_data(config: dict, database: dict[str, dict], sta
 		starting_cmd	(int):				The starting custom model data.
 		blacklist		(list[str]):		The list of items to ignore.
 	"""
-	error("(deterministic_custom_model_data is deprecated since 1.21.3) Please now use the 'add_item_model_component' function instead.")
+	stp.error("(deterministic_custom_model_data is deprecated since 1.21.3) Please now use the 'add_item_model_component' function instead.")
 
 # Add item model component
 def add_item_model_component(config: dict, database: dict[str, dict], black_list: list[str] = []) -> None:
@@ -616,29 +615,29 @@ class CustomOreGeneration():
 		self.provider: str|list[str] = provider
 		self.placer_command: str = placer_command
 		if not official_lib_used("smart_ore_generation"):
-			debug("Found custom ore generation, adding 'smart_ore_generation' dependency")
+			stp.debug("Found custom ore generation, adding 'smart_ore_generation' dependency")
 		self.check_validity()
 	
 	def check_validity(self) -> None:
 		""" Check if the custom ore generation configuration is valid """
 		if not isinstance(self.dimensions, list) or not all(isinstance(dimension, str) for dimension in self.dimensions):
-			error("Custom ore generation 'dimensions' must be a list of strings")
+			stp.error("Custom ore generation 'dimensions' must be a list of strings")
 		if not isinstance(self.maximum_height, int):
-			error("Custom ore generation 'maximum_height' must be an integer")
+			stp.error("Custom ore generation 'maximum_height' must be an integer")
 		if self.minimum_height is not None and not isinstance(self.minimum_height, int):
-			error("Custom ore generation 'minimum_height' must be an integer or None")
+			stp.error("Custom ore generation 'minimum_height' must be an integer or None")
 		elif self.minimum_height is not None and self.minimum_height > self.maximum_height:
-			error("Custom ore generation 'minimum_height' must be less or equal to 'maximum_height'")
+			stp.error("Custom ore generation 'minimum_height' must be less or equal to 'maximum_height'")
 		if not isinstance(self.veins_per_region, int):
-			error("Custom ore generation 'veins_per_region' must be an integer")
+			stp.error("Custom ore generation 'veins_per_region' must be an integer")
 		if not isinstance(self.vein_size_logic, float) or self.vein_size_logic < 0:
-			error("Custom ore generation 'vein_size_logic' must be a float >= 0")
+			stp.error("Custom ore generation 'vein_size_logic' must be a float >= 0")
 		if not isinstance(self.provider, str) and not isinstance(self.provider, list):
-			error("Custom ore generation 'provider' must be a string or a list of strings")
+			stp.error("Custom ore generation 'provider' must be a string or a list of strings")
 		if isinstance(self.provider, list) and not all(isinstance(provider, str) for provider in self.provider):
-			error("Custom ore generation 'provider' must be a list of strings")
+			stp.error("Custom ore generation 'provider' must be a list of strings")
 		if not isinstance(self.placer_command, str):
-			error("Custom ore generation 'placer_command' must be a string")
+			stp.error("Custom ore generation 'placer_command' must be a string")
 	
 	def generate_files(self, config: dict, custom_ore: str, number: int|None = None):
 		""" Generate the files for the custom ore generation\n

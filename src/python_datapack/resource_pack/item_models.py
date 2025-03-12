@@ -1,8 +1,9 @@
 
 # Imports
-from ..utils.io import *
-from ..utils.print import *
-from ..constants import *
+import os
+import stouputils as stp
+from ..utils.io import write_to_file, super_copy
+from ..constants import CUSTOM_BLOCK_VANILLA, CUSTOM_ITEM_VANILLA, OVERRIDE_MODEL
 
 # Utility functions
 def get_powered_texture(variants: list[str], side: str, on_off: str) -> str:
@@ -13,7 +14,7 @@ def get_powered_texture(variants: list[str], side: str, on_off: str) -> str:
 	for texture in variants:
 		if texture.endswith(side):
 			return texture
-	error(f"Couldn't find texture for side '{side}' in '{variants}', consider adding missing texture or override the model")
+	stp.error(f"Couldn't find texture for side '{side}' in '{variants}', consider adding missing texture or override the model")
 	return ""
 
 # Check if all models are in a string of any variant
@@ -93,7 +94,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 						for i in range(1, 7):
 							name: str = f"{item}_slice{i}"
 							slice_content = {"parent": f"block/cake_slice{i}", "textures": content["textures"]}
-							write_to_file(f"{dest_base_model}/{name}{on_off}.json", super_json_dump(slice_content, max_level = 4))
+							write_to_file(f"{dest_base_model}/{name}{on_off}.json", stp.super_json_dump(slice_content, max_level = 4))
 
 					# Check cube_bottom_top model
 					elif model_in_variants(cube_bottom_top, variants):
@@ -115,13 +116,13 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 					
 					# Else, if there are no textures override, show error
 					elif not data.get(OVERRIDE_MODEL,{}).get("textures"):
-						patterns = super_json_dump({
+						patterns = stp.super_json_dump({
 							"cake": cake,
 							"cube_bottom_top": cube_bottom_top,
 							"orientable": orientable,
 							"cube_column": cube_column
 						}, max_level = 1)
-						error(f"Block '{item}' has invalid variants: {variants},\nconsider overriding the model or adding missing textures to match up one of the following patterns:\n{patterns}")
+						stp.error(f"Block '{item}' has invalid variants: {variants},\nconsider overriding the model or adding missing textures to match up one of the following patterns:\n{patterns}")
 
 			# Else, it's an item
 			else:
@@ -169,7 +170,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 						for i, variant in enumerate(sorted_pull_variants):
 							pull_content: dict = {"parent": parent,"textures": {"layer0": f"{config['namespace']}:item/{variant}"}}
 							super_copy(f"{config['assets_folder']}/textures/{variant}.png", f"{dest_base_textu}/{variant}.png")
-							write_to_file(f"{dest_base_model}/{item}_pulling_{i}.json", super_json_dump(pull_content))
+							write_to_file(f"{dest_base_model}/{item}_pulling_{i}.json", stp.super_json_dump(pull_content))
 
 							if i < (len(sorted_pull_variants) - 1):
 								pull: float = 0.65 + (0.25 * i)
@@ -183,7 +184,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 								})
 						
 						# Write the items/bow.json file
-						write_to_file(f"{dest_base_model}/{item}{on_off}.json".replace("models/item", "items"), super_json_dump(items_content, max_level = 4))
+						write_to_file(f"{dest_base_model}/{item}{on_off}.json".replace("models/item", "items"), stp.super_json_dump(items_content, max_level = 4))
 
 		# Add overrides
 		for key, value in overrides.items():
@@ -218,11 +219,11 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 					if os.path.exists(source + ".mcmeta"):
 						super_copy(source + ".mcmeta", destination + ".mcmeta")
 				except FileNotFoundError:
-					error(f"Texture '{source}' not found")
+					stp.error(f"Texture '{source}' not found")
 
 		# Write content if not empty
 		if data.get(OVERRIDE_MODEL, None) != {}:
-			dump: str = super_json_dump(content, max_level = 4)
+			dump: str = stp.super_json_dump(content, max_level = 4)
 		else:
 			dump: str = "{}\n"
 		item_model_path: str = f"{dest_base_model}/{item}{on_off}.json"
@@ -233,7 +234,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		if not data["id"].endswith("bow"):
 			model_path: str = item_model_path.replace("models/item", "items")
 			items_model = {"model": {"type": "minecraft:model", "model": f"{config['namespace']}:item/{item}{on_off}"}}
-			write_to_file(model_path, super_json_dump(items_model, max_level = 4))
+			write_to_file(model_path, stp.super_json_dump(items_model, max_level = 4))
 
 
 
@@ -256,7 +257,7 @@ def main(config: dict):
 		if not os.path.exists(path):
 			warns.append(f"Texture '{path}' not found")
 	if warns:
-		warning("The following textures are used but missing:\n" + "\n".join(sorted(warns)))
+		stp.warning("The following textures are used but missing:\n" + "\n".join(sorted(warns)))
 	if used_textures:
-		info("Custom models created")
+		stp.info("Custom models created")
 

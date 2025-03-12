@@ -1,7 +1,9 @@
 
 # Imports
-from ..utils.print import *
-from .cd_utils import *
+import os
+import requests
+import stouputils as stp
+from .cd_utils import handle_response
 
 # Constants
 GITHUB_API_URL: str = "https://api.github.com"
@@ -72,7 +74,7 @@ def handle_existing_tag(owner: str, project_name: str, version: str, headers: di
 	tag_url = f"{PROJECT_ENDPOINT}/{owner}/{project_name}/git/refs/tags/v{version}"
 	response = requests.get(tag_url, headers=headers)
 	if response.status_code == 200:
-		warning(f"A tag v{version} already exists. Do you want to delete it? (y/N): ")
+		stp.warning(f"A tag v{version} already exists. Do you want to delete it? (y/N): ")
 		if input().lower() == "y":
 			delete_existing_release(owner, project_name, version, headers)
 			delete_existing_tag(tag_url, headers)
@@ -98,7 +100,7 @@ def delete_existing_release(owner: str, project_name: str, version: str, headers
 			headers=headers
 		)
 		handle_response(delete_release, "Failed to delete existing release")
-		info(f"Deleted existing release for v{version}")
+		stp.info(f"Deleted existing release for v{version}")
 
 def delete_existing_tag(tag_url: str, headers: dict[str, str]) -> None:
 	""" Delete existing tag\n
@@ -108,7 +110,7 @@ def delete_existing_tag(tag_url: str, headers: dict[str, str]) -> None:
 	"""
 	delete_response = requests.delete(tag_url, headers=headers)
 	handle_response(delete_response, "Failed to delete existing tag")
-	info(f"Deleted existing tag")
+	stp.info(f"Deleted existing tag")
 
 def version_to_int(version: str) -> int:
 	""" Version format: major.minor.patch.something_else.... infinitely """
@@ -231,7 +233,7 @@ def create_tag(owner: str, project_name: str, version: str, headers: dict[str, s
 		version (str):				Version for the new tag
 		headers (dict[str, str]):	Headers for GitHub API requests
 	"""
-	progress(f"Creating tag v{version}")
+	stp.progress(f"Creating tag v{version}")
 	create_tag_url = f"{PROJECT_ENDPOINT}/{owner}/{project_name}/git/refs"
 	latest_commit_url = f"{PROJECT_ENDPOINT}/{owner}/{project_name}/git/refs/heads/main"
 	
@@ -259,7 +261,7 @@ def create_release(owner: str, project_name: str, version: str, changelog: str, 
 	Returns:
 		int: ID of the created release
 	"""
-	progress(f"Creating release v{version}")
+	stp.progress(f"Creating release v{version}")
 	release_url: str = f"{PROJECT_ENDPOINT}/{owner}/{project_name}/releases"
 	release_data: dict[str, str|bool] = {
 		"tag_name": f"v{version}",
@@ -284,7 +286,7 @@ def upload_assets(owner: str, project_name: str, release_id: int, build_folder: 
 	"""
 	if not build_folder:
 		return
-	progress("Uploading assets")
+	stp.progress("Uploading assets")
 	
 	response = requests.get(f"{PROJECT_ENDPOINT}/{owner}/{project_name}/releases/{release_id}", headers=headers)
 	handle_response(response, "Failed to get release details")
@@ -307,10 +309,10 @@ def upload_assets(owner: str, project_name: str, release_id: int, build_folder: 
 					data=f.read()
 				)
 				handle_response(response, f"Failed to upload {file}")
-				progress(f"Uploaded {file}")
+				stp.progress(f"Uploaded {file}")
 
-@measure_time(progress, "Uploading to GitHub took")
-@handle_error(error_log=3)
+@stp.measure_time(stp.progress, "Uploading to GitHub took")
+@stp.handle_error()
 def upload_to_github(credentials: dict[str, dict[str, str]], github_config: dict[str, str]) -> str:
 	""" Upload the project to GitHub using the credentials and the configuration\n
 	Args:
@@ -332,6 +334,6 @@ def upload_to_github(credentials: dict[str, dict[str, str]], github_config: dict
 		create_tag(owner, project_name, version, headers)
 		release_id = create_release(owner, project_name, version, changelog, headers)
 		upload_assets(owner, project_name, release_id, build_folder, headers)	
-		info(f"Project {project_name} updated on GitHub!")
+		stp.info(f"Project {project_name} updated on GitHub!")
 	return changelog
 

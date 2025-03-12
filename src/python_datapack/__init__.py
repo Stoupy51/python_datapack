@@ -1,10 +1,9 @@
 
 # Imports
-from .constants import *
-from .utils.print import *
-from typing import Callable
-import time
 import os
+import time
+import stouputils as stp
+from typing import Callable
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 
@@ -24,9 +23,9 @@ from .finalyze import main as finalyze_main
 def basic_key_check(config: dict, key: str, value_type: type, hint: str, valid: bool) -> bool:
 	bool_return = valid
 	if config.get(key, None) == None:
-		bool_return = warning(f"Missing '{key}' key in config file\n ({hint})") or False
+		bool_return = stp.warning(f"Missing '{key}' key in config file\n ({hint})") or False
 	elif not isinstance(config[key], value_type):
-		bool_return = warning(f"Invalid type for '{key}' key in config file, found {type(config[key])} instead of {value_type}\n ({hint})") or False
+		bool_return = stp.warning(f"Invalid type for '{key}' key in config file, found {type(config[key])} instead of {value_type}\n ({hint})") or False
 	return bool_return
 
 def check_config_format(config: dict) -> bool:
@@ -68,7 +67,7 @@ def check_config_format(config: dict) -> bool:
 	if valid == True:
 		for key in config.keys():
 			if key not in KNOWN_KEYS:
-				warning(f"Unknown key '{key}' in config file, it might be a typo or been removed from the configuration")
+				stp.warning(f"Unknown key '{key}' in config file, it might be a typo or been removed from the configuration")
 	return valid == True
 
 
@@ -86,14 +85,14 @@ def build_process(config: dict, setup_database: Callable|None = None, setup_exte
 	# Check config format
 	valid = check_config_format(config)
 	if not valid:
-		error("Invalid config format, please check the documentation")
+		stp.error("Invalid config format, please check the documentation")
 	
 	# Enhance config dict
 	config = enhance_config_main(config)
 
 	# Get start time & 
 	START_TIME: float = time.perf_counter()
-	info("Starting build process...")
+	stp.info("Starting build process...")
 
 	# Try to build the datapack
 	try:
@@ -130,7 +129,7 @@ def build_process(config: dict, setup_database: Callable|None = None, setup_exte
 
 		# Total time
 		TOTAL_TIME: float = time.perf_counter() - START_TIME
-		info(f"Build finished in {TOTAL_TIME:.5f} seconds")
+		stp.info(f"Build finished in {TOTAL_TIME:.5f} seconds")
 
 	# Catch any exception
 	except Exception as e:

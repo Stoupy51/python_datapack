@@ -1,7 +1,16 @@
 
 # Imports
-from .shared_import import *
-from ..constants import *
+import os
+import stouputils as stp
+from ..constants import (
+	CUSTOM_BLOCK_VANILLA,
+	OVERRIDE_MODEL,
+	RESULT_OF_CRAFTING,
+	USED_FOR_CRAFTING,
+	DOWNLOAD_VANILLA_ASSETS_RAW,
+	DOWNLOAD_VANILLA_ASSETS_SOURCE
+)
+from ..utils.io import super_copy
 from model_resolver.cli import main as model_resolver_main
 from pathlib import Path
 import requests
@@ -33,7 +42,7 @@ def generate_all_iso_renders(config: dict):
 					if os.path.exists(source):
 						super_copy(source, f"{path}/{namespace}/{item}.png")
 					else:
-						warning(f"Missing texture for item '{item}', please add it manually to '{path}/{namespace}/{item}.png'")
+						stp.warning(f"Missing texture for item '{item}', please add it manually to '{path}/{namespace}/{item}.png'")
 		except ValueError:
 			# Else, add the block to the model resolver list
 			# Skip if item is already generated (to prevent OpenGL launching for nothing)
@@ -48,7 +57,7 @@ def generate_all_iso_renders(config: dict):
 	# Launch model resolvers for remaining blocks
 	if len(for_model_resolver) > 0:
 		load_dir = Path(config['build_resource_pack'])
-		debug(f"Generating iso renders for {len(for_model_resolver)} items...")
+		stp.debug(f"Generating iso renders for {len(for_model_resolver)} items...")
 		model_resolver_main(
 			render_size = config['opengl_resolution'],
 			load_dir = load_dir,
@@ -65,7 +74,7 @@ def generate_all_iso_renders(config: dict):
 		# 	for rp_path, dst_path in for_model_resolver.items():
 		# 		render.add_model_task(rp_path, path=dst_path)
 		# 	render.run()
-	debug("Generated iso renders for all items, or used cached renders")
+		stp.debug("Generated iso renders for all items, or used cached renders")
 
 	## Copy every used vanilla items
 	# Get every used vanilla items
@@ -92,15 +101,15 @@ def generate_all_iso_renders(config: dict):
 	for item in used_vanilla_items:
 		destination = f"{path}/minecraft/{item}.png"
 		if not (os.path.exists(destination) and config['cache_manual_assets']):	# If not downloaded yet or not using cache
-			debug(f"Downloading texture for item '{item}'...")
+			stp.debug(f"Downloading texture for item '{item}'...")
 			response = requests.get(f"{DOWNLOAD_VANILLA_ASSETS_RAW}/item/{item}.png")
 			if response.status_code == 200:
-				with super_open(destination, "wb") as file:
+				with stp.super_open(destination, "wb") as file:
 					file.write(response.content)
 			else:
-				warning(f"Failed to download texture for item '{item}', please add it manually to '{destination}'")
-				warning(f"Suggestion link: '{DOWNLOAD_VANILLA_ASSETS_SOURCE}'")
-		pass
-	debug("Downloaded all the vanilla textures, or using cached ones")
+				stp.warning(f"Failed to download texture for item '{item}', please add it manually to '{destination}'")
+				stp.warning(f"Suggestion link: '{DOWNLOAD_VANILLA_ASSETS_SOURCE}'")
 
+	# Debug
+	stp.debug("Downloaded all the vanilla textures, or using cached ones")
 

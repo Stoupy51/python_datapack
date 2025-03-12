@@ -1,9 +1,19 @@
 
 # Imports
-from .constants import *
-from .utils.ingredients import *
-from .utils.print import *
-from .utils.io import *
+import time
+import stouputils as stp
+from .utils.ingredients import FURNACES_RECIPES_TYPES
+from .constants import (
+	RESULT_OF_CRAFTING,
+	USED_FOR_CRAFTING,
+	CUSTOM_BLOCK_VANILLA,
+	CUSTOM_BLOCK_ALTERNATIVE,
+	VANILLA_BLOCK,
+	VANILLA_BLOCK_FOR_ORES,
+	NO_SILK_TOUCH_DROP,
+	CATEGORY,
+	VANILLA_BLOCK,
+)
 
 def main(config: dict):
 	start_time: float = time.perf_counter()
@@ -17,9 +27,9 @@ def main(config: dict):
 			data.pop(USED_FOR_CRAFTING)
 
 	# Export database to JSON for debugging generation
-	with super_open(config['database_debug'], "w") as f:
-		super_json_dump(database, file = f)
-	debug(f"Received database exported to '{config['database_debug']}'")
+	with stp.super_open(config['database_debug'], "w") as f:
+		stp.super_json_dump(database, file = f)
+	stp.debug(f"Received database exported to '{config['database_debug']}'")
 
 	# Check every single thing in the database
 	errors: list[str] = []
@@ -173,10 +183,10 @@ def main(config: dict):
 
 	# Log errors if any
 	if errors:
-		error("Errors found in the database during verification:\n" + "\n".join(errors))
+		stp.error("Errors found in the database during verification:\n" + "\n".join(errors))
 	else:
 		total_time = time.perf_counter() - start_time
-		info(f"No errors found in the database during verification (took {total_time:.5f}s)")
+		stp.info(f"No errors found in the database during verification (took {total_time:.5f}s)")
 
 
 	# Add additional data to the custom blocks

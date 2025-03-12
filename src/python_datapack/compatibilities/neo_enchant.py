@@ -1,8 +1,8 @@
 
 # Imports
-from ..utils.print import *
-from ..utils.io import *
-from ..constants import *
+import stouputils as stp
+from ..utils.io import write_to_file
+from ..constants import VANILLA_BLOCK_FOR_ORES, VANILLA_BLOCK
 
 # Main function
 def main(config: dict):
@@ -12,8 +12,8 @@ def main(config: dict):
 	if any(VANILLA_BLOCK_FOR_ORES == data.get(VANILLA_BLOCK) for data in database.values()):
 
 		# Add the block to veinminer tag
-		write_to_file(f"{config['build_datapack']}/data/enchantplus/tags/block/veinminer.json", super_json_dump({"values": [VANILLA_BLOCK_FOR_ORES["id"]]}))
+		write_to_file(f"{config['build_datapack']}/data/enchantplus/tags/block/veinminer.json", stp.super_json_dump({"values": [VANILLA_BLOCK_FOR_ORES["id"]]}))
 
 		# Final print
-		debug("Special datapack compatibility done for NeoEnchant's veinminer!")
+		stp.debug("Special datapack compatibility done for NeoEnchant's veinminer!")
 

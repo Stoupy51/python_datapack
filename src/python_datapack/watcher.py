@@ -3,9 +3,9 @@ import sys
 import os
 import time
 import threading
+import stouputils as stp
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
-from .utils.print import warning
 
 # Build processor
 class BuildProcessor(threading.Thread):
@@ -76,7 +76,7 @@ def watcher(to_watch: list[str], to_ignore: list[str], build_script: str):
 	observer = Observer()
 	observer.schedule(event_handler, ".", recursive=True)
 	observer.start()
-	warning("Watching for file changes... (Press Ctrl+C to stop)")
+	stp.warning("Watching for file changes... (Press Ctrl+C to stop)")
 
 	try:
 		while True:
@@ -86,5 +86,5 @@ def watcher(to_watch: list[str], to_ignore: list[str], build_script: str):
 		observer.stop()
 		observer.join()
 		processor.join()
-	warning("Watcher stopped")
+	stp.warning("Watcher stopped")
 

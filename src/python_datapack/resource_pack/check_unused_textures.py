@@ -1,7 +1,7 @@
 
 # Imports
-from ..utils.io import *
-from ..utils.print import *
+import stouputils as stp
+from ..utils.io import FILES_TO_WRITE
 
 def main(config: dict):
 
@@ -23,5 +23,5 @@ def main(config: dict):
 		path = f"{config['assets_folder']}/textures/{texture}"
 		not_used += (f"\n'{path}.png' not used in the resource pack")
 	if not_used:
-		warning("Some textures are not used in the resource pack: " + not_used)
+		stp.warning("Some textures are not used in the resource pack: " + not_used)
 

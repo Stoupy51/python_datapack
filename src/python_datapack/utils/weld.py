@@ -1,15 +1,16 @@
 
 # Imports
-from .io import *
-from .print import *
+import os
+import time
+import stouputils as stp
 from ..dependencies.main import OFFICIAL_LIBS, OFFICIAL_LIBS_PATH
 from smithed.weld.toolchain.cli import weld
 from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
-import time
 
 # Weld datapack
-@silent
+@stp.handle_error()
+@stp.silent
 def weld_datapack(config: dict, dest_path: str) -> float:
 	""" Merge the datapack and libs into one file using Weld
 	Args:
@@ -94,7 +95,8 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 	return time.perf_counter() - start_time
 
 # Weld resource pack
-@silent
+@stp.handle_error()
+@stp.silent
 def weld_resource_pack(config: dict, dest_path: str) -> float:
 	""" Merge the resource pack and libs into one file using Weld
 	Args:

@@ -1,10 +1,21 @@
 
 # Imports
-from ..utils.io import *
-from ..utils.print import *
-from ..constants import *
+import stouputils as stp
+from ..utils.io import write_to_file, write_to_function, write_to_versioned_function
+from ..constants import (
+	VANILLA_BLOCK,
+	CUSTOM_BLOCK_VANILLA,
+	BLOCKS_WITH_INTERFACES,
+	VANILLA_BLOCK_FOR_ORES,
+	NO_SILK_TOUCH_DROP,
+	OFFICIAL_LIBS,
+	VANILLA_BLOCK,
+	CUSTOM_BLOCK_HEAD,
+	CUSTOM_BLOCK_HEAD_CUBE_RADIUS,
+	official_lib_used
+)
 
-@measure_time(info, "All customs blocks are now placeable and destroyable!")
+@stp.measure_time(stp.info, "All customs blocks are now placeable and destroyable!")
 def main(config: dict):
 	namespace: str = config['namespace']
 	build_datapack: str = config['build_datapack']
@@ -18,7 +29,7 @@ def main(config: dict):
 	FACING = ["north", "east", "south", "west"]
 	for face in FACING:
 		predicate = {"condition":"minecraft:location_check","predicate":{"block":{"state":{"facing":face}}}}
-		write_to_file(f"{build_datapack}/data/{namespace}/predicate/facing/{face}.json", super_json_dump(predicate))
+		write_to_file(f"{build_datapack}/data/{namespace}/predicate/facing/{face}.json", stp.super_json_dump(predicate))
 
 	# Get rotation function
 	write_to_function(config, f"{namespace}:custom_blocks/get_rotation", f"""
@@ -54,9 +65,9 @@ execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:f
 			beautify_name: str = ""
 			if block_id in BLOCKS_WITH_INTERFACES:
 				if data.get("item_name"):
-					beautify_name = json.dumps({"CustomName": data["item_name"]})
+					beautify_name = stp.super_json_dump({"CustomName": data["item_name"]})
 				else:
-					beautify_name = json.dumps({"CustomName": item_name})
+					beautify_name = stp.super_json_dump({"CustomName": item_name})
 
 			## Place function	
 			content = ""
@@ -148,10 +159,10 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 
 		# Change is_used state
 		if not official_lib_used("smithed.custom_block"):
-			debug("Found custom blocks using CUSTOM_BLOCK_VANILLA in the database, adding 'smithed.custom_block' to the dependencies")
+			stp.debug("Found custom blocks using CUSTOM_BLOCK_VANILLA in the database, adding 'smithed.custom_block' to the dependencies")
 
 		# Write function tag to link with the library
-		write_to_file(f"{build_datapack}/data/smithed.custom_block/tags/function/event/on_place.json", super_json_dump({"values": [f"{namespace}:custom_blocks/on_place"]}))
+		write_to_file(f"{build_datapack}/data/smithed.custom_block/tags/function/event/on_place.json", stp.super_json_dump({"values": [f"{namespace}:custom_blocks/on_place"]}))
 
 		# Write the slot function
 		write_to_function(config, f"{namespace}:custom_blocks/on_place", f"execute if data storage smithed.custom_block:main blockApi.__data.Items[0].components.\"minecraft:custom_data\".smithed.block{{from:\"{namespace}\"}} run function {namespace}:custom_blocks/place\n")
@@ -266,9 +277,9 @@ execute store result entity @s Item.count byte 1 run scoreboard players get #ite
 	if "minecraft:cauldron" in listed_blocks:
 		listed_blocks.remove("minecraft:cauldron")
 		listed_blocks.append("#minecraft:cauldrons")
-	write_to_file(f"{build_datapack}/data/{namespace}/tags/block/{VANILLA_BLOCKS_TAG}.json", super_json_dump({"values": listed_blocks}))
+	write_to_file(f"{build_datapack}/data/{namespace}/tags/block/{VANILLA_BLOCKS_TAG}.json", stp.super_json_dump({"values": listed_blocks}))
 	predicate = {"condition": "minecraft:location_check", "predicate": {"block": {"blocks": f"#{namespace}:{VANILLA_BLOCKS_TAG}"}}}
-	write_to_file(f"{build_datapack}/data/{namespace}/predicate/check_vanilla_blocks.json", super_json_dump(predicate))
+	write_to_file(f"{build_datapack}/data/{namespace}/predicate/check_vanilla_blocks.json", stp.super_json_dump(predicate))
 	advanced_predicate = {"condition": "minecraft:any_of", "terms": []}
 	for block in unique_blocks:
 		block_underscore = block.replace(":","_")
@@ -276,20 +287,20 @@ execute store result entity @s Item.count byte 1 run scoreboard players get #ite
 			block = "#minecraft:cauldrons"
 		predicate = {"condition": "minecraft:entity_properties", "entity": "this", "predicate": { "nbt": f"{{Tags:[\"{namespace}.vanilla.{block_underscore}\"]}}", "location": { "block": { "blocks": block }}}}
 		advanced_predicate["terms"].append(predicate)
-	write_to_file(f"{build_datapack}/data/{namespace}/predicate/advanced_check_vanilla_blocks.json", super_json_dump(advanced_predicate))
+	write_to_file(f"{build_datapack}/data/{namespace}/predicate/advanced_check_vanilla_blocks.json", stp.super_json_dump(advanced_predicate))
 
 	# Write a destroy check every 2 ticks, every second, and every 5 seconds
 	ore_vanilla_block = VANILLA_BLOCK_FOR_ORES["id"].replace(':', '_')
 	score_check: str = f"score #total_custom_blocks {namespace}.data matches 1.."
-	write_to_versioned_file(config, "tick_2", f"""
+	write_to_versioned_function(config, "tick_2", f"""
 # 2 ticks destroy detection
 execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,tag=!{namespace}.vanilla.{ore_vanilla_block},predicate=!{namespace}:check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
-	write_to_versioned_file(config, "second", f"""
+	write_to_versioned_function(config, "second", f"""
 # 1 second break detection
 execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,tag=!{namespace}.vanilla.{ore_vanilla_block},predicate=!{namespace}:advanced_check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
-	write_to_versioned_file(config, "second_5", f"""
+	write_to_versioned_function(config, "second_5", f"""
 # 5 seconds break detection
 execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,predicate=!{namespace}:advanced_check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
@@ -298,7 +309,7 @@ execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,pr
 
 	## Custom ores break detection (if any custom ore)
 	if any(data.get(VANILLA_BLOCK) == VANILLA_BLOCK_FOR_ORES for data in database.values()):
-		write_to_file(f"{build_datapack}/data/common_signals/tags/function/signals/on_new_item.json", super_json_dump({"values": [f"{namespace}:calls/common_signals/new_item"]}))
+		write_to_file(f"{build_datapack}/data/common_signals/tags/function/signals/on_new_item.json", stp.super_json_dump({"values": [f"{namespace}:calls/common_signals/new_item"]}))
 		write_to_function(config, f"{namespace}:calls/common_signals/new_item", f"""
 # If the item is from a custom ore, launch the on_ore_destroyed function
 execute if data entity @s Item.components.\"minecraft:custom_data\".common_signals.temp at @s align xyz run function {namespace}:calls/common_signals/on_ore_destroyed
@@ -331,9 +342,9 @@ execute as @e[tag={namespace}.custom_block,dx=0,dy=0,dz=0] at @s run function {n
 
 			# Make advancement
 			predicate = {"criteria":{"requirement":{"trigger":"minecraft:placed_block","conditions":{"location": [{"condition": "minecraft:location_check","predicate": {"block": {}}}]}}},"requirements":[["requirement"]],"rewards":{}}
-			predicate["criteria"]["requirement"]["conditions"]["location"][0]["predicate"]["block"]["nbt"] = json.dumps({"components":{"minecraft:custom_data":data.get("custom_data", {})}})
+			predicate["criteria"]["requirement"]["conditions"]["location"][0]["predicate"]["block"]["nbt"] = stp.super_json_dump({"components":{"minecraft:custom_data":data.get("custom_data", {})}}, max_level = 0)
 			predicate["rewards"]["function"] = f"{namespace}:custom_blocks/_player_head/search_{item}"
-			write_to_file(f"{build_datapack}/data/{namespace}/advancement/custom_block_head/{item}.json", super_json_dump(predicate, max_level = -1))
+			write_to_file(f"{build_datapack}/data/{namespace}/advancement/custom_block_head/{item}.json", stp.super_json_dump(predicate, max_level = -1))
 
 			# Make search function
 			content = "# Search where the head has been placed\n"

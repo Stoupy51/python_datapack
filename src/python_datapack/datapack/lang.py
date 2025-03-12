@@ -1,9 +1,7 @@
 
 # Imports
-from ..utils.io import *
-from ..utils.print import *
-from ..utils.cache import simple_cache
-import json
+import stouputils as stp
+from ..utils.io import FILES_TO_WRITE
 
 # Utility functions for finding text end
 def find_text_end_no_backslash(text: str, used_char: str) -> int:
@@ -22,12 +20,12 @@ def find_text_end_backslash(text: str, used_char: str) -> int:
 			return text_end - 1
 
 # Main function
-@measure_time(info, "Lang file generated")
+@stp.measure_time(stp.info, "Lang file generated")
 def main(config: dict):
 
 	# Prepare lang dictionnary and lang_format function
 	lang = {}
-	@simple_cache
+	@stp.simple_cache()
 	def lang_format(text: str) -> tuple[str, str]:
 		""" Get alphanumeric characters from a string and return it.
 		Args:
@@ -110,5 +108,5 @@ def main(config: dict):
 
 	# Write the lang file
 	path: str = f"{config['build_resource_pack']}/assets/minecraft/lang/en_us.json"
-	FILES_TO_WRITE[path] = json.dumps(lang, indent = '\t', ensure_ascii = True)
+	FILES_TO_WRITE[path] = stp.super_json_dump(lang)
 

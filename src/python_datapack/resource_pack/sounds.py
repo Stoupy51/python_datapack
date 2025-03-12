@@ -1,7 +1,9 @@
 
 # Imports
-from ..utils.io import *
-from ..utils.print import *
+import os
+import time
+import stouputils as stp
+from ..utils.io import super_copy, write_to_file
 
 def main(config: dict):
 	if not config.get("assets_folder") or not os.path.exists(config["assets_folder"] + "/sounds"):
@@ -24,8 +26,9 @@ def main(config: dict):
 
 			# Add sound json to sounds.json
 			sound_json = {sound_file: {"subtitle": sound, "sounds": [f"{config['namespace']}:{sound_file}"]}}
-			write_to_file(f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds.json", super_json_dump(sound_json))	
+			write_to_file(f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds.json", stp.super_json_dump(sound_json))	
 
 		total_time: float = time.perf_counter() - start_time
-		info(f"All sounds in '{config['assets_folder']}/sounds/' have been copied to the resource pack in {total_time:.5f}s")
+		stp.info(f"All sounds in '{config['assets_folder']}/sounds/' have been copied to the resource pack in {total_time:.5f}s")
+
 

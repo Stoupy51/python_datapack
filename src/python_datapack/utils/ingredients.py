@@ -1,9 +1,8 @@
 
 # Imports
-from .io import *
-from .print import *
-from .cache import simple_cache
-from ..constants import *
+import stouputils as stp
+from .io import write_to_file
+from ..constants import PULVERIZING, NOT_COMPONENTS
 
 # Recipes constants
 FURNACES_RECIPES_TYPES: tuple[str, ...] = ("smelting", "blasting", "smoking", "campfire_cooking")
@@ -11,7 +10,7 @@ CRAFTING_RECIPES_TYPES: tuple[str, ...] = ("crafting_shaped", "crafting_shapeles
 SPECIAL_RECIPES_TYPES: tuple[str, ...] = (PULVERIZING, )
 
 # Function mainly used for database generation
-@simple_cache
+@stp.simple_cache()
 def ingr_repr(id: str, ns: str|None = None, count: int|None = None) -> dict:
 	""" Get the identity of the ingredient from its id for custom crafts
 	Args:
@@ -27,13 +26,13 @@ def ingr_repr(id: str, ns: str|None = None, count: int|None = None) -> dict:
 		to_return: dict = {"item": id}
 	else:
 		if ns is None:
-			error(f"Namespace must be specified for custom ingredient '{id}', or you may be missing 'minecraft:'")
+			stp.error(f"Namespace must be specified for custom ingredient '{id}', or you may be missing 'minecraft:'")
 		to_return: dict = {"components":{"minecraft:custom_data":{ns:{id:True}}}}
 	if count is not None:
 		to_return["count"] = count
 	return to_return
 
-@simple_cache
+@stp.simple_cache()
 def item_to_id_ingr_repr(ingr: dict) -> dict:
 	""" Replace the "item" key by "id" in an item ingredient representation
 	Args:
@@ -53,7 +52,7 @@ def item_to_id_ingr_repr(ingr: dict) -> dict:
 	return r
 
 # Mainly used for manual
-@simple_cache
+@stp.simple_cache()
 def ingr_to_id(ingredient: dict, add_namespace: bool = True) -> str:
 	""" Get the id from an ingredient dict
 	Args:
@@ -79,13 +78,13 @@ def ingr_to_id(ingredient: dict, add_namespace: bool = True) -> str:
 					id = list(cd_data.keys())[0]
 					break
 		if not namespace:
-			error(f"No namespace found in custom data: {custom_data}")
+			stp.error(f"No namespace found in custom data: {custom_data}")
 		if add_namespace:
 			return namespace + ":" + id
 		return id
 
 # Mainly used for recipes
-@simple_cache
+@stp.simple_cache()
 def get_vanilla_item_id_from_ingredient(config: dict, ingredient: dict, add_namespace: bool = True) -> str:
 	""" Get the id of the vanilla item from an ingredient dict
 	Args:
@@ -111,10 +110,11 @@ def get_vanilla_item_id_from_ingredient(config: dict, ingredient: dict, add_name
 				return config['external_database'][f"{ns}:{ingr_id}"]["id"]
 			return config['external_database'][f"{ns}:{ingr_id}"]["id"].split(":")[1]
 		else:
-			error(f"External item '{ns}:{ingr_id}' not found in the external database")
+			stp.error(f"External item '{ns}:{ingr_id}' not found in the external database")
+	return ""
 
 # Used for recipes
-@simple_cache
+@stp.simple_cache()
 def get_item_from_ingredient(config: dict, ingredient: dict) -> dict:
 	""" Get the item dict from an ingredient dict
 	Args:
@@ -156,10 +156,12 @@ def get_item_from_ingredient(config: dict, ingredient: dict) -> dict:
 	# Minecraft item
 	if ns == "minecraft":
 		return {"id": id, "count": 1}
-	error(f"External item '{ingr_id}' not found in the external database")
+	stp.error(f"External item '{ingr_id}' not found in the external database")
+	return {}
+
 
 # Make a loot table
-@simple_cache
+@stp.simple_cache()
 def loot_table_from_ingredient(config: dict, result_ingredient: dict, result_count: int) -> str:
 
 	# If item from this datapack
@@ -186,10 +188,10 @@ def loot_table_from_ingredient(config: dict, result_ingredient: dict, result_cou
 		file: dict = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":f"{namespace}:{item}"}] }] }
 	if result_count > 1:
 		file["pools"][0]["entries"][0]["functions"] = [{"function": "minecraft:set_count","count": result_count}]
-	write_to_file(path, super_json_dump(file, max_level = 9))
+	write_to_file(path, stp.super_json_dump(file, max_level = 9))
 	return loot_table
 
-@simple_cache
+@stp.simple_cache()
 def get_ingredients_from_recipe(recipe: dict) -> list[str]:
 	""" Get the ingredients from a recipe dict
 	Args:
@@ -215,5 +217,4 @@ def get_ingredients_from_recipe(recipe: dict) -> list[str]:
 	elif recipe.get("template"):
 		ingredients.append(recipe["template"])
 	return ingredients
-
 

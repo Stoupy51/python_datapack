@@ -1,10 +1,10 @@
 
 # Imports
-from ..utils.io import *
-from ..utils.print import *
 import json
+import stouputils as stp
+from ..utils.io import FILES_TO_WRITE
 
-@measure_time(info, "Headers added to all mcfunction files")
+@stp.measure_time(stp.info, "Headers added to all mcfunction files")
 def main(config: dict):
 
 	# Get all mcfunctions paths

@@ -1,9 +1,11 @@
 
 # Imports
-from .io import *
-from .print import *
-from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
+import os
 import time
+import shutil
+import stouputils as stp
+from .io import FILES_TO_WRITE
+from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
 # Function that makes an archive with consistency (same zip file each time)
 def make_archive(source: str, destination: str, copy_destinations: list[str] = []) -> float:
@@ -18,7 +20,7 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] = [
 	not_known_files: list[str] = []
 	for root, _, files in os.walk(source):
 		for file in files:
-			file_path: str = clean_path(os.path.join(root, file))
+			file_path: str = stp.clean_path(os.path.join(root, file))
 			if file_path not in FILES_TO_WRITE:
 				not_known_files.append(file_path)
 
@@ -70,14 +72,14 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] = [
 	# Copy the archive to the destination(s)
 	for dest_folder in copy_destinations:
 		try:
-			dest_folder = clean_path(dest_folder)
+			dest_folder = stp.clean_path(dest_folder)
 			if dest_folder.endswith("/"):
 				file_name = destination.split("/")[-1]
-				shutil.copy(clean_path(destination), f"{dest_folder}/{file_name}")
+				shutil.copy(stp.clean_path(destination), f"{dest_folder}/{file_name}")
 			else:	# Else, it's not a folder but a file path
-				shutil.copy(clean_path(destination), dest_folder)
+				shutil.copy(stp.clean_path(destination), dest_folder)
 		except Exception as e:
-			warning(f"Unable to copy '{clean_path(destination)}' to '{dest_folder}', reason: {e}")
+			stp.warning(f"Unable to copy '{stp.clean_path(destination)}' to '{dest_folder}', reason: {e}")
 	
 	# Return the time taken to archive the source folder
 	return time.perf_counter() - start_time
