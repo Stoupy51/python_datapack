@@ -25,7 +25,7 @@ def main(config: dict) -> dict:
 		# Copy the original icon to the resource pack
 		destination: str = f"{config['build_resource_pack']}/assets/{namespace}/textures/font/original_icon.png"
 		os.makedirs(os.path.dirname(destination), exist_ok=True)
-		image: Image.Image = Image.open(original_icon).convert("RGB")
+		image: Image.Image = Image.open(original_icon).convert("RGBA")
 		if image.width > 256:
 			image = image.resize((256, 256))
 		image.save(destination)
