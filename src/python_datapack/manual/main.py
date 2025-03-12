@@ -552,7 +552,7 @@ def routine(config: dict):
 			font_providers.append({"type":"bitmap","file":f"{namespace}:font/pulverizing.png", "ascent": -3, "height": 58, "chars": [HOVER_PULVERIZING_FONT]})
 		fonts = {"providers": font_providers}
 		with super_open(f"{config['manual_path']}/font/manual.json", "w") as f:
-			f.write(super_json_dump(fonts).replace("\\\\", "\\"))
+			f.write(super_json_dump(fonts))
 				
 		# Debug book_content
 		with super_open(config['manual_debug'], "w") as f:
