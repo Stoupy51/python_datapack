@@ -1,15 +1,14 @@
 
 # Imports
 import os
-import time
 import shutil
 import stouputils as stp
 from .utils.io import read_initial_files, write_to_file
 from .constants import DATAPACK_FORMAT, RESOURCE_PACK_FORMAT
 
 
+@stp.measure_time(message="Build initialization")
 def main(config: dict):
-	start_time: float = time.perf_counter()
 
 	# Delete database_debug
 	print()
@@ -46,8 +45,5 @@ def main(config: dict):
 			if new_name != file:
 				os.rename(f"{config['assets_folder']}/textures/{file}", f"{config['assets_folder']}/textures/{new_name}")
 				stp.info(f"Renamed {file} to {new_name}")
-
-	# Print total time
-	total_time: float = time.perf_counter() - start_time
-	stp.info(f"Build initialized in {total_time:.5f}s")
+	pass
 

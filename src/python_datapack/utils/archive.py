@@ -5,7 +5,7 @@ import time
 import shutil
 import stouputils as stp
 from .io import FILES_TO_WRITE
-from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
+from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 # Function that makes an archive with consistency (same zip file each time)
 def make_archive(source: str, destination: str, copy_destinations: list[str] = []) -> float:

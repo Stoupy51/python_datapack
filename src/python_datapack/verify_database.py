@@ -200,4 +200,5 @@ def main(config: dict):
 			elif not data["tooltip_display"].get("hidden_components"):
 				data["tooltip_display"]["hidden_components"] = []
 			data["tooltip_display"]["hidden_components"].append("minecraft:container")
+	pass
 
