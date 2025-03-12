@@ -242,11 +242,11 @@ scoreboard players reset #count furnace_nbt_recipes.data
 				any_shaped = True
 
 			# Transform ingr to a list of dicts
-			ingr: list[dict] = recipe.get("ingredients")
+			ingr: list[dict] | dict = recipe.get("ingredients", {})
 			if isinstance(ingr, dict):
 				ingr = list(ingr.values())
 			if not ingr:
-				ingr = [recipe.get("ingredient")]
+				ingr = [recipe.get("ingredient", {})]
 			
 			# If there is a component in the ingredients of shaped/shapeless, use smithed crafter
 			if not smithed_crafter_used and recipe.get("type") in ["crafting_shapeless", "crafting_shaped"] and any(i.get("components") for i in ingr):
@@ -282,9 +282,9 @@ scoreboard players reset #count furnace_nbt_recipes.data
 
 			# Get ingredients
 			name = f"{item}" if i == 1 else f"{item}_{i}"
-			ingr = recipe.get("ingredients")
+			ingr = recipe.get("ingredients", {})
 			if not ingr:
-				ingr = recipe.get("ingredient")
+				ingr = recipe.get("ingredient", {})
 			
 			# Get possible result item
 			if not recipe.get("result"):
@@ -309,7 +309,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 			elif recipe["type"] == "crafting_shaped":
 
 				# Vanilla recipe
-				if all(i.get("item") for i in ingr.values()):
+				if all(i.get("item") for i in ingr.values()):	# type: ignore
 					r = vanilla_shaped_recipe(recipe, item)
 					write_to_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", super_json_dump(r, max_level = 5))
 					i += 1
@@ -322,7 +322,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 			elif recipe["type"] in SMELTING + ["campfire_cooking"]:
 
 				# Vanilla recipe
-				if ingr.get("item"):
+				if ingr.get("item"):	# type: ignore
 					r = vanilla_furnace_recipe(recipe, item)
 					write_to_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", super_json_dump(r, max_level = 5))
 					i += 1
@@ -337,8 +337,9 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					path: str = f"{FURNACE_NBT_PATH}/{type}_recipes.mcfunction"
 					write_to_file(path, line)
 
-					# Add vanilla item
-					furnace_nbt_vanilla_items.add(get_vanilla_item_id_from_ingredient(config, ingr))
+					# Add vanilla item unless it's a custom item
+					if not ingr.get("item"):	# type: ignore
+						furnace_nbt_vanilla_items.add(get_vanilla_item_id_from_ingredient(config, ingr))	# type: ignore
 
 					# Add xp reward
 					experience: float = recipe.get("experience", 0)
@@ -387,10 +388,10 @@ scoreboard players reset #count furnace_nbt_recipes.data
 		for recipe_name, _ in vanilla_generated_recipes:
 			recipe_path: str = f"{build_datapack}/data/{namespace}/recipe/{recipe_name}.json"
 			recipe: dict = json.loads(read_file(recipe_path))
-			for ingr in get_ingredients_from_recipe(recipe):
-				if ingr not in ingredients:
-					ingredients[ingr] = set()
-				ingredients[ingr].add(recipe_name)
+			for ingr_str in get_ingredients_from_recipe(recipe):
+				if ingr_str not in ingredients:
+					ingredients[ingr_str] = set()
+				ingredients[ingr_str].add(recipe_name)
 		
 		# Write an inventory_changed advancement
 		adv_path: str = f"{build_datapack}/data/{namespace}/advancement/unlock_recipes.json"
