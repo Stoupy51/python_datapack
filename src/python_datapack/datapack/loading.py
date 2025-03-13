@@ -42,17 +42,31 @@ execute unless score #{namespace}.loaded load.status matches 1 run function {nam
 	if config['database']:
 		items_storage += f"\n# Items storage\ndata modify storage {namespace}:items all set value {{}}\n"
 		for item, data in config['database'].items():
-			mc_data = {"id":"","count":1, "components":{"item_model":""}}
+
+			# Prepare storage data with item_model component in first
+			mc_data = {"id":"","count":1, "components":{"minecraft:item_model":""}}
 			for k, v in data.items():
 				if k not in NOT_COMPONENTS:
+
+					# Add 'minecraft:' if missing
+					if ":" not in k:
+						k = f"minecraft:{k}"
+
+					# Copy component
 					mc_data["components"][k] = v
+
+				# Copy the id
 				elif k == "id":
 					mc_data[k] = v
-			if mc_data["components"]["item_model"] == "":
-				del mc_data["components"]["item_model"]
-			items_storage += f"data modify storage {namespace}:items all.{item} set value " + stp.super_json_dump(mc_data, max_level = 0)
-		pass
+			
+			# If no item_model, remove it
+			if not mc_data["components"].get("item_model"):
+				del mc_data["components"]["minecraft:item_model"]
 
+			# Append to the storage database, json_dump adds \n
+			items_storage += f"data modify storage {namespace}:items all.{item} set value " + stp.super_json_dump(mc_data, max_level = 0)
+
+	# Write the loading tellraw and score, along with the final dataset
 	write_to_load_file(config, f"""
 # Confirm load
 tellraw @a[tag=convention.debug] {{"text":"[Loaded {config['project_name']} v{version}]","color":"green"}}
