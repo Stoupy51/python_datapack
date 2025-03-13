@@ -1,6 +1,7 @@
 
 # Imports
 import stouputils as stp
+from typing import Any
 from ..utils.io import write_to_file, write_to_function, write_to_versioned_function
 from ..constants import (
 	VANILLA_BLOCK,
@@ -50,12 +51,13 @@ execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:f
 # No more cases for now
 """)
 
-	# For each custom block
+	# For each custom block,
 	unique_blocks = set()
 	for item, data in database.items():
 		item: str
-		data: dict
+		data: dict[str, Any]
 		item_name: str = item.replace("_", " ").title()
+		custom_name: str = stp.super_json_dump({"CustomName": data.get("item_name", item_name)})
 
 		# Custom block
 		if data.get(VANILLA_BLOCK):
@@ -64,10 +66,7 @@ execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:f
 			path = f"{namespace}:custom_blocks/{item}"
 			beautify_name: str = ""
 			if block_id in BLOCKS_WITH_INTERFACES:
-				if data.get("item_name"):
-					beautify_name = stp.super_json_dump({"CustomName": data["item_name"]})
-				else:
-					beautify_name = stp.super_json_dump({"CustomName": item_name})
+				beautify_name = custom_name
 
 			## Place function	
 			content = ""
@@ -130,6 +129,9 @@ tag @s add smithed.block
 tag @s add {namespace}.custom_block
 tag @s add {namespace}.{item}
 tag @s add {namespace}.vanilla.{block_id}
+
+# Add a custom name
+data merge entity @s {custom_name}
 
 # Modify item display entity to match the custom block
 {set_custom_model}data modify entity @s transformation.scale set value [1.002f,1.002f,1.002f]
