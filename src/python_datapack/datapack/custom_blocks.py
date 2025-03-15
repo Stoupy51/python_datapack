@@ -231,7 +231,7 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 			# Destroy function
 			content = f"""
 # Replace the item with the custom one
-execute as @e[type=item,nbt={{Item:{{id:"{block_id}"}}}},limit=1,sort=nearest,distance=..1] run function {namespace}:custom_blocks/{item}/replace_item
+execute as @n[type=item,nbt={{Item:{{id:"{block_id}"}}}},distance=..1] run function {namespace}:custom_blocks/{item}/replace_item
 """
 			
 			# Decrease count scores for stats and optimization
