@@ -328,7 +328,7 @@ def write_to_versioned_function(config: dict, relative_path: str, content: str, 
 	write_to_file(f"{functions_path}/{relative_path}", content, overwrite, prepend)
 
 @stp.deprecated("This function has been renamed to write_to_versioned_function(), please update your code")
-def write_to_version_file(**kwargs):
+def write_to_versioned_file(**kwargs):
 	return write_to_versioned_function(**kwargs)
 
 def write_to_load_file(config: dict, content: str, overwrite: bool = False, prepend: bool = False) -> None:
