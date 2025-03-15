@@ -11,7 +11,6 @@ from ..constants import (
 	DOWNLOAD_VANILLA_ASSETS_SOURCE
 )
 from ..utils.io import super_copy
-from model_resolver.cli import main as model_resolver_main
 from pathlib import Path
 import requests
 
@@ -58,22 +57,32 @@ def generate_all_iso_renders(config: dict):
 	if len(for_model_resolver) > 0:
 		load_dir = Path(config['build_resource_pack'])
 		stp.debug(f"Generating iso renders for {len(for_model_resolver)} items...")
-		model_resolver_main(
-			render_size = config['opengl_resolution'],
-			load_dir = load_dir,
-			output_dir = None,	# type: ignore
-			use_cache = False,
-			minecraft_version = "latest",
-			__special_filter__ = for_model_resolver	# type: ignore
+
+		## Model Resolver v0.12.0
+		# model_resolver_main(
+		# 	render_size = config['opengl_resolution'],
+		# 	load_dir = load_dir,
+		# 	output_dir = None,	# type: ignore
+		# 	use_cache = False,
+		# 	minecraft_version = "latest",
+		# 	__special_filter__ = for_model_resolver	# type: ignore
+		# )
+
+		## Model Resolver v1.3.0
+		from beet import run_beet, ProjectConfig
+		from model_resolver import Render
+		#beet_config = ProjectConfig(output=load_dir)
+
+		beet_config = ProjectConfig(
+			output=None,
+			resource_pack={"load": load_dir, "name": load_dir.name}, # type: ignore
 		)
 
-		# TODO: Update to latest model_resolver
-		# from model_resolver import Render
-		# with run_beet() as ctx:
-		# 	render = Render(ctx)
-		# 	for rp_path, dst_path in for_model_resolver.items():
-		# 		render.add_model_task(rp_path, path=dst_path)
-		# 	render.run()
+		with run_beet(config=beet_config) as ctx:
+			render = Render(ctx)
+			for rp_path, dst_path in for_model_resolver.items():
+				render.add_model_task(rp_path, path_save=dst_path)
+			render.run()
 		stp.debug("Generated iso renders for all items, or used cached renders")
 
 	## Copy every used vanilla items
