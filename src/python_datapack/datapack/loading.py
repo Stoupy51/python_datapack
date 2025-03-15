@@ -60,7 +60,7 @@ execute unless score #{namespace}.loaded load.status matches 1 run function {nam
 					mc_data[k] = v
 			
 			# If no item_model, remove it
-			if not mc_data["components"].get("item_model"):
+			if mc_data["components"]["minecraft:item_model"] == "":
 				del mc_data["components"]["minecraft:item_model"]
 
 			# Append to the storage database, json_dump adds \n
