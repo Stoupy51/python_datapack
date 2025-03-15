@@ -2,6 +2,7 @@
 # Imports
 from __future__ import annotations
 from enum import Enum
+from typing import Any
 from mutagen.oggvorbis import OggVorbis
 import stouputils as stp
 
@@ -529,7 +530,10 @@ def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], i
 		is_external	(bool):				Whether the database is the external one or not (meaning the namespace is in the item name).
 		black_list	(list[str]):		The list of items to ignore.
 	"""
-	lore: dict|list[dict] = config["source_lore"]
+	# Load the source lore
+	source_lore: dict|list[dict] = config["source_lore"]
+
+	# For each item, add item name and lore if missing (if not in black_list)
 	for item, data in database.items():
 		if item in black_list:
 			continue
@@ -537,22 +541,33 @@ def add_item_name_and_lore_if_missing(config: dict, database: dict[str, dict], i
 		# Add item name if none
 		if not data.get("item_name"):
 			if not is_external:
-				item_str = item.replace("_"," ").title()
+				item_str: str = item.replace("_"," ").title()
 			else:
-				item_str = item.split(":")[-1].replace("_"," ").title()
+				item_str: str = item.split(":")[-1].replace("_"," ").title()
 			data["item_name"] = {"text": item_str, "italic": False, "color":"white"}
 
 		# Apply namespaced lore if none
 		if not data.get("lore"):
 			data["lore"] = []
+
+		# If item is not external,
 		if not is_external:
-			if not data["lore"] or data["lore"][-1] != lore:
-				data["lore"].append(lore)
+
+			# Add the source lore ONLY if not already present
+			if source_lore not in data["lore"]:
+				data["lore"].append(source_lore)
+
+		# If item is external, add the source lore to the item lore (without ICON)
 		else:
-			ns = item.split(":")[0].replace("_"," ").title()
-			ns_lore = json.loads(json.dumps(config['source_lore']).replace(config["project_name"], ns))
-			if not data["lore"] or data["lore"][-1] != ns_lore:
-				data["lore"].append(ns_lore)
+			# Extract the namespace
+			titled_namespace: str = item.split(":")[0].replace("_"," ").title()
+
+			# Create the new namespace lore with the titled namespace
+			new_source_lore: dict[str, Any] = {"text": titled_namespace, "italic": True, "color": "blue"}
+
+			# Add the namespace lore ONLY if not already present
+			if new_source_lore not in data["lore"]:
+				data["lore"].append(new_source_lore)
 	return
 
 # Add private custom data for namespace ( namespace:{item:true} )
