@@ -57,7 +57,7 @@ execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:f
 		item: str
 		data: dict[str, Any]
 		item_name: str = item.replace("_", " ").title()
-		custom_name: str = stp.super_json_dump({"CustomName": data.get("item_name", item_name)})
+		custom_name: str = stp.super_json_dump({"CustomName": data.get("item_name", item_name)}, max_level = 0)
 
 		# Custom block
 		if data.get(VANILLA_BLOCK):
@@ -223,7 +223,6 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 
 	# For each custom block, make it's destroy function
 	for item, data in database.items():
-		data: dict
 		if data.get(VANILLA_BLOCK):
 			block = data[VANILLA_BLOCK]
 			path = f"{namespace}:custom_blocks/{item}"
