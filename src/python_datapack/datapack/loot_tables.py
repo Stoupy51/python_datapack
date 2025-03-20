@@ -1,7 +1,7 @@
 
 # Imports
 import stouputils as stp
-from ..utils.io import write_to_file, write_to_function
+from ..utils.io import write_file, write_function
 from ..constants import NOT_COMPONENTS, RESULT_OF_CRAFTING
 
 @stp.measure_time(stp.info, "Loot tables generated")
@@ -23,7 +23,7 @@ def main(config: dict):
 		# Add functions
 		loot_table["pools"][0]["entries"][0]["functions"] = [set_components]
 
-		write_to_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{item}.json", stp.super_json_dump(loot_table, max_level = 9))
+		write_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{item}.json", stp.super_json_dump(loot_table, max_level = 9))
 	
 	# Same for external items
 	for item, data in external_database.items():
@@ -34,7 +34,7 @@ def main(config: dict):
 			if k not in NOT_COMPONENTS:
 				set_components["components"][f"minecraft:{k}"] = v
 		loot_table["pools"][0]["entries"][0]["functions"] = [set_components]
-		write_to_file(f"{config['build_datapack']}/data/{namespace}/loot_table/external/{ns}/{item}.json", stp.super_json_dump(loot_table, max_level = 9))
+		write_file(f"{config['build_datapack']}/data/{namespace}/loot_table/external/{ns}/{item}.json", stp.super_json_dump(loot_table, max_level = 9))
 
 
 	# Loot tables for items with crafting recipes
@@ -50,12 +50,12 @@ def main(config: dict):
 			# For each result count, create a loot table for it
 			for result_count in results:
 				loot_table = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:loot_table","value":f"{namespace}:i/{item}","functions":[{"function":"minecraft:set_count","count":result_count}]}]}]}
-				write_to_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{item}_x{result_count}.json", stp.super_json_dump(loot_table, max_level = -1), overwrite = True)
+				write_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{item}_x{result_count}.json", stp.super_json_dump(loot_table, max_level = -1), overwrite = True)
 
 	# Second loot table for the manual (if present)
 	if "manual" in database:
 		loot_table = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:loot_table","value":f"{namespace}:i/manual"}]}]}
-		write_to_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{namespace}_manual.json", stp.super_json_dump(loot_table, max_level = -1), overwrite = True)
+		write_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{namespace}_manual.json", stp.super_json_dump(loot_table, max_level = -1), overwrite = True)
 
 	# Make a give all command that gives chests with all the items
 	CHEST_SIZE = 27
@@ -80,5 +80,5 @@ def main(config: dict):
 			chest_contents.append(f'{{slot:{j},item:{{count:1,id:"{id}",components:{json_content}}}}}')
 		joined_content = ",".join(chest_contents)
 		chests.append(f'give @s chest[container=[{joined_content}],custom_name={{"text":"Chest [{i+1}/{total_chests}]","color":"yellow"}},lore=[{lore}]]')
-	write_to_function(config, f"{namespace}:_give_all", "\n" + "\n\n".join(chests) + "\n\n")
+	write_function(config, f"{namespace}:_give_all", "\n" + "\n\n".join(chests) + "\n\n")
 

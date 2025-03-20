@@ -41,7 +41,8 @@ class BuildProcessor(threading.Thread):
 # File change handler
 class ChangeHandler(FileSystemEventHandler):
 	def __init__(self, to_watch: list[str], to_ignore: list[str], processor: BuildProcessor):
-		""" Class to handle file changes\n
+		""" Class to handle file changes
+
 		Args:
 			to_watch	(list[str]):	List of paths to watch (starts with)
 			to_ignore	(list[str]):	List of paths to ignore (contains)
@@ -53,7 +54,8 @@ class ChangeHandler(FileSystemEventHandler):
 		super().__init__()
 
 	def on_modified(self, event: FileSystemEvent):
-		""" Function called when a file is modified\n
+		""" Function called when a file is modified
+
 		Args:
 			event	(FileSystemEvent):	Watchdog event
 		"""
@@ -63,7 +65,8 @@ class ChangeHandler(FileSystemEventHandler):
 
 # Main watcher
 def watcher(to_watch: list[str], to_ignore: list[str], build_script: str):
-	""" Start a watcher to monitor file changes and automatically build the datapack\n
+	""" Start a watcher to monitor file changes and automatically build the datapack
+
 	Args:
 		to_watch		(list[str]):	List of paths to watch (starts with)
 		to_ignore		(list[str]):	List of paths to ignore (contains)

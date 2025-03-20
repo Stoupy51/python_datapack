@@ -1,7 +1,7 @@
 
 # Imports
 import stouputils as stp
-from ..utils.io import write_to_file
+from ..utils.io import write_file
 from ..utils.ingredients import ingr_to_id
 from ..constants import RESULT_OF_CRAFTING
 
@@ -85,7 +85,7 @@ def main(config: dict):
 		# Link function tag
 		path: str = f"{config['build_datapack']}/data/simpledrawer/tags/function/material.json"
 		json_file: dict = {"values": [f"{namespace}:calls/simpledrawer/material"]}
-		write_to_file(path, stp.super_json_dump(json_file))
+		write_file(path, stp.super_json_dump(json_file))
 		
 		# Write material function
 		path: str = f"{config['build_datapack']}/data/{namespace}/function/calls/simpledrawer/material.mcfunction"
@@ -95,7 +95,7 @@ def main(config: dict):
 			for variant, item in material.items():
 				if variant != "material":
 					content += f'execute unless score #success_material simpledrawer.io matches 1 if data storage simpledrawer:io item_material.components."minecraft:custom_data".{namespace}.{item} run function {namespace}:calls/simpledrawer/{material_base}/{variant}\n'
-		write_to_file(path, content)
+		write_file(path, content)
 
 		# Make materials folders
 		types_for_variants: dict[str, str] = {"block": "0", "ingot": "1", "nugget": "2"}
@@ -111,7 +111,7 @@ def main(config: dict):
 				if variant != "material":
 					path: str = f"{material_folder}/{variant}.mcfunction"
 					content: str = f"scoreboard players set #type simpledrawer.io {types_for_variants[variant]}\nfunction {namespace}:calls/simpledrawer/{material_base}/main"
-					write_to_file(path, content)
+					write_file(path, content)
 
 			# Get ingot and nugget conversions if any
 			ingot_in_block: int = get_result_count(config, material.get("ingot", ""), material.get("block", ""))
@@ -135,7 +135,7 @@ data modify storage simpledrawer:io material set value {{material: "{namespace}.
 			for variant, item in material.items():
 				if variant != "material":
 					content += f"data modify storage simpledrawer:io material.{variant}.item set from storage {namespace}:items all.{item}\n"
-			write_to_file(path, content)
+			write_file(path, content)
 
 		# Final print
 		stp.debug("Special datapack compatibility done for SimpleDrawer's compacting drawer!")

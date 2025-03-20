@@ -218,7 +218,7 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 			
 			model_file: str = f"{namespace_rp}/equipment/{material_base}.json"
 			model_data: dict = {"layers": {humanoid_type: [{"texture": f"{namespace}:{layer_file.replace('.png', '')}"}]}}
-			write_to_file(model_file, stp.super_json_dump(model_data))
+			write_file(model_file, stp.super_json_dump(model_data))
 			return True
 		return False
 	top_layer: bool = handle_armor_layer(1, ["helmet", "chestplate"], "humanoid")
@@ -365,9 +365,12 @@ def generate_everything_about_these_materials(config: dict, database: dict[str, 
 
 # Add recipes for dust
 def add_recipes_for_dust(config: dict, database: dict[str, dict], material: str, pulverize: list[str|dict], smelt_to: dict) -> None:
-	""" Add recipes for dust (pulverize and smelt). If dust isn't found in the database, it will be added automagically.\n
-	All items in the pulverize list will be pulverized to get 2 times the dust.\n
-	If the item is a string, their ingr_repr will be used as "minecraft:{item}"\n
+	""" Add recipes for dust (pulverize and smelt). If dust isn't found in the database, it will be added automagically.
+
+	All items in the pulverize list will be pulverized to get 2 times the dust.
+
+	If the item is a string, their ingr_repr will be used as "minecraft:{item}"
+
 	Args:
 		config		(dict):				The configuration to use.
 		database	(dict[str, dict]):	The database to add the dust recipes to.
@@ -402,11 +405,15 @@ def add_recipes_for_dust(config: dict, database: dict[str, dict], material: str,
 
 # Add recipes for all dusts
 def add_recipes_for_all_dusts(config: dict, database: dict[str, dict], dusts_configs: dict[str, tuple[list[str|dict],dict]]) -> None:
-	""" Add recipes for all dusts in the dusts_configs dictionary using the add_recipes_for_dust function.\n
+	""" Add recipes for all dusts in the dusts_configs dictionary using the add_recipes_for_dust function.
+
 	Args:
-		config			(dict):										The configuration to use.\n
-		database		(dict[str, dict]):							The database to add the dust recipes to.\n
-		dusts_configs	(dict[str, tuple[list[str|dict],dict]]):	The dusts to add recipes for, ex:\n
+		config			(dict):										The configuration to use.
+
+		database		(dict[str, dict]):							The database to add the dust recipes to.
+
+		dusts_configs	(dict[str, tuple[list[str|dict],dict]]):	The dusts to add recipes for, ex:
+
 		{
 			"copper": (
 				["raw_copper", "copper_ore", "deepslate_copper_ore", ingr_repr("custom_copper", "some_namespace")],
@@ -477,14 +484,14 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 				
 				# Set jukebox song
 				json_song = {"comparator_output": duration % 16, "length_in_seconds": duration + 1, "sound_event": {"sound_id":f"{config['namespace']}:{record}"}, "description": {"text": item_name}}
-				write_to_file(f"{config['build_datapack']}/data/{config['namespace']}/jukebox_song/{record}.json", stp.super_json_dump(json_song))
+				write_file(f"{config['build_datapack']}/data/{config['namespace']}/jukebox_song/{record}.json", stp.super_json_dump(json_song))
 
 				# Copy sound to resource pack
 				super_copy(file_path, f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds/{record}.ogg")
 
 				json_sound = {"category": "music", "sounds": [{"name": f"{config['namespace']}:{record}","stream": True}]}
 				json_sound = {record: json_sound}
-				write_to_file(f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds.json", stp.super_json_dump(json_sound))
+				write_file(f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds.json", stp.super_json_dump(json_sound))
 
 			except KeyboardInterrupt as e:
 				raise e
@@ -612,7 +619,8 @@ def add_smithed_ignore_vanilla_behaviours_convention(database: dict[str, dict]) 
 
 class CustomOreGeneration():
 	def __init__(self, dimensions: list[str], maximum_height: int = 70, minimum_height: int|None = None, veins_per_region: int = 4, vein_size_logic: float = 0.4, provider: str|list[str] = "#minecraft:overworld_carver_replaceables", placer_command: str = "") -> None:
-		""" Creates a custom ore generation configuration.\n
+		""" Creates a custom ore generation configuration.
+
 		Args:
 			dimensions (list[str]):			The dimensions to generate the ore in (ex: ["minecraft:overworld"])
 			maximum_height (int):			The maximum height the ore can generate at
@@ -655,7 +663,8 @@ class CustomOreGeneration():
 			stp.error("Custom ore generation 'placer_command' must be a string")
 	
 	def generate_files(self, config: dict, custom_ore: str, number: int|None = None):
-		""" Generate the files for the custom ore generation\n
+		""" Generate the files for the custom ore generation
+
 		Args:
 			config (dict):			The configuration dictionary
 			custom_ore (str):		The custom ore to generate, ex: "adamantium_ore"
@@ -695,7 +704,7 @@ scoreboard players set #max_height smart_ore_generation.data {self.maximum_heigh
 """
 		place_vein: str = f"execute if score #dimension smart_ore_generation.data matches 0.. run function {config['namespace']}:calls/smart_ore_generation/veins/{custom_ore}\n"
 		content += self.veins_per_region * place_vein
-		write_to_file(path, content)
+		write_file(path, content)
 
 		# Add ore to veins folder
 		path: str = f"{lib_folder}/veins/{custom_ore}.mcfunction"
@@ -720,14 +729,17 @@ execute at @s if block ~ ~ ~ {self.provider} {self.placer_command}
 				radius += 1
 		
 		# Write file
-		write_to_file(path, content)
+		write_file(path, content)
 
 	@staticmethod
 	def all_with_config(config: dict, ore_configs: dict[str, list[CustomOreGeneration]]) -> None:
-		""" Generate all custom ore generation files with the configurations provided\n
+		""" Generate all custom ore generation files with the configurations provided
+
 		Args:
-			config (dict):										The configuration dictionary\n
-			ore_configs (dict[str, list[CustomOreGeneration]]):	The custom ore generation configurations, ex:\n
+			config (dict):										The configuration dictionary
+
+			ore_configs (dict[str, list[CustomOreGeneration]]):	The custom ore generation configurations, ex:
+
 				{
 					"super_iron_ore": [
 						CustomOreGeneration(

@@ -3,7 +3,7 @@
 import os
 import shutil
 import stouputils as stp
-from .utils.io import read_initial_files, write_to_file
+from .utils.io import read_initial_files, write_file
 from .constants import DATAPACK_FORMAT, RESOURCE_PACK_FORMAT
 
 
@@ -20,11 +20,11 @@ def main(config: dict):
 
 	# Setup pack.mcmeta for the datapack
 	pack_mcmeta = {"pack":{"pack_format": DATAPACK_FORMAT, "description": config["description"]}, "id": config["namespace"]}
-	write_to_file(f"{config['build_datapack']}/pack.mcmeta", stp.super_json_dump(pack_mcmeta))
+	write_file(f"{config['build_datapack']}/pack.mcmeta", stp.super_json_dump(pack_mcmeta))
 
 	# Setup pack.mcmeta for the resource pack
 	pack_mcmeta = {"pack":{"pack_format": RESOURCE_PACK_FORMAT, "description": config["description"]}, "id": config["namespace"]}
-	write_to_file(f"{config['build_resource_pack']}/pack.mcmeta", stp.super_json_dump(pack_mcmeta))
+	write_file(f"{config['build_resource_pack']}/pack.mcmeta", stp.super_json_dump(pack_mcmeta))
 
 	# Convert textures names if needed
 	if config.get('textures_files'):

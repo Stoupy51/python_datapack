@@ -24,7 +24,8 @@ COMMIT_TYPES: dict[str, str] = {
 }
 
 def validate_credentials(credentials: dict[str, dict[str, str]]) -> tuple[str, dict[str, str]]:
-	""" Get and validate GitHub credentials\n
+	""" Get and validate GitHub credentials
+
 	Args:
 		credentials (dict[str, dict[str, str]]):	Credentials for the GitHub API
 	Returns:
@@ -44,7 +45,8 @@ def validate_credentials(credentials: dict[str, dict[str, str]]) -> tuple[str, d
 	return owner, headers
 
 def validate_config(github_config: dict[str, str]) -> tuple[str, str, str]:
-	""" Validate GitHub configuration\n
+	""" Validate GitHub configuration
+
 	Args:
 		github_config (dict[str, str]):	Configuration for the GitHub project
 	Returns:
@@ -62,7 +64,8 @@ def validate_config(github_config: dict[str, str]) -> tuple[str, str, str]:
 	return github_config["project_name"], github_config["version"], github_config["build_folder"]
 
 def handle_existing_tag(owner: str, project_name: str, version: str, headers: dict[str, str]) -> bool:
-	""" Check if tag exists and handle deletion if needed\n
+	""" Check if tag exists and handle deletion if needed
+
 	Args:
 		owner (str):				GitHub username
 		project_name (str):			Name of the GitHub repository
@@ -84,7 +87,8 @@ def handle_existing_tag(owner: str, project_name: str, version: str, headers: di
 	return True
 
 def delete_existing_release(owner: str, project_name: str, version: str, headers: dict[str, str]) -> None:
-	""" Delete existing release for a version\n
+	""" Delete existing release for a version
+
 	Args:
 		owner (str):				GitHub username
 		project_name (str):			Name of the GitHub repository
@@ -103,7 +107,8 @@ def delete_existing_release(owner: str, project_name: str, version: str, headers
 		stp.info(f"Deleted existing release for v{version}")
 
 def delete_existing_tag(tag_url: str, headers: dict[str, str]) -> None:
-	""" Delete existing tag\n
+	""" Delete existing tag
+
 	Args:
 		tag_url (str):				URL of the tag to delete
 		headers (dict[str, str]):	Headers for GitHub API requests
@@ -128,7 +133,8 @@ def version_to_int(version: str) -> int:
 	return total
 
 def get_latest_tag(owner: str, project_name: str, version: str, headers: dict[str, str]) -> tuple[str|None, str|None]:
-	""" Get latest tag information\n
+	""" Get latest tag information
+
 	Args:
 		owner (str):				GitHub username
 		project_name (str):			Name of the GitHub repository
@@ -149,7 +155,8 @@ def get_latest_tag(owner: str, project_name: str, version: str, headers: dict[st
 	return latest_tag_sha, latest_tag_version
 
 def get_commits_since_tag(owner: str, project_name: str, latest_tag_sha: str|None, headers: dict[str, str]) -> list[dict]:
-	""" Get commits since last tag\n
+	""" Get commits since last tag
+
 	Args:
 		owner			(str):				GitHub username
 		project_name	(str):				Name of the GitHub repository
@@ -184,8 +191,10 @@ def get_commits_since_tag(owner: str, project_name: str, latest_tag_sha: str|Non
 	return commits
 
 def generate_changelog(commits: list[dict], owner: str, project_name: str, latest_tag_version: str|None, version: str) -> str:
-	""" Generate changelog from commits\n
-	They must follow the conventional commits convention:\n
+	""" Generate changelog from commits
+
+	They must follow the conventional commits convention:
+
 		<type>: <description>
 	Source:
 		https://www.conventionalcommits.org/en/v1.0.0/
@@ -226,7 +235,8 @@ def generate_changelog(commits: list[dict], owner: str, project_name: str, lates
 	return changelog
 
 def create_tag(owner: str, project_name: str, version: str, headers: dict[str, str]) -> None:
-	""" Create a new tag\n
+	""" Create a new tag
+
 	Args:
 		owner (str):				GitHub username
 		project_name (str):			Name of the GitHub repository
@@ -251,7 +261,8 @@ def create_tag(owner: str, project_name: str, version: str, headers: dict[str, s
 	handle_response(response, "Failed to create tag")
 
 def create_release(owner: str, project_name: str, version: str, changelog: str, headers: dict[str, str]) -> int:
-	""" Create a new release\n
+	""" Create a new release
+
 	Args:
 		owner (str):				GitHub username
 		project_name (str):			Name of the GitHub repository
@@ -276,7 +287,8 @@ def create_release(owner: str, project_name: str, version: str, changelog: str, 
 	return response.json()["id"]
 
 def upload_assets(owner: str, project_name: str, release_id: int, build_folder: str, headers: dict[str, str]) -> None:
-	""" Upload release assets\n
+	""" Upload release assets
+
 	Args:
 		owner (str):				GitHub username
 		project_name (str):			Name of the GitHub repository
@@ -314,7 +326,8 @@ def upload_assets(owner: str, project_name: str, release_id: int, build_folder: 
 @stp.measure_time(stp.progress, "Uploading to GitHub took")
 @stp.handle_error()
 def upload_to_github(credentials: dict[str, dict[str, str]], github_config: dict[str, str]) -> str:
-	""" Upload the project to GitHub using the credentials and the configuration\n
+	""" Upload the project to GitHub using the credentials and the configuration
+
 	Args:
 		credentials (dict[str, dict[str, str]]):	Credentials for the GitHub API
 		github_config (dict[str, str]):			Configuration for the GitHub project

@@ -2,7 +2,7 @@
 # Imports
 import os
 import stouputils as stp
-from ..utils.io import write_to_file, super_copy
+from ..utils.io import write_file, super_copy
 from ..constants import CUSTOM_BLOCK_VANILLA, CUSTOM_ITEM_VANILLA, OVERRIDE_MODEL
 
 # Utility functions
@@ -28,7 +28,8 @@ def model_in_variants(models: list[str], variants: list[str]) -> bool:
 
 # Function to handle item
 def handle_item(config: dict, item: str, data: dict, used_textures: set|None = None, ignore_textures: bool = False) -> None:
-	""" Generate custom models for an item or block\n
+	""" Generate custom models for an item or block
+
 	Args:
 		config			(dict):		The config dict containing all the data
 		item			(str):		The item/block name, ex: "steel_ingot"
@@ -94,7 +95,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 						for i in range(1, 7):
 							name: str = f"{item}_slice{i}"
 							slice_content = {"parent": f"block/cake_slice{i}", "textures": content["textures"]}
-							write_to_file(f"{dest_base_model}/{name}{on_off}.json", stp.super_json_dump(slice_content, max_level = 4))
+							write_file(f"{dest_base_model}/{name}{on_off}.json", stp.super_json_dump(slice_content, max_level = 4))
 
 					# Check cube_bottom_top model
 					elif model_in_variants(cube_bottom_top, variants):
@@ -170,7 +171,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 						for i, variant in enumerate(sorted_pull_variants):
 							pull_content: dict = {"parent": parent,"textures": {"layer0": f"{config['namespace']}:item/{variant}"}}
 							super_copy(f"{config['assets_folder']}/textures/{variant}.png", f"{dest_base_textu}/{variant}.png")
-							write_to_file(f"{dest_base_model}/{item}_pulling_{i}.json", stp.super_json_dump(pull_content))
+							write_file(f"{dest_base_model}/{item}_pulling_{i}.json", stp.super_json_dump(pull_content))
 
 							if i < (len(sorted_pull_variants) - 1):
 								pull: float = 0.65 + (0.25 * i)
@@ -184,7 +185,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 								})
 						
 						# Write the items/bow.json file
-						write_to_file(f"{dest_base_model}/{item}{on_off}.json".replace("models/item", "items"), stp.super_json_dump(items_content, max_level = 4))
+						write_file(f"{dest_base_model}/{item}{on_off}.json".replace("models/item", "items"), stp.super_json_dump(items_content, max_level = 4))
 
 		# Add overrides
 		for key, value in overrides.items():
@@ -227,14 +228,14 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		else:
 			dump: str = "{}\n"
 		item_model_path: str = f"{dest_base_model}/{item}{on_off}.json"
-		write_to_file(item_model_path, dump)
+		write_file(item_model_path, dump)
 		config['rendered_item_models'].append(data["item_model"])
 	
 		# Generate the json file required in items/
 		if not data["id"].endswith("bow"):
 			model_path: str = item_model_path.replace("models/item", "items")
 			items_model = {"model": {"type": "minecraft:model", "model": f"{config['namespace']}:item/{item}{on_off}"}}
-			write_to_file(model_path, stp.super_json_dump(items_model, max_level = 4))
+			write_file(model_path, stp.super_json_dump(items_model, max_level = 4))
 
 
 

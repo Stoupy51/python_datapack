@@ -1,7 +1,7 @@
 
 # Imports
 import stouputils as stp
-from .io import write_to_file
+from .io import write_file
 from ..constants import PULVERIZING, NOT_COMPONENTS
 
 # Recipes constants
@@ -188,14 +188,15 @@ def loot_table_from_ingredient(config: dict, result_ingredient: dict, result_cou
 		file: dict = {"pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":f"{namespace}:{item}"}] }] }
 	if result_count > 1:
 		file["pools"][0]["entries"][0]["functions"] = [{"function": "minecraft:set_count","count": result_count}]
-	write_to_file(path, stp.super_json_dump(file, max_level = 9))
+	write_file(path, stp.super_json_dump(file, max_level = 9))
 	return loot_table
 
 @stp.simple_cache()
 def get_ingredients_from_recipe(recipe: dict) -> list[str]:
 	""" Get the ingredients from a recipe dict
 	Args:
-		recipe (dict): The final recipe JSON dict, ex:\n
+		recipe (dict): The final recipe JSON dict, ex:
+
 		{
 			"type": "minecraft:crafting_shaped",
 			"pattern": [...],

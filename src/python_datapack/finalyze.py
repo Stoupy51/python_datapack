@@ -6,7 +6,7 @@ import json
 import shutil
 import hashlib
 import stouputils as stp
-from .utils.io import super_copy, super_merge_dict, write_to_file, delete_files, delete_old_files, write_all_files, FILES_TO_WRITE
+from .utils.io import super_copy, super_merge_dict, write_file, delete_files, delete_old_files, write_all_files, FILES_TO_WRITE
 from .utils.weld import weld_datapack, weld_resource_pack
 from .utils.archive import make_archive
 from .datapack.lang import main as lang_main
@@ -42,7 +42,7 @@ def main(config: dict, user_code: Callable|None = None):
 					# If file is not JSON format,
 					if not file.endswith(".json") and not file.endswith(".mcmeta"):
 						with stp.super_open(merge_path, "r") as f:
-							write_to_file(build_path, f.read())
+							write_file(build_path, f.read())
 
 					else:
 						# Load to two dictionnaries
@@ -52,13 +52,13 @@ def main(config: dict, user_code: Callable|None = None):
 						
 						# Write the merged dictionnaries to the build file
 						merged_dict = super_merge_dict(build_dict, merge_dict)
-						write_to_file(build_path, stp.super_json_dump(merged_dict), overwrite = True)
+						write_file(build_path, stp.super_json_dump(merged_dict), overwrite = True)
 				else:
 					# Get content of .mcfunction file to correctly append headers
 					if file.endswith((".json",".mcfunction",".mcmeta")):
 						try:
 							with stp.super_open(merge_path, "r") as f:
-								write_to_file(build_path, f.read())
+								write_file(build_path, f.read())
 						except Exception as e:
 							stp.warning(f"Could not read '{merge_path}': {e}")
 					

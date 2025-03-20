@@ -9,7 +9,8 @@ MARKDOWN_TO_BBCODE_URL: list[str] = ["https://ricolovefeng.github.io/"]
 
 # Configuration
 def validate_config(pmc_config: dict[str, str]) -> tuple[str, str]:
-	""" Validate PlanetMinecraft configuration\n
+	""" Validate PlanetMinecraft configuration
+
 	Args:
 		pmc_config (dict[str, str]): Configuration for the PlanetMinecraft project
 	Returns:
@@ -31,7 +32,8 @@ def validate_config(pmc_config: dict[str, str]) -> tuple[str, str]:
 	)
 
 def upload_version(project_url: str, version: str, changelog: str) -> None:
-	""" Upload new version by opening the project url with the browser\n
+	""" Upload new version by opening the project url with the browser
+
 	Args:
 		project_url		(str):	Url of the project on PlanetMinecraft to open
 		version			(str):	Version number
@@ -52,7 +54,8 @@ def upload_version(project_url: str, version: str, changelog: str) -> None:
 @stp.measure_time(stp.progress, "Uploading to PlanetMinecraft took")
 @stp.handle_error()
 def upload_to_pmc(pmc_config: dict, changelog: str = "") -> None:
-	""" Upload the project to PlanetMinecraft using the configuration\n
+	""" Upload the project to PlanetMinecraft using the configuration
+
 	Disclaimer:
 		There is no API for PlanetMinecraft, so everything is done manually.
 	Args:

@@ -12,7 +12,8 @@ PROJECT_ENDPOINT: str = f"{MODRINTH_API_URL}/project"
 VERSION_ENDPOINT: str = f"{MODRINTH_API_URL}/version"
 
 def validate_credentials(credentials: dict[str, str]) -> str:
-	""" Get and validate Modrinth credentials\n
+	""" Get and validate Modrinth credentials
+
 	Args:
 		credentials (dict[str, str]): Credentials for the Modrinth API
 	Returns:
@@ -23,7 +24,8 @@ def validate_credentials(credentials: dict[str, str]) -> str:
 	return credentials["modrinth_api_key"]
 
 def validate_config(modrinth_config: dict[str, str]) -> tuple[str, str, str, str, str, str, str]:
-	""" Validate Modrinth configuration\n
+	""" Validate Modrinth configuration
+
 	Args:
 		modrinth_config (dict[str, str]): Configuration for the Modrinth project
 	Returns:
@@ -64,7 +66,8 @@ def validate_config(modrinth_config: dict[str, str]) -> tuple[str, str, str, str
 	)
 
 def get_project(slug: str, headers: dict[str, str]) -> dict:
-	""" Get project from Modrinth\n
+	""" Get project from Modrinth
+
 	Args:
 		slug (str): Project slug/namespace
 		headers (dict[str, str]): Headers for Modrinth API requests
@@ -77,7 +80,8 @@ def get_project(slug: str, headers: dict[str, str]) -> dict:
 	return search_response.json()
 
 def update_project_description(slug: str, description: str, summary: str, headers: dict[str, str]) -> None:
-	""" Update project description and summary\n
+	""" Update project description and summary
+
 	Args:
 		slug (str): Project slug/namespace
 		description (str): Project description in Markdown
@@ -93,7 +97,8 @@ def update_project_description(slug: str, description: str, summary: str, header
 	handle_response(update_response, "Failed to update project description")
 
 def handle_existing_version(slug: str, version: str, headers: dict[str, str]) -> bool:
-	""" Check and handle existing version\n
+	""" Check and handle existing version
+
 	Args:
 		slug (str): Project slug/namespace
 		version (str): Version to check
@@ -116,7 +121,8 @@ def handle_existing_version(slug: str, version: str, headers: dict[str, str]) ->
 	return True
 
 def get_file_parts(project_name: str, build_folder: str) -> list[str]:
-	""" Get file parts to upload\n
+	""" Get file parts to upload
+
 	Args:
 		project_name (str): Name of the project
 		build_folder (str): Path to build folder
@@ -148,7 +154,8 @@ def upload_version(
 	headers: dict[str, str], 
 	dependencies: list[str] = []
 ) -> dict:
-	""" Upload new version\n
+	""" Upload new version
+
 	Args:
 		project_id		(str):				Modrinth project ID
 		project_name	(str):				Name of the project
@@ -196,7 +203,8 @@ def upload_version(
 	return json_response
 
 def set_resource_pack_required(version_id: str, resource_pack_hash: str, headers: dict[str, str]) -> None:
-	""" Set resource pack as required\n
+	""" Set resource pack as required
+
 	Args:
 		version_id (str): ID of the version
 		resource_pack_hash (str): SHA1 hash of resource pack
@@ -213,7 +221,8 @@ def set_resource_pack_required(version_id: str, resource_pack_hash: str, headers
 @stp.measure_time(stp.progress, "Uploading to modrinth took")
 @stp.handle_error()
 def upload_to_modrinth(credentials: dict[str, str], modrinth_config: dict, changelog: str = "") -> None:
-	""" Upload the project to Modrinth using the credentials and the configuration\n
+	""" Upload the project to Modrinth using the credentials and the configuration
+
 	Args:
 		credentials		(dict[str, str]):	Credentials for the Modrinth API
 		modrinth_config	(dict):				Configuration for the Modrinth project

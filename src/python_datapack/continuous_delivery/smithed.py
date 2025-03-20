@@ -10,7 +10,8 @@ from .cd_utils import handle_response, get_supported_versions
 SMITHED_API_URL: str = "https://api.smithed.dev/v2/packs"
 
 def validate_credentials(credentials: dict) -> tuple[str, str]:
-	""" Get and validate Smithed credentials\n
+	""" Get and validate Smithed credentials
+
 	Args:
 		credentials (dict[str, str]): Credentials for the Smithed API
 	Returns:
@@ -28,7 +29,8 @@ def validate_credentials(credentials: dict) -> tuple[str, str]:
 	return credentials["smithed_api_key"], credentials["github"]["username"]
 
 def validate_config(smithed_config: dict[str, str]) -> tuple[str, str, str]:
-	""" Validate Smithed configuration\n
+	""" Validate Smithed configuration
+
 	Args:
 		smithed_config (dict[str, str]): Configuration for the Smithed project
 	Returns:
@@ -54,7 +56,8 @@ def validate_config(smithed_config: dict[str, str]) -> tuple[str, str, str]:
 	)
 
 def upload_version(project_id: str, project_name: str, version: str, api_key: str, author: str) -> None:
-	""" Upload new version\n
+	""" Upload new version
+
 	Args:
 		project_id		(str):				Smithed project ID
 		project_name	(str):				Name of the project
@@ -96,7 +99,8 @@ def upload_version(project_id: str, project_name: str, version: str, api_key: st
 @stp.measure_time(stp.progress, "Uploading to smithed took")
 @stp.handle_error(error_log=stp.LogLevels.WARNING_TRACEBACK)
 def upload_to_smithed(credentials: dict[str, str], smithed_config: dict, changelog: str = "") -> None:
-	""" Upload the project to Smithed using the credentials and the configuration\n
+	""" Upload the project to Smithed using the credentials and the configuration
+
 	Args:
 		credentials		(dict[str, str]):	Credentials for the Smithed API
 		smithed_config	(dict):				Configuration for the Smithed project

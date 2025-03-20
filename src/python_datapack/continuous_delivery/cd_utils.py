@@ -14,7 +14,8 @@ def replace_tilde(path: str) -> str:
 # Load credentials from file
 @stp.handle_error((ValueError, FileNotFoundError))
 def load_credentials(credentials_path: str) -> dict[str, str]:
-	""" Load credentials from a JSON or YAML file into a dictionary\n
+	""" Load credentials from a JSON or YAML file into a dictionary
+
 	The file must be in the following format (JSON example, you can imagine the YAML format):
 	```json
 	{
@@ -63,7 +64,8 @@ def handle_response(response: requests.Response, error_message: str) -> None:
 
 # Supported versions
 def get_supported_versions(version: str = MINECRAFT_VERSION) -> list[str]:
-	""" Get the supported versions for a given version of Minecraft\n
+	""" Get the supported versions for a given version of Minecraft
+
 	Args:
 		version (str): Version of Minecraft
 	Returns:
