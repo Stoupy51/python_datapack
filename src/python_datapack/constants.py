@@ -89,8 +89,8 @@ def official_lib_used(lib: str) -> bool:
 
 OFFICIAL_LIBS: dict[str, dict] = {
 	"common_signals":		{"version":[0, 1, 0], "name":"Common Signals",					"url":"https://github.com/Stoupy51/CommonSignals",			"is_used": False},
-	"smithed.custom_block":	{"version":[0, 6, 2], "name":"Smithed Custom Block",			"url":"https://wiki.smithed.dev/libraries/custom-block/",	"is_used": False},
-	"smithed.crafter":		{"version":[0, 6, 2], "name":"Smithed Crafter",					"url":"https://wiki.smithed.dev/libraries/crafter/",		"is_used": False},
+	"smithed.custom_block":	{"version":[0, 7, 0], "name":"Smithed Custom Block",			"url":"https://wiki.smithed.dev/libraries/custom-block/",	"is_used": False},
+	"smithed.crafter":		{"version":[0, 7, 0], "name":"Smithed Crafter",					"url":"https://wiki.smithed.dev/libraries/crafter/",		"is_used": False},
 	"furnace_nbt_recipes":	{"version":[1, 9, 0], "name":"Furnace NBT Recipes",				"url":"https://github.com/Stoupy51/FurnaceNbtRecipes",		"is_used": False},
 	"smart_ore_generation":	{"version":[1, 7, 1], "name":"SmartOreGeneration",				"url":"https://github.com/Stoupy51/SmartOreGeneration",		"is_used": False},
 	"itemio":				{"version":[1, 3, 3], "name":"ItemIO",							"url":"https://github.com/edayot/ItemIO",					"is_used": False},
