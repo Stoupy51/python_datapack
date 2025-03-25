@@ -625,6 +625,7 @@ def routine(config: dict):
 		del database["heavy_workbench"]
 		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/textures/item/heavy_workbench.png")
 		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/models/item/heavy_workbench.json")
+		delete_file(f"{config['build_resource_pack']}/assets/{namespace}/items/heavy_workbench.json")
 
 
 	# Register of the manual in the universal manual
