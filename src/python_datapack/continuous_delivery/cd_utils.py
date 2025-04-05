@@ -12,7 +12,7 @@ def replace_tilde(path: str) -> str:
 	return path.replace("~", os.path.expanduser("~"))
 
 # Load credentials from file
-@stp.handle_error((ValueError, FileNotFoundError))
+@stp.handle_error(exceptions=(ValueError, FileNotFoundError))
 def load_credentials(credentials_path: str) -> dict[str, str]:
 	""" Load credentials from a JSON or YAML file into a dictionary
 
