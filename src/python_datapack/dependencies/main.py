@@ -1,7 +1,7 @@
 
 # Imports
 import stouputils as stp
-from ..constants import OFFICIAL_LIBS, DATA_VERSION, MINECRAFT_VERSION, official_lib_used
+from ..constants import OFFICIAL_LIBS, DATA_VERSION, MINECRAFT_VERSION, BOOKSHELF_MODULES, official_lib_used
 from ..utils.io import write_file, write_function, write_versioned_function, is_in_write_queue, FILES_TO_WRITE
 
 # This folder path
@@ -46,6 +46,15 @@ def main(config: dict) -> None:
 				if not official_lib_used("itemio"):
 					stp.info("Found the use of official supported library 'itemio', adding it to the datapack")
 				break
+	
+	# Find for each bookshelf module if it is used
+	if namespace != "bookshelf":
+		for module_ns in BOOKSHELF_MODULES.keys():
+			for file_content in FILES_TO_WRITE.values():
+				if f"#{module_ns}:" in file_content:
+					if not official_lib_used(module_ns):
+						stp.info(f"Found the use of official supported library '{module_ns}', adding it to the datapack")
+					break
 
 	# Get all dependencies (official and custom)
 	dependencies: list[tuple] = [(ns, data) for ns, data in OFFICIAL_LIBS.items() if data["is_used"]]

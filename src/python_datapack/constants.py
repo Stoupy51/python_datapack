@@ -1,4 +1,7 @@
 
+# Imports
+from .dependencies.bookshelf import BOOKSHELF_MODULES
+
 # Minecraft version constants
 DATAPACK_FORMAT: int = 71			# Pack format version, see https://minecraft.wiki/w/Pack_format#List_of_data_pack_formats
 RESOURCE_PACK_FORMAT: int = 55		# Resource pack format version, see https://minecraft.wiki/w/Pack_format#List_of_resource_pack_formats
@@ -94,7 +97,6 @@ OFFICIAL_LIBS: dict[str, dict] = {
 	"furnace_nbt_recipes":	{"version":[1, 9, 0], "name":"Furnace NBT Recipes",				"url":"https://github.com/Stoupy51/FurnaceNbtRecipes",		"is_used": False},
 	"smart_ore_generation":	{"version":[1, 7, 1], "name":"SmartOreGeneration",				"url":"https://github.com/Stoupy51/SmartOreGeneration",		"is_used": False},
 	"itemio":				{"version":[1, 3, 3], "name":"ItemIO",							"url":"https://github.com/edayot/ItemIO",					"is_used": False},
-
-	# TODO: Bookshelf modules
+	**BOOKSHELF_MODULES,
 }
 
