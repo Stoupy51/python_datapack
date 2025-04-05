@@ -3,8 +3,8 @@
 import json
 import stouputils as stp
 from .general import (
-	FILES_TO_WRITE, INITIAL_FILES_SET, INITIAL_FILES, DATAPACK_RESOURCE_TYPES,
-	remove_initial_file, is_in_initial_files, super_merge_dict, sort_override_model, path_to_file_path
+	FILES_TO_WRITE, INITIAL_FILES_SET, INITIAL_FILES,
+	remove_initial_file, is_in_initial_files, super_merge_dict, sort_override_model
 )
 
 # Functions

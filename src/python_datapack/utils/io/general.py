@@ -56,7 +56,7 @@ def read_initial_files(folders: list[str]) -> None:
 				except:
 					pass
 
-@stp.handle_error(KeyError)
+@stp.handle_error(exceptions=KeyError)
 def remove_initial_file(file_path: str) -> None:
 	""" Remove the file from the initial files
 
