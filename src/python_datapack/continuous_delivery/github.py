@@ -213,7 +213,7 @@ def generate_changelog(commits: list[dict], owner: str, project_name: str, lates
 		sha: str = commit["sha"]
 		if ":" in message:
 			type_, desc = message.split(":", 1)
-			type_ = type_.split('(')[0]
+			type_ = type_.split('(')[0].split('/')[0]
 			type_ = "".join(c for c in type_.lower().strip() if c in "abcdefghijklmnopqrstuvwxyz")
 			type_ = COMMIT_TYPES.get(type_, type_.title())
 			if type_ not in commit_groups:
