@@ -1,5 +1,5 @@
 
-name: Bookshelf Release Process
+name: Bookshelf latest release download
 
 on:
   workflow_dispatch:

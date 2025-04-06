@@ -1,5 +1,5 @@
 
-name: Bookshelf Version Check
+name: Bookshelf version check
 
 on:
   schedule:
@@ -41,6 +41,6 @@ jobs:
         if: steps.check-version.outputs.update_available == 'true'
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: .github/workflows/bookshelf/on_release.yml
+          workflow: Bookshelf latest release download
           token: ${{ secrets.GITHUB_TOKEN }}
 
