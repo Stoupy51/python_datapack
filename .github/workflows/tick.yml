@@ -39,9 +39,5 @@ jobs:
       
       - name: Trigger release workflow if update available
         if: steps.check-version.outputs.update_available == 'true'
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: .github/workflows/bookshelf/on_release.yml
-          ref: ${{ github.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+        uses: ./.github/workflows/bookshelf/on_release.yml
 
