@@ -2,7 +2,6 @@
 name: Bookshelf latest release download
 
 on:
-  workflow_run:
   workflow_dispatch:
     # Triggered by the tick.yml workflow
 
