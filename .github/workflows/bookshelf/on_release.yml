@@ -1,19 +1,15 @@
 
-name: Run on bookshelf release trigger
+name: Bookshelf Release Process
 
 on:
-  issues:
-    types: [opened]
+  workflow_dispatch:
+    # This workflow is triggered by the tick.yml workflow
 
 jobs:
-  run-script-if-valid:
+  process-release:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if the issue title is "bookshelf"
-        if: contains(github.event.issue.title, '[Bookshelf] New Release')
-        run: echo "The issue title contains 'bookshelf'. Running the workflow."
-
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -22,7 +18,7 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies	
+      - name: Install dependencies
         run: |
           pip install stouputils
 
@@ -38,11 +34,4 @@ jobs:
           git add .
           git diff --cached --quiet || git commit -m "chore: 🔨 Updated Bookshelf modules"
           git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref_name }}
-
-      - name: Close trigger issue
-        run: |
-          gh issue close "$ISSUE_URL" --reason completed
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ISSUE_URL: ${{ github.event.issue.html_url }}
 

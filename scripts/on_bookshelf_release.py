@@ -14,8 +14,10 @@ from copy import deepcopy
 # Constants
 ROOT: str = stp.get_root_path(__file__, go_up=1)
 GITHUB_REPO: str = "https://github.com/mcbookshelf/bookshelf/releases"
-DEPS_TO_UPDATE: str = "src/python_datapack/dependencies/bookshelf.py"
+API_URL: str = "https://api.github.com/repos/mcbookshelf/bookshelf/releases/latest"
+CONFIG_PATH: str = f"{ROOT}/.github/workflows/bookshelf/config.json"
 DESTINATION_FOLDER: str = f"{ROOT}/src/python_datapack/dependencies/datapack"
+DEPS_TO_UPDATE: str = "src/python_datapack/dependencies/bookshelf.py"
 MODULE_TEMPLATE: dict = {"version": [0, 0, 0], "name": "Title Name", "url": GITHUB_REPO, "is_used": False}
 
 
@@ -49,9 +51,8 @@ def download_latest_release() -> None:
 		...
 	}
 	"""
-	api_url: str = "https://api.github.com/repos/mcbookshelf/bookshelf/releases/latest"
-	stp.info(f"Fetching latest release from {api_url}")
-	response: requests.Response = requests.get(api_url)
+	stp.info(f"Fetching latest release from {API_URL}")
+	response: requests.Response = requests.get(API_URL)
 	if response.status_code != 200:
 		stp.info(f"Error fetching release info: {response.status_code}")
 		return
@@ -109,6 +110,11 @@ BOOKSHELF_MODULES = {dumped}
 	with open(f"{ROOT}/{DEPS_TO_UPDATE}", "w") as f:
 		f.write(file_content)
 	stp.info(f"Updated '{DEPS_TO_UPDATE}' with new module information.")
+
+	# Update the config file
+	with open(CONFIG_PATH, "w") as f:
+		stp.super_json_dump({"version": tag_name}, f)
+	stp.info(f"Updated '{CONFIG_PATH}' with new version information.")
 
 # Main
 if __name__ == "__main__":

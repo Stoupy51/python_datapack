@@ -59,7 +59,7 @@ class ChangeHandler(FileSystemEventHandler):
 		Args:
 			event	(FileSystemEvent):	Watchdog event
 		"""
-		source_path: str = os.path.abspath(event.src_path).replace("\\", "/")
+		source_path: str = os.path.abspath(str(event.src_path)).replace("\\", "/")
 		if not event.is_directory and not any(x in source_path for x in self.to_ignore) and any(source_path.startswith(x) for x in self.to_watch):
 			self.processor.add_to_queue(source_path)
 
