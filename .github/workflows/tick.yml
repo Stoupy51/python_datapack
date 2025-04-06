@@ -41,6 +41,7 @@ jobs:
         if: steps.check-version.outputs.update_available == 'true'
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: Bookshelf latest release download
+          workflow: .github/workflows/bookshelf/on_release.yml
+          ref: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
