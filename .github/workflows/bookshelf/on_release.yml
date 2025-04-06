@@ -2,8 +2,9 @@
 name: Bookshelf latest release download
 
 on:
+  workflow_run:
   workflow_dispatch:
-    # This workflow is triggered by the tick.yml workflow
+    # Triggered by the tick.yml workflow
 
 jobs:
   process-release:
