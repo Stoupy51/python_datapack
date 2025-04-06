@@ -41,5 +41,5 @@ jobs:
   release:
     needs: check-for-updates
     if: needs.check-for-updates.outputs.update_available == 'true'
-    uses: ./.github/workflows/on_bookshelf_release.yml@main
+    uses: ./.github/workflows/on_bookshelf_release.yml
 
