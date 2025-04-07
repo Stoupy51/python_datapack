@@ -36,6 +36,7 @@ jobs:
           # If a new version is found, set the output variable
           UPDATE_AVAILABLE=$(python scripts/check_bookshelf_version.py)
           echo "update_available=$UPDATE_AVAILABLE" >> $GITHUB_OUTPUT
+          echo "Update available: $UPDATE_AVAILABLE"
   
   # New job to call the reusable workflow conditionally
   release:

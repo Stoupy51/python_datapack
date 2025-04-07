@@ -15,8 +15,8 @@ from copy import deepcopy
 ROOT: str = stp.get_root_path(__file__, go_up=1)
 GITHUB_REPO: str = "https://github.com/mcbookshelf/bookshelf/releases"
 API_URL: str = "https://api.github.com/repos/mcbookshelf/bookshelf/releases/latest"
-CONFIG_PATH: str = f"{ROOT}/.github/workflows/bookshelf/config.json"
 DESTINATION_FOLDER: str = f"{ROOT}/src/python_datapack/dependencies/datapack"
+CONFIG_PATH: str = f"{DESTINATION_FOLDER}/bookshelf_config.json"
 DEPS_TO_UPDATE: str = "src/python_datapack/dependencies/bookshelf.py"
 MODULE_TEMPLATE: dict = {"version": [0, 0, 0], "name": "Title Name", "url": GITHUB_REPO, "is_used": False}
 
@@ -63,7 +63,7 @@ def download_latest_release() -> None:
 
 	modules: dict = {}
 	assets: list[dict] = release_info.get("assets", [])
-	os.makedirs(DESTINATION_FOLDER, exist_ok=True)
+	os.makedirs(f"{DESTINATION_FOLDER}/datapack", exist_ok=True)
 
 	# Filter assets
 	assets = [asset for asset in assets if re.match(r"^bs\..*\.zip$", asset.get("name", ""))]
@@ -82,7 +82,7 @@ def download_latest_release() -> None:
 			stp.warning(f"Failed to download {file_name}: HTTP {asset_response.status_code}")
 			return
 
-		local_zip_path: str = f"{DESTINATION_FOLDER}/{module_name}.zip"
+		local_zip_path: str = f"{DESTINATION_FOLDER}/datapack/{module_name}.zip"
 		with open(local_zip_path, "wb") as f:
 			f.write(asset_response.content)
 		stp.debug(f"Downloaded '{file_name}' to '...{local_zip_path[-40:]}'")
