@@ -15,7 +15,7 @@ from copy import deepcopy
 ROOT: str = stp.get_root_path(__file__, go_up=1)
 GITHUB_REPO: str = "https://github.com/mcbookshelf/bookshelf/releases"
 API_URL: str = "https://api.github.com/repos/mcbookshelf/bookshelf/releases/latest"
-DESTINATION_FOLDER: str = f"{ROOT}/src/python_datapack/dependencies/datapack"
+DESTINATION_FOLDER: str = f"{ROOT}/src/python_datapack/dependencies"
 CONFIG_PATH: str = f"{DESTINATION_FOLDER}/bookshelf_config.json"
 DEPS_TO_UPDATE: str = "src/python_datapack/dependencies/bookshelf.py"
 MODULE_TEMPLATE: dict = {"version": [0, 0, 0], "name": "Title Name", "url": GITHUB_REPO, "is_used": False}
