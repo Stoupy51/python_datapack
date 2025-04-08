@@ -16,6 +16,12 @@ def check_version(config: dict, lib_ns: str, data: dict, run_command: str) -> st
 	score_minor: str = f"score #{lib_ns}.minor load.status matches {minor}"
 	score_patch: str = f"score #{lib_ns}.patch load.status matches {patch}" if patch > 0 else ""
 
+	# If bookshelf, replace #bs by $bs
+	if lib_ns.startswith("bs."):
+		score_major = score_major.replace("#", "$")
+		score_minor = score_minor.replace("#", "$")
+		score_patch = score_patch.replace("#", "$")
+
 	# Check if the version is correct
 	is_decoder: int = 1 if "tellraw @" in run_command else 0
 	checks += f"execute if score #dependency_error {namespace}.data matches {is_decoder} unless {score_major}.. run {run_command}\n"
