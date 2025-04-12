@@ -439,6 +439,7 @@ def clean_record_name(name: str) -> str:
 # Custom records
 def generate_custom_records(config: dict, database: dict[str, dict], records: dict[str, str]|str|None = "auto", category: str|None = None) -> None:
 	""" Generate custom records by searching in config['assets_folder']/records/ for the files and copying them to the database and resource pack folder.
+
 	Args:
 		database	(dict[str, dict]):	The database to add the custom records items to, ex: {"record_1": "song.ogg", "record_2": "another_song.ogg"}
 		records		(dict[str, str]):	The custom records to apply, ex: {"record_1": "My first Record.ogg", "record_2": "A second one.ogg"}
@@ -453,7 +454,6 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 		
 		songs: list[str] = [x for x in os.listdir(config["assets_folder"] + "/records") if x.endswith((".ogg",".wav"))]
 		records_to_check: dict[str, str] = { clean_record_name(file): file for file in songs }
-		stp.debug(f"No records specified, searching in '{config['assets_folder']}/records' folder. Found {len(records_to_check)} records.")
 	else:
 		records_to_check = records # type: ignore
 

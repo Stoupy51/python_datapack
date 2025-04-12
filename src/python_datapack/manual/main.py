@@ -1,5 +1,6 @@
 
 # Imports
+from typing import Any
 import stouputils as stp
 import os
 import shutil
@@ -139,7 +140,7 @@ def routine(config: dict):
 			if len(items) > MAX_ITEMS_PER_PAGE:
 				s += f" (splitted into {len(items) // MAX_ITEMS_PER_PAGE + 1} pages)"
 		nb_categories: int = len(categories) - (1 if HEAVY_WORKBENCH_CATEGORY in categories else 0)
-		stp.debug(f"Found {nb_categories} categories:{s}")
+		stp.debug(f"Found {nb_categories} categories in the database:{s}")
 
 		# Split up categories into pages
 		categories_pages = {}
@@ -175,7 +176,7 @@ def routine(config: dict):
 		book_content = []
 		os.makedirs(f"{config['manual_path']}/font/category", exist_ok=True)
 		simple_case = load_simple_case_no_border(config['manual_high_resolution'])	# Load the simple case image for later use in categories pages
-		for page in manual_pages:
+		def encode_page(page: dict[str, Any]):
 			content = []
 			number = page["number"]
 			raw_data: dict = page["raw_data"]
@@ -428,6 +429,8 @@ def routine(config: dict):
 
 			# Add page to the book
 			book_content.append(content)
+			pass
+		stp.multithreading(encode_page, manual_pages, desc="Creating manual pages", max_workers=1, verbose=1)
 
 		## Add categories page
 		content = []
@@ -572,9 +575,11 @@ def routine(config: dict):
 			f.write(stp.super_json_dump(fonts))
 				
 		# Debug book_content
-		with stp.super_open(config['manual_debug'], "w") as f:
+		manual_debug: str = config["manual_debug"]
+		with stp.super_open(manual_debug, "w") as f:
 			f.write(stp.super_json_dump(book_content))
-			stp.debug(f"Debug book_content at '{config['manual_debug']}'")
+		rel_debug: str = stp.clean_path(os.path.relpath(manual_debug, os.getcwd()))
+		stp.debug(f"Debug book_content at './{rel_debug}'")
 
 
 	# Copy the font provider and the generated textures to the resource pack

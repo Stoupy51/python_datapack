@@ -259,6 +259,4 @@ def main(config: dict):
 			warns.append(f"Texture '{path}' not found")
 	if warns:
 		stp.warning("The following textures are used but missing:\n" + "\n".join(sorted(warns)))
-	if used_textures:
-		stp.info("Custom models created")
 

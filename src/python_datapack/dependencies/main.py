@@ -31,10 +31,9 @@ def check_version(config: dict, lib_ns: str, data: dict, run_command: str) -> st
 	return checks
 
 # Main function called on finalization process
-@stp.measure_time(stp.info, "Dependencies generated")
 def main(config: dict) -> None:
-	ns: str = config['namespace']
-	version: str = config['version']
+	ns: str = config["namespace"]
+	version: str = config["version"]
 	major, minor, patch = version.split(".")
 
 	# Find if common_signals is used
@@ -42,7 +41,7 @@ def main(config: dict) -> None:
 		for file_content in FILES_TO_WRITE.values():
 			if "common_signals" in file_content:
 				if not official_lib_used("common_signals"):
-					stp.info("Found the use of official supported library 'common_signals', adding it to the datapack")
+					stp.debug("Found the use of official supported library 'common_signals', adding it to the datapack")
 				break
 	
 	# Find if itemio is used
@@ -50,7 +49,7 @@ def main(config: dict) -> None:
 		for file_content in FILES_TO_WRITE.values():
 			if "itemio" in file_content:
 				if not official_lib_used("itemio"):
-					stp.info("Found the use of official supported library 'itemio', adding it to the datapack")
+					stp.debug("Found the use of official supported library 'itemio', adding it to the datapack")
 				break
 	
 	# Find for each bookshelf module if it is used
@@ -59,7 +58,7 @@ def main(config: dict) -> None:
 			for file_content in FILES_TO_WRITE.values():
 				if f"#{module_ns}:" in file_content:
 					if not official_lib_used(module_ns):
-						stp.info(f"Found the use of official supported library '{module_ns}', adding it to the datapack")
+						stp.debug(f"Found the use of official supported library '{module_ns}', adding it to the datapack")
 					break
 
 	# Get all dependencies (official and custom)
@@ -129,9 +128,9 @@ execute if score #{ns}.major load.status matches {major} if score #{ns}.minor lo
 
 
 	# For each used library, show message
-	used_libs: list[str] = [data['name'] for data in OFFICIAL_LIBS.values() if data["is_used"]]
+	used_libs: str = ', '.join(data["name"] for data in OFFICIAL_LIBS.values() if data["is_used"])
 	if used_libs:
-		stp.info(f"Summary of the official supported libraries used in the datapack: {', '.join(used_libs)}\n")
+		stp.info(f"Summary of the official supported libraries used in the datapack: {used_libs}")
 
 	## Write check_dependencies and valid_dependencies functions now that we have all the dependencies
 	encoder_checks = ""

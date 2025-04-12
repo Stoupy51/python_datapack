@@ -6,7 +6,6 @@ from .power_of_2 import main as check_all_textures_power_of_2
 from ..utils.io import write_all_files
 
 def main(config: dict):
-	print()
 
 	# Add the sounds folder to the resource pack
 	sounds_main(config)

@@ -16,7 +16,6 @@ from ..constants import (
 	official_lib_used
 )
 
-@stp.measure_time(stp.info, "All customs blocks are now placeable and destroyable!")
 def main(config: dict):
 	namespace: str = config['namespace']
 	build_datapack: str = config['build_datapack']

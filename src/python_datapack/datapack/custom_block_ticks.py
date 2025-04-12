@@ -1,10 +1,8 @@
 
 # Imports
-import stouputils as stp
 from ..utils.io import write_file, write_function, FILES_TO_WRITE
 
 
-@stp.measure_time(stp.info, "Custom blocks ticks and second functions calls")
 def custom_blocks_ticks_and_second_functions(config: dict) -> None:
 	""" Setup custom blocks ticks and second functions calls
 
@@ -14,7 +12,6 @@ def custom_blocks_ticks_and_second_functions(config: dict) -> None:
 
 	Args:
 		config (dict): The config dictionary
-
 	"""
 	namespace: str = config['namespace']
 	build_datapack: str = config['build_datapack']

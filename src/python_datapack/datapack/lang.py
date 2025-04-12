@@ -20,11 +20,10 @@ def find_text_end_backslash(text: str, used_char: str) -> int:
 			return text_end - 1
 
 # Main function
-@stp.measure_time(stp.info, "Lang file generated")
 def main(config: dict):
 
 	# Prepare lang dictionnary and lang_format function
-	lang = {}
+	lang: dict[str, str] = {}
 	@stp.simple_cache()
 	def lang_format(text: str) -> tuple[str, str]:
 		""" Get alphanumeric characters from a string and return it.
@@ -48,7 +47,7 @@ def main(config: dict):
 	# For each file in FILES_TO_WRITE
 	POSSIBLES_TEXTS = ['"text":', '\\"text\\":', "'text':", "\\'text\\':"]
 	NO_BACKSLASHS = [x for x in POSSIBLES_TEXTS if '\\' not in x]
-	for file, content in FILES_TO_WRITE.items():
+	def handle_file(file: str, content: str):
 
 		# Some content adjustments
 		for p in POSSIBLES_TEXTS:
@@ -105,6 +104,12 @@ def main(config: dict):
 		
 		# Write the new content to the file
 		FILES_TO_WRITE[file] = content
+	
+	# Show progress of the handle_file function
+	stp.multithreading(handle_file, FILES_TO_WRITE.items(), use_starmap=True, desc="Generating lang file", max_workers=1, verbose=1)
+
+	# Sort the lang dictionnary (by value)
+	lang = dict(sorted(lang.items(), key=lambda x: x[1]))
 
 	# Write the lang file
 	path: str = f"{config['build_resource_pack']}/assets/minecraft/lang/en_us.json"

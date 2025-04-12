@@ -1,6 +1,5 @@
-
 # Imports
-import time
+import os
 import stouputils as stp
 from .utils.ingredients import FURNACES_RECIPES_TYPES
 from .constants import (
@@ -16,7 +15,6 @@ from .constants import (
 )
 
 def main(config: dict):
-	start_time: float = time.perf_counter()
 	database: dict[str, dict] = config['database']
 
 	# Remove empty lists of recipes
@@ -27,9 +25,11 @@ def main(config: dict):
 			data.pop(USED_FOR_CRAFTING)
 
 	# Export database to JSON for debugging generation
-	with stp.super_open(config['database_debug'], "w") as f:
+	database_debug: str = config["database_debug"]
+	with stp.super_open(database_debug, "w") as f:
 		stp.super_json_dump(database, file = f)
-	stp.debug(f"Received database exported to '{config['database_debug']}'")
+	rel_debug: str = stp.clean_path(os.path.relpath(database_debug, os.getcwd()))
+	stp.debug(f"Received database exported to './{rel_debug}'")
 
 	# Check every single thing in the database
 	errors: list[str] = []
@@ -185,8 +185,7 @@ def main(config: dict):
 	if errors:
 		stp.error("Errors found in the database during verification:\n" + "\n".join(errors))
 	else:
-		total_time = time.perf_counter() - start_time
-		stp.info(f"No errors found in the database during verification (took {total_time:.5f}s)")
+		stp.info(f"No errors found in the database during verification")
 
 
 	# Add additional data to the custom blocks

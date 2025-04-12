@@ -4,7 +4,6 @@ import stouputils as stp
 from ..utils.io import write_file, write_function
 from ..constants import NOT_COMPONENTS, RESULT_OF_CRAFTING
 
-@stp.measure_time(stp.info, "Loot tables generated")
 def main(config: dict):
 	database: dict[str,dict] = config["database"]
 	external_database: dict[str,dict] = config["external_database"]

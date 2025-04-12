@@ -19,6 +19,7 @@ from typing import Callable
 
 
 def main(config: dict, user_code: Callable|None = None):
+	print()
 
 	# Copy original_icon.png to pack.png if it exists
 	if config.get('assets_folder') and os.path.exists(f"{config['assets_folder']}/original_icon.png"):
@@ -29,8 +30,6 @@ def main(config: dict, user_code: Callable|None = None):
 
 	# For every file in the merge folder, copy it to the build folder (with append content)
 	if config.get('merge_folder'):
-		print()
-		start_time: float = time.perf_counter()
 		for root, _, files in os.walk(config['merge_folder']):
 			for file in files:
 				merge_path = stp.clean_path(f"{root}/{file}")
@@ -65,8 +64,7 @@ def main(config: dict, user_code: Callable|None = None):
 					# Else, just copy the file, such as pack.mcmeta, pack.png, ...
 					elif file.endswith((".png",".mcmeta")):
 						super_copy(merge_path, build_path)
-		total_time: float = time.perf_counter() - start_time
-		stp.info(f"All content in the '{config['merge_folder']}' folder copied to the build folder in {total_time:.5f}s")
+		pass
 
 	# Delete resource_pack folder if no subfolder 'assets' is found
 	if not os.path.exists(f"{config['build_resource_pack']}/assets"):
@@ -96,11 +94,8 @@ def main(config: dict, user_code: Callable|None = None):
 	headers_main(config)
 
 	# Write every pending files and delete old ones
-	start_time: float = time.perf_counter()
-	write_all_files()
+	write_all_files(verbose = 1)
 	delete_old_files()
-	total_time: float = time.perf_counter() - start_time
-	stp.info(f"All pending files written in {total_time:.5f}s")
 
 	# Check not used textures
 	if config.get('textures_files'):
@@ -123,13 +118,14 @@ def main(config: dict, user_code: Callable|None = None):
 	for source, destination, copy_destinations in processes:
 		if os.path.exists(source):
 			total_time: float = make_archive(source, destination, copy_destinations)
-			stp.debug(f"'{destination}.zip' file generated and copied to destinations in {total_time:.5f}s")
+			rel_dest: str = stp.clean_path(os.path.relpath(destination, os.getcwd()))
+			stp.debug(f"'./{rel_dest}.zip' file generated and copied to destinations in {total_time:.5f}s")
 
 	# Copy datapack libraries
 	try:		
 		# Copy lib folder
-		if config.get('libs_folder'):
-			for root, _, files in os.walk(config['libs_folder'] + "/datapack"):
+		if config.get("libs_folder"):
+			for root, _, files in os.walk(config["libs_folder"] + "/datapack"):
 				for file in files:
 					if file.endswith(".zip"):
 						for dest in datapack_dest:

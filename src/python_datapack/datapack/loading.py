@@ -4,7 +4,6 @@ import stouputils as stp
 from ..utils.io import write_versioned_function, write_file, write_load_file
 from ..constants import NOT_COMPONENTS
 
-@stp.measure_time(stp.info, "Loading functions and tags created")
 def main(config: dict):
 	version: str = config['version']
 	namespace: str = config['namespace']

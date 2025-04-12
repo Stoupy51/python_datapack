@@ -1,10 +1,8 @@
 
 # Imports
-import stouputils as stp
 from ..utils.io import is_in_write_queue, write_versioned_function, write_tick_file
 
 
-@stp.measure_time(stp.info, "Basic structure generated")
 def main(config: dict):
 	version: str = config['version']
 	namespace: str = config['namespace']

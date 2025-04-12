@@ -8,13 +8,14 @@ from .general import (
 )
 
 # Functions
-def write_all_files(contains: str = ""):
+def write_all_files(contains: str = "", verbose: int = 0):
 	""" Write all the files in the write queue to their respective files
 
 	If a file content didn't change, it won't be written
 
 	Args:
 		contains (str): If set, only write the files that contains this string in their path
+		verbose (int): If set, turn verbose for multithreading
 	"""
 	contains = stp.clean_path(contains)
 	
@@ -29,15 +30,16 @@ def write_all_files(contains: str = ""):
 		processed_contents[path] = content
 
 	# Filter out unchanged files
-	files_to_write: dict[str, str] = {
+	filtered_files: dict[str, str] = {
 		path: content for path, content in processed_contents.items()
 		if path not in INITIAL_FILES_SET or content != INITIAL_FILES[path]
 	}
 
-	# Batch write all files
-	for file_path, content in files_to_write.items():
+	# Write all the files
+	def really_write(file_path: str, content: str):
 		with stp.super_open(file_path, "w") as f:
 			f.write(content)
+	stp.multithreading(really_write, filtered_files.items(), use_starmap=True, desc="Writing all files", verbose=verbose)
 
 def write_file(file_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
 	""" Write the content to the file at the given path.

@@ -1,14 +1,13 @@
 
 # Imports
 import json
-import stouputils as stp
+from typing import Any
 from ..utils.io import FILES_TO_WRITE
 
-@stp.measure_time(stp.info, "Headers added to all mcfunction files")
 def main(config: dict):
 
 	# Get all mcfunctions paths
-	mcfunctions = {}
+	mcfunctions: dict[str, dict[str, Any]] = {}
 	functions_folder = "/function/"
 	for file_path in FILES_TO_WRITE:
 		if functions_folder in file_path and file_path.endswith(".mcfunction"):

@@ -14,6 +14,9 @@ from ..utils.io import super_copy
 from pathlib import Path
 import requests
 
+from beet import run_beet, ProjectConfig
+from model_resolver import Render
+
 # Generate iso renders for every item in the database
 def generate_all_iso_renders(config: dict):
 	database: dict[str, dict] = config['database']
@@ -56,7 +59,6 @@ def generate_all_iso_renders(config: dict):
 	# Launch model resolvers for remaining blocks
 	if len(for_model_resolver) > 0:
 		load_dir = Path(config['build_resource_pack'])
-		stp.debug(f"Generating iso renders for {len(for_model_resolver)} items...")
 
 		## Model Resolver v0.12.0
 		# model_resolver_main(
@@ -69,21 +71,19 @@ def generate_all_iso_renders(config: dict):
 		# )
 
 		## Model Resolver v1.3.0
-		from beet import run_beet, ProjectConfig
-		from model_resolver import Render
-		#beet_config = ProjectConfig(output=load_dir)
-
 		beet_config = ProjectConfig(
 			output=None,
 			resource_pack={"load": load_dir, "name": load_dir.name}, # type: ignore
+			meta={"model_resolver": {"dont_merge_datapack": True}}
 		)
 
-		with run_beet(config=beet_config) as ctx:
+		stp.debug(f"Generating iso renders for {len(for_model_resolver)} items, this may take a while...")
+		with run_beet(config=beet_config, cache=True) as ctx:
 			render = Render(ctx)
 			for rp_path, dst_path in for_model_resolver.items():
 				render.add_model_task(rp_path, path_save=dst_path)
 			render.run()
-		stp.debug("Generated iso renders for all items, or used cached renders")
+		stp.debug("Generated iso renders for all items")
 
 	## Copy every used vanilla items
 	# Get every used vanilla items
@@ -107,10 +107,9 @@ def generate_all_iso_renders(config: dict):
 		pass
 
 	# Download all the vanilla textures from the wiki
-	for item in used_vanilla_items:
+	def download_item(item: str):
 		destination = f"{path}/minecraft/{item}.png"
 		if not (os.path.exists(destination) and config['cache_manual_assets']):	# If not downloaded yet or not using cache
-			stp.debug(f"Downloading texture for item '{item}'...")
 			response = requests.get(f"{DOWNLOAD_VANILLA_ASSETS_RAW}/item/{item}.png")
 			if response.status_code == 200:
 				with stp.super_open(destination, "wb") as file:
@@ -118,7 +117,7 @@ def generate_all_iso_renders(config: dict):
 			else:
 				stp.warning(f"Failed to download texture for item '{item}', please add it manually to '{destination}'")
 				stp.warning(f"Suggestion link: '{DOWNLOAD_VANILLA_ASSETS_SOURCE}'")
-
-	# Debug
-	stp.debug("Downloaded all the vanilla textures, or using cached ones")
+	
+	# Multithread the download
+	stp.multithreading(download_item, used_vanilla_items)
 

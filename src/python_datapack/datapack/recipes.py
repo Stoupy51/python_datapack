@@ -14,7 +14,6 @@ from ..constants import (
 )
 
 # Generate recipes
-@stp.measure_time(stp.info, "Recipes generated")
 def main(config: dict):
 	namespace: str = config['namespace']
 	build_datapack: str = config['build_datapack']

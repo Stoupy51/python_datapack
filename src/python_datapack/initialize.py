@@ -7,11 +7,9 @@ from .utils.io import read_initial_files, write_file
 from .constants import DATAPACK_FORMAT, RESOURCE_PACK_FORMAT
 
 
-@stp.measure_time(message="Build initialization")
 def main(config: dict):
 
 	# Delete database_debug
-	print()
 	if config.get("database_debug"):
 		shutil.rmtree(config["database_debug"], ignore_errors=True)
 
