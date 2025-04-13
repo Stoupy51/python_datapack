@@ -62,7 +62,7 @@ def main(config: dict, user_code: Callable|None = None):
 							stp.warning(f"Could not read '{merge_path}': {e}")
 					
 					# Else, just copy the file, such as pack.mcmeta, pack.png, ...
-					elif file.endswith((".png",".mcmeta")):
+					else:
 						super_copy(merge_path, build_path)
 		pass
 
