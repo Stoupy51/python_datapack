@@ -1,21 +1,23 @@
 
 # Imports
 import os
+from pathlib import Path
+
+import requests
 import stouputils as stp
+from beet import ProjectConfig, run_beet
+from model_resolver import Render
+
 from ..constants import (
 	CUSTOM_BLOCK_VANILLA,
+	DOWNLOAD_VANILLA_ASSETS_RAW,
+	DOWNLOAD_VANILLA_ASSETS_SOURCE,
 	OVERRIDE_MODEL,
 	RESULT_OF_CRAFTING,
 	USED_FOR_CRAFTING,
-	DOWNLOAD_VANILLA_ASSETS_RAW,
-	DOWNLOAD_VANILLA_ASSETS_SOURCE
 )
 from ..utils.io import super_copy
-from pathlib import Path
-import requests
 
-from beet import run_beet, ProjectConfig
-from model_resolver import Render
 
 # Generate iso renders for every item in the database
 def generate_all_iso_renders(config: dict):
@@ -33,7 +35,7 @@ def generate_all_iso_renders(config: dict):
 		# Skip items that don't have models
 		if not data.get("item_model"):
 			continue
-		
+
 		# If it's not a block, simply copy the texture
 		try:
 			if data["id"] == CUSTOM_BLOCK_VANILLA:
@@ -88,7 +90,7 @@ def generate_all_iso_renders(config: dict):
 	## Copy every used vanilla items
 	# Get every used vanilla items
 	used_vanilla_items = set()
-	for item, data in database.items():
+	for data in database.values():
 		all_crafts: list[dict] = list(data.get(RESULT_OF_CRAFTING,[]))
 		all_crafts += list(data.get(USED_FOR_CRAFTING,[]))
 		for recipe in all_crafts:
@@ -117,7 +119,7 @@ def generate_all_iso_renders(config: dict):
 			else:
 				stp.warning(f"Failed to download texture for item '{item}', please add it manually to '{destination}'")
 				stp.warning(f"Suggestion link: '{DOWNLOAD_VANILLA_ASSETS_SOURCE}'")
-	
+
 	# Multithread the download
 	stp.multithreading(download_item, used_vanilla_items)
 

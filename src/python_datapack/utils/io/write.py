@@ -1,11 +1,19 @@
 
 # Imports
 import json
+
 import stouputils as stp
+
 from .general import (
-	FILES_TO_WRITE, INITIAL_FILES_SET, INITIAL_FILES,
-	remove_initial_file, is_in_initial_files, super_merge_dict, sort_override_model
+	FILES_TO_WRITE,
+	INITIAL_FILES,
+	INITIAL_FILES_SET,
+	is_in_initial_files,
+	remove_initial_file,
+	sort_override_model,
+	super_merge_dict,
 )
+
 
 # Functions
 def write_all_files(contains: str = "", verbose: int = 0):
@@ -18,13 +26,13 @@ def write_all_files(contains: str = "", verbose: int = 0):
 		verbose (int): If set, turn verbose for multithreading
 	"""
 	contains = stp.clean_path(contains)
-	
+
 	# Pre-process all contents to have two newlines at the end
 	processed_contents: dict[str, str] = {}
 	for path, content in FILES_TO_WRITE.items():
 		if contains not in path:
 			continue
-			
+
 		if not content.endswith("\n\n"):
 			content = content.rstrip("\n") + "\n\n"
 		processed_contents[path] = content
@@ -39,7 +47,7 @@ def write_all_files(contains: str = "", verbose: int = 0):
 	def really_write(file_path: str, content: str):
 		with stp.super_open(file_path, "w") as f:
 			f.write(content)
-	stp.multithreading(really_write, filtered_files.items(), use_starmap=True, desc="Writing all files", verbose=verbose)
+	stp.multithreading(really_write, filtered_files.items(), use_starmap=True, desc="Writing all files" if verbose > 0 else "")
 
 def write_file(file_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
 	""" Write the content to the file at the given path.
@@ -65,7 +73,7 @@ def write_file(file_path: str, content: str, overwrite: bool = False, prepend: b
 		if is_in_initial_files(file_path):
 			remove_initial_file(file_path)
 		FILES_TO_WRITE[file_path] = ""
-	
+
 	# If the file already exists as JSON and the content is a dict, merge both dict
 	if not overwrite and file_path in FILES_TO_WRITE and file_path.endswith((".json",".mcmeta")) and FILES_TO_WRITE[file_path] != "":
 		dict_content = json.loads(content)
@@ -74,7 +82,7 @@ def write_file(file_path: str, content: str, overwrite: bool = False, prepend: b
 		sort_override_model(merged)
 		FILES_TO_WRITE[file_path] = stp.super_json_dump(merged)
 		return
-	
+
 	# Add the content to the file
 	if prepend:
 		FILES_TO_WRITE[file_path] = str(content) + FILES_TO_WRITE[file_path]
@@ -94,17 +102,17 @@ def write_versioned_function(config: dict, relative_path: str, content: str, ove
 	# Force the path to be .mcfunction
 	if relative_path.endswith((".json",".mcmeta")):
 		stp.error(f"Writing to a {relative_path.split('.')[-1]} file is not allowed using write_versioned_file(), use write_file() instead.")
-	
+
 	# Make sure the path is correct for load/confirm_load
 	if relative_path in ["load","confirm_load"]:
 		stp.warning(f"You tried to write to the '{relative_path}' file, did you mean to write to the 'load/confirm_load' file instead?")
 
 	# Add .mcfunction to the path
 	if relative_path.endswith(".mcfunction"):
-		stp.warning(f"The method write_versioned_file() already adds the '.mcfunction' extension to the path, you don't need to add it yourself.")
+		stp.warning("The method write_versioned_file() already adds the '.mcfunction' extension to the path, you don't need to add it yourself.")
 	else:
 		relative_path += ".mcfunction"
-	
+
 	# Write to the file
 	functions_path: str = f"{config['build_datapack']}/data/{config['namespace']}/function/v{config['version']}"
 	write_file(f"{functions_path}/{relative_path}", content, overwrite, prepend)

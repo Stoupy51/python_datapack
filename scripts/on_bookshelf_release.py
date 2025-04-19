@@ -7,9 +7,10 @@ It will then update the "bookshelf.py" file with the new version information.
 # Imports
 import os
 import re
+from copy import deepcopy
+
 import requests
 import stouputils as stp
-from copy import deepcopy
 
 # Constants
 ROOT: str = stp.get_root_path(__file__, go_up=1)
@@ -86,7 +87,7 @@ def download_latest_release() -> None:
 		with open(local_zip_path, "wb") as f:
 			f.write(asset_response.content)
 		stp.debug(f"Downloaded '{file_name}' to '...{local_zip_path[-40:]}'")
-	
+
 		# Extract module version from name (e.g. "bs.health-1.21.5-v3.0.0.zip" -> [3, 0, 0])
 		version: list[int] = parse_version(no_extension.split('-')[-1])
 
@@ -96,10 +97,10 @@ def download_latest_release() -> None:
 		module_info["version"] = version
 		module_info["name"] = module_name
 		return module_key_snake, module_info
-	
+
 	# Multithreading
 	results: list[tuple[str, dict]] = stp.multithreading(download_module, assets, max_workers=len(assets))
-	modules: dict = {key: value for key, value in sorted(results, key=lambda x: x[0])}
+	modules: dict = dict(sorted(results, key=lambda x: x[0]))
 
 	dumped: str = stp.super_json_dump(modules, max_level=1).replace("false", "False").replace("true", "True")
 	file_content: str = f"""

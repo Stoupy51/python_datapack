@@ -1,33 +1,66 @@
 
 # Imports
-from typing import Any
-import stouputils as stp
+import json
 import os
 import shutil
-import json
+from typing import Any
+
+import stouputils as stp
 from PIL import Image
-from ..resource_pack.item_models import handle_item		# Handle new items models (used for the manual and the heavy workbench)
+
+from ..constants import (
+	CATEGORY,
+	CUSTOM_BLOCK_VANILLA,
+	OFFICIAL_LIBS,
+	OVERRIDE_MODEL,
+	RESULT_OF_CRAFTING,
+	USED_FOR_CRAFTING,
+	WIKI_COMPONENT,
+)
+from ..resource_pack.item_models import handle_item  # Handle new items models (used for the manual and the heavy workbench)
 from ..utils.database_helper import add_item_name_and_lore_if_missing
 from ..utils.ingredients import ingr_repr, ingr_to_id
-from ..utils.io import super_copy, write_all_files, super_merge_dict, delete_file, write_load_file
-from ..constants import CUSTOM_BLOCK_VANILLA, OVERRIDE_MODEL, RESULT_OF_CRAFTING, USED_FOR_CRAFTING, OFFICIAL_LIBS, CATEGORY, WIKI_COMPONENT
-from .shared_import import (
-	TEMPLATES_PATH, MANUAL_ASSETS_PATH, HEAVY_WORKBENCH_CATEGORY, FONT_FILE, SMALL_NONE_FONT,
-	MEDIUM_NONE_FONT, NONE_FONT, WIKI_INFO_FONT, VERY_SMALL_NONE_FONT, BORDER_COLOR, BORDER_SIZE,
-	HEAVY_WORKBENCH_CATEGORY, HOVER_EQUIVALENTS, WIKI_RESULT_OF_CRAFT_FONT, WIKI_INGR_OF_CRAFT_FONT,
-	WIKI_NONE_FONT, MICRO_NONE_FONT, SHAPED_3X3_FONT, SHAPED_2X2_FONT, INVISIBLE_ITEM_FONT, FURNACE_FONT,
-	PULVERIZING_FONT, HOVER_SHAPED_3X3_FONT, HOVER_SHAPED_2X2_FONT, HOVER_FURNACE_FONT, HOVER_PULVERIZING_FONT,
-	manual_pages, font_providers,
-	get_page_font, get_next_font, get_page_number
-)
-from .book_optimizer import optimize_element, remove_events
-from .iso_renders import generate_all_iso_renders
-from .image_utils import careful_resize, add_border, load_simple_case_no_border, generate_high_res_font
+from ..utils.io import delete_file, super_copy, super_merge_dict, write_all_files, write_load_file
 from .book_components import get_item_component
 from .book_optimizer import optimize_element, remove_events
-from .page_font import generate_page_font, generate_wiki_font_for_ingr
-from .other_utils import generate_otherside_crafts, remove_unknown_crafts, convert_shapeless_to_shaped
 from .craft_content import generate_craft_content
+from .image_utils import add_border, careful_resize, generate_high_res_font, load_simple_case_no_border
+from .iso_renders import generate_all_iso_renders
+from .other_utils import convert_shapeless_to_shaped, generate_otherside_crafts, remove_unknown_crafts
+from .page_font import generate_page_font, generate_wiki_font_for_ingr
+from .shared_import import (
+	BORDER_COLOR,
+	BORDER_SIZE,
+	FONT_FILE,
+	FURNACE_FONT,
+	HEAVY_WORKBENCH_CATEGORY,
+	HOVER_EQUIVALENTS,
+	HOVER_FURNACE_FONT,
+	HOVER_PULVERIZING_FONT,
+	HOVER_SHAPED_2X2_FONT,
+	HOVER_SHAPED_3X3_FONT,
+	INVISIBLE_ITEM_FONT,
+	MANUAL_ASSETS_PATH,
+	MEDIUM_NONE_FONT,
+	MICRO_NONE_FONT,
+	NONE_FONT,
+	PULVERIZING_FONT,
+	SHAPED_2X2_FONT,
+	SHAPED_3X3_FONT,
+	SMALL_NONE_FONT,
+	TEMPLATES_PATH,
+	VERY_SMALL_NONE_FONT,
+	WIKI_INFO_FONT,
+	WIKI_INGR_OF_CRAFT_FONT,
+	WIKI_NONE_FONT,
+	WIKI_RESULT_OF_CRAFT_FONT,
+	font_providers,
+	get_next_font,
+	get_page_font,
+	get_page_number,
+	manual_pages,
+)
+
 
 # Utility functions
 def deepcopy(x):
@@ -158,12 +191,12 @@ def routine(config: dict):
 
 		## Prepare pages (append categories first, then items depending on categories order)
 		i = 2 # Skip first two pages (introduction + categories)
-		
+
 		# Append categories
 		for page_name, items in categories_pages.items():
 			i += 1
 			manual_pages.append({"number": i, "name": page_name, "raw_data": items, "type": CATEGORY})
-		
+
 		# Append items (sorted by category)
 		items_with_category = [(item, data) for item, data in database.items() if CATEGORY in data]
 		category_list = list(categories.keys())
@@ -236,7 +269,7 @@ def routine(config: dict):
 						line = []
 						x = 2
 						y += simple_case.size[1]
-				
+
 				# If remaining items in the line, add them
 				if len(line) > 0:
 					line.insert(0, SMALL_NONE_FONT * LEFT_PADDING)
@@ -244,11 +277,11 @@ def routine(config: dict):
 					for i in range(1, len(line)):
 						line[-i]["text"] = MEDIUM_NONE_FONT
 					content += ["\n"] + line + ["\n"]
-				
+
 				# Add the 2 pixels border
 				is_rectangle_shape = len(raw_data) % config['max_items_per_row'] == 0
 				page_image = add_border(page_image, BORDER_COLOR, BORDER_SIZE, is_rectangle_shape)
-				
+
 				# Save the image
 				page_image.save(f"{config['manual_path']}/font/category/{file_name}.png")
 
@@ -273,7 +306,7 @@ def routine(config: dict):
 					l: list[dict|str] = generate_craft_content(config, first_craft, name, page_font)
 					if l:
 						content += l
-				
+
 				# Else, generate the content for the single item in a big box
 				else:
 					if page_font == "":
@@ -306,7 +339,7 @@ def routine(config: dict):
 							or (isinstance(wiki_component, str) and "'" in wiki_component):
 							stp.error(f"Wiki component for '{name}' should not contain single quotes are they fuck up the json files:\n{wiki_component}")
 						info_buttons.append({
-							"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2, 
+							"text": WIKI_INFO_FONT + VERY_SMALL_NONE_FONT * 2,
 							"hover_event": {
 								"action": "show_text",
 								"value": raw_data[WIKI_COMPONENT]
@@ -340,7 +373,7 @@ def routine(config: dict):
 						# Append ingredients
 						if craft.get("ingredient"):
 							id = ingr_to_id(craft["ingredient"], False).replace("_", " ").title()
-							hover_text.append({"text": f"\n- x1 ", "color": "gray"})
+							hover_text.append({"text": "\n- x1 ", "color": "gray"})
 							hover_text.append({"text": id, "color": "gray"})
 						elif craft.get("ingredients"):
 
@@ -351,7 +384,7 @@ def routine(config: dict):
 									count = sum([line.count(k) for line in craft["shape"]])
 									hover_text.append({"text": f"\n- x{count} ", "color": "gray"})
 									hover_text.append({"text": id, "color": "gray"})
-							
+
 							# If it's shapeless
 							elif isinstance(craft["ingredients"], list):
 								ids = {}	# {id: count}
@@ -367,7 +400,7 @@ def routine(config: dict):
 						# Add the craft to the content
 						result_or_ingredient = WIKI_RESULT_OF_CRAFT_FONT if "result" not in craft else generate_wiki_font_for_ingr(config, name, craft)
 						info_buttons.append({
-							"text": result_or_ingredient + VERY_SMALL_NONE_FONT * 2, 
+							"text": result_or_ingredient + VERY_SMALL_NONE_FONT * 2,
 							"hover_event": {
 								"action": "show_text",
 								"value": hover_text
@@ -382,10 +415,10 @@ def routine(config: dict):
 									"action": "change_page",
 									"page": get_page_number(result_item)
 								}
-				
+
 				# Add wiki buttons 5 by 5
 				if info_buttons:
-					
+
 					# If too many buttons, remove all the blue ones (no click_event) except the last one
 					if len(info_buttons) > 15:
 						first_index: int = 0 if not raw_data.get(WIKI_COMPONENT) else 1
@@ -393,7 +426,7 @@ def routine(config: dict):
 						for i, button in enumerate(info_buttons):
 							if isinstance(button, dict) and not button.get("click_event") and i != first_index:
 								last_index = i
-						
+
 						# If there are more than 1 blue button, remove them except the last one
 						if (last_index - first_index) > 1:
 							info_buttons = info_buttons[:first_index] + info_buttons[last_index:]
@@ -415,7 +448,7 @@ def routine(config: dict):
 								content[-5 + j]["text"] = WIKI_NONE_FONT + VERY_SMALL_NONE_FONT * (2 if j != 4 else 0)
 							content.append("\n")
 						content.append(button)
-					
+
 					# Duplicate the last line if not done yet
 					if last_i % 5 != 0 or last_i == 0:
 						last_i = last_i % 5 + 1
@@ -430,7 +463,7 @@ def routine(config: dict):
 			# Add page to the book
 			book_content.append(content)
 			pass
-		stp.multithreading(encode_page, manual_pages, desc="Creating manual pages", max_workers=1, verbose=1)
+		stp.multithreading(encode_page, manual_pages, desc="Creating manual pages", max_workers=1)
 
 		## Add categories page
 		content = []
@@ -489,7 +522,7 @@ def routine(config: dict):
 					line = []
 					x = 2
 					y += simple_case.size[1]
-		
+
 		# If remaining items in the line, add them
 		if len(line) > 0:
 			line.insert(0, SMALL_NONE_FONT * LEFT_PADDING)
@@ -497,11 +530,11 @@ def routine(config: dict):
 			for i in range(1, len(line)):
 				line[-i]["text"] = MEDIUM_NONE_FONT
 			content += line + ["\n"]
-		
+
 		# Add the 2 pixels border
 		is_rectangle_shape = len(categories_pages) % config['max_items_per_row'] == 0
 		page_image = add_border(page_image, BORDER_COLOR, BORDER_SIZE, is_rectangle_shape)
-		
+
 		# Save the image and add the page to the book
 		page_image.save(f"{config['manual_path']}/font/category/{file_name}.png")
 		book_content.insert(0, content)
@@ -513,7 +546,7 @@ def routine(config: dict):
 		font_providers.append({"type":"bitmap","file":f"{namespace}:font/page/_logo.png", "ascent": 0, "height": 40, "chars": [page_font]})
 		intro_content.append({"text": config['manual_name'] + "\n", "underlined": True})
 		intro_content.append({"text": MEDIUM_NONE_FONT * 2 + page_font, "font": FONT, "color": "white"})
-		
+
 		# Create the image and load Minecraft font
 		icon_path = f"{config['assets_folder']}/original_icon.png"
 		if not os.path.exists(icon_path):
@@ -573,7 +606,7 @@ def routine(config: dict):
 		fonts = {"providers": font_providers}
 		with stp.super_open(f"{config['manual_path']}/font/manual.json", "w") as f:
 			f.write(stp.super_json_dump(fonts))
-				
+
 		# Debug book_content
 		manual_debug: str = config["manual_debug"]
 		with stp.super_open(manual_debug, "w") as f:

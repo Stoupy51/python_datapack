@@ -1,7 +1,11 @@
 
 # Imports
+from collections.abc import Callable
+
 import stouputils as stp
+
 from ..utils.io import FILES_TO_WRITE
+
 
 # Utility functions for finding text end
 def find_text_end_no_backslash(text: str, used_char: str) -> int:
@@ -59,7 +63,7 @@ def main(config: dict):
 			used_char: str = possible_text[-2]	# Get the char used for the text (") or (')
 
 			# Get function to find the end of the text
-			find_text_end: function = find_text_end_no_backslash if possible_text in NO_BACKSLASHS else find_text_end_backslash
+			find_text_end: Callable = find_text_end_no_backslash if possible_text in NO_BACKSLASHS else find_text_end_backslash
 
 			while True:
 				content_progress = content.find(possible_text, content_progress)
@@ -101,12 +105,12 @@ def main(config: dict):
 				# Replace "text" by "translate"
 				text_position -= len(possible_text)
 				content = content[:text_position] + content[text_position:].replace("text", "translate", 1)
-		
+
 		# Write the new content to the file
 		FILES_TO_WRITE[file] = content
-	
+
 	# Show progress of the handle_file function
-	stp.multithreading(handle_file, FILES_TO_WRITE.items(), use_starmap=True, desc="Generating lang file", max_workers=1, verbose=1)
+	stp.multithreading(handle_file, FILES_TO_WRITE.items(), use_starmap=True, desc="Generating lang file", max_workers=1)
 
 	# Sort the lang dictionnary (by value)
 	lang = dict(sorted(lang.items(), key=lambda x: x[1]))
