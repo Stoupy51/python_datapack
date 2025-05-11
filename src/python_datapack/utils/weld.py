@@ -25,9 +25,10 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 
 	# Get all paths to merge
 	datapacks_to_merge = [
-		f"{config['build_folder']}/{config['project_name_simple']}_datapack.zip",
-		config['libs_folder'] + "/datapack/*.zip",
+		f"{config['build_folder']}/{config['project_name_simple']}_datapack.zip"
 	]
+	if config.get("libs_folder", ""):
+		datapacks_to_merge.append(config["libs_folder"] + "/datapack/*.zip")
 
 	# Add the used official libs
 	for lib in OFFICIAL_LIBS.values():
@@ -83,14 +84,14 @@ def weld_datapack(config: dict, dest_path: str) -> float:
 			# Check if pack.png exists and add it to the final zip if it does
 			if os.path.exists(f"{config['build_datapack']}/pack.png"):
 				pack_png_path = f"{config['build_datapack']}/pack.png"
-				
+
 				# Copy the file with the same timestamp as mcmeta
 				info: ZipInfo = ZipInfo("pack.png")
 				info.compress_type = ZIP_DEFLATED
 				info.date_time = constant_time
 				with open(pack_png_path, "rb") as f:
 					zip.writestr(info, f.read())
-	
+
 	# Remove temp file
 	os.remove(dest_path.replace(".zip","_temporary.zip"))
 
@@ -111,9 +112,10 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 
 	# Get all paths to merge
 	resource_packs_to_merge = [
-		f"{config['build_folder']}/{config['project_name_simple']}_resource_pack.zip",
-		config['libs_folder'] + "/resource_pack/*.zip",
+		f"{config['build_folder']}/{config['project_name_simple']}_resource_pack.zip"
 	]
+	if config.get("libs_folder", ""):
+		resource_packs_to_merge.append(config["libs_folder"] + "/resource_pack/*.zip")
 
 	# Add the used official libs
 	for lib in OFFICIAL_LIBS.values():
@@ -122,7 +124,7 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 			path: str = f"{OFFICIAL_LIBS_PATH}/resource_pack/{name}.zip"
 			if os.path.exists(path):
 				resource_packs_to_merge.append(path)
-	
+
 	# Weld all resource packs
 	output_dir = os.path.dirname(dest_path)
 	output = os.path.basename(dest_path.replace(".zip", "_temporary.zip"))
@@ -169,14 +171,14 @@ def weld_resource_pack(config: dict, dest_path: str) -> float:
 			# Check if pack.png exists and add it to the final zip if it does
 			if os.path.exists(f"{config['build_resource_pack']}/pack.png"):
 				pack_png_path = f"{config['build_resource_pack']}/pack.png"
-				
+
 				# Copy the file with the same timestamp as mcmeta
 				info: ZipInfo = ZipInfo("pack.png")
 				info.compress_type = ZIP_DEFLATED
 				info.date_time = constant_time
 				with open(pack_png_path, "rb") as f:
 					zip.writestr(info, f.read())
-	
+
 	# Remove temp file
 	os.remove(dest_path.replace(".zip","_temporary.zip"))
 
