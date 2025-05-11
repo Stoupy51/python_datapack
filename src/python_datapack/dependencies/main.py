@@ -2,20 +2,8 @@
 # Imports
 import stouputils as stp
 
-from ..constants import (
-	BOOKSHELF_MODULES,
-	DATA_VERSION,
-	MINECRAFT_VERSION,
-	OFFICIAL_LIBS,
-	official_lib_used,
-)
-from ..utils.io import (
-	FILES_TO_WRITE,
-	is_in_write_queue,
-	write_file,
-	write_function,
-	write_versioned_function,
-)
+from ..constants import *
+from ..utils.io import *
 
 # This folder path
 OFFICIAL_LIBS_PATH: str = stp.get_root_path(__file__)
@@ -56,7 +44,7 @@ def main(config: dict) -> None:
 				if not official_lib_used("common_signals"):
 					stp.debug("Found the use of official supported library 'common_signals', adding it to the datapack")
 				break
-	
+
 	# Find if itemio is used
 	if ns != "itemio":
 		for file_content in FILES_TO_WRITE.values():
@@ -64,7 +52,7 @@ def main(config: dict) -> None:
 				if not official_lib_used("itemio"):
 					stp.debug("Found the use of official supported library 'itemio', adding it to the datapack")
 				break
-	
+
 	# Find for each bookshelf module if it is used
 	if ns != "bookshelf":
 		for module_ns in BOOKSHELF_MODULES.keys():
@@ -83,7 +71,7 @@ def main(config: dict) -> None:
 	write_file(f"{config['build_datapack']}/data/minecraft/tags/function/load.json", stp.super_json_dump({"values": ["#load:_private/load"]}))
 	write_file(f"{config['build_datapack']}/data/load/tags/function/_private/init.json", stp.super_json_dump({"values": ["load:_private/init"]}))
 	write_file(f"{config['build_datapack']}/data/load/tags/function/_private/load.json", stp.super_json_dump({"values": ["#load:_private/init",{"id":"#load:pre_load","required":False},{"id":"#load:load","required":False},{"id":"#load:post_load","required":False}]}))
-	write_function(config, f"load:_private/init", f"""
+	write_function(config, "load:_private/init", """
 # Reset scoreboards so packs can set values accurate for current load.
 scoreboard objectives add load.status dummy
 scoreboard players reset * load.status
@@ -94,10 +82,12 @@ scoreboard players reset * load.status
 	write_file(f"{config['build_datapack']}/data/load/tags/function/load.json", stp.super_json_dump({"values": [f"#{ns}:load"]}))
 	values: list[str | dict] = [f"#{ns}:enumerate", f"#{ns}:resolve"]
 	if dependencies:
-		values.insert(0, {"id":f"#{ns}:dependencies","required":False})
+		enum_tag: dict = json.loads(read_tags(config, f"{ns}:function/enumerate"))
+		enum_tag["values"].insert(0, f"#{ns}:dependencies")
+		write_tags(config, f"{ns}:function/enumerate", stp.super_json_dump(enum_tag), overwrite=True)
 	write_file(f"{config['build_datapack']}/data/{ns}/tags/function/load.json", stp.super_json_dump({"values": values}, max_level = 3))
 	if dependencies:
-		calls = [{"id":f"#{ns}:load" if not ns.startswith("bs.") else f"#bs.load:load", "required": False} for ns, _ in dependencies]
+		calls = [{"id":f"#{ns}:load" if not ns.startswith("bs.") else "#bs.load:load", "required": False} for ns, _ in dependencies]
 		calls = stp.unique_list(calls)
 		write_file(f"{config['build_datapack']}/data/{ns}/tags/function/dependencies.json", stp.super_json_dump({"values": calls}))
 
