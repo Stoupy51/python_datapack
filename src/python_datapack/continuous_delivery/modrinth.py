@@ -40,7 +40,7 @@ def validate_config(modrinth_config: dict[str, str]) -> tuple[str, str, str, str
 		str: Build folder path
 	"""
 	required_keys = [
-		"project_name", "version", "slug", "summary", 
+		"project_name", "version", "slug", "summary",
 		"description_markdown", "version_type", "build_folder"
 	]
 	error_messages = {
@@ -52,11 +52,11 @@ def validate_config(modrinth_config: dict[str, str]) -> tuple[str, str, str, str
 		"version_type": "version type of the project (release, beta, alpha)",
 		"build_folder": "folder containing the build of the project (datapack and resourcepack zip files)"
 	}
-	
+
 	for key in required_keys:
 		if key not in modrinth_config:
 			raise ValueError(f"The modrinth_config dictionary must contain a '{key}' key, which is the {error_messages[key]}")
-	
+
 	return (
 		modrinth_config["project_name"],
 		modrinth_config["version"],
@@ -90,10 +90,10 @@ def update_project_description(slug: str, description: str, summary: str, header
 		summary (str): Project summary
 		headers (dict[str, str]): Headers for Modrinth API requests
 	"""
-	stp.progress(f"Updating project description")
+	stp.progress("Updating project description")
 	update_response = requests.patch(
-		f"{PROJECT_ENDPOINT}/{slug}", 
-		headers=headers, 
+		f"{PROJECT_ENDPOINT}/{slug}",
+		headers=headers,
 		json={"body": description.strip(), "description": summary.strip()}
 	)
 	handle_response(update_response, "Failed to update project description")
@@ -150,10 +150,10 @@ def upload_version(
 	project_id: str,
 	project_name: str,
 	version: str,
-	version_type: str, 
+	version_type: str,
 	changelog: str,
 	file_parts: list[str],
-	headers: dict[str, str], 
+	headers: dict[str, str],
 	dependencies: list[str] = []
 ) -> dict:
 	""" Upload new version
@@ -176,7 +176,7 @@ def upload_version(
 		stp.progress(f"Reading file {os.path.basename(file_part)}")
 		with open(file_part, "rb") as file:
 			files[os.path.basename(file_part)] = file.read()
-		
+
 	request_data: dict = {
 		"name": f"{project_name} [v{version}]",
 		"version_number": version,
@@ -234,15 +234,15 @@ def upload_to_modrinth(credentials: dict[str, str], modrinth_config: dict, chang
 	headers: dict[str, str] = {"Authorization": api_key}
 
 	project_name, version, slug, summary, description_markdown, version_type, build_folder = validate_config(modrinth_config)
-	
+
 	project = get_project(slug, headers)
 	update_project_description(slug, description_markdown, summary, headers)
 	can_continue: bool = handle_existing_version(slug, version, headers)
 	if not can_continue:
 		return
-	
+
 	file_parts = get_file_parts(project_name, build_folder)
-	
+
 	json_response = upload_version(
 		project["id"], project_name, version, version_type,
 		changelog, file_parts, headers, modrinth_config.get("dependencies", [])

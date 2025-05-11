@@ -74,7 +74,7 @@ def main(config: dict):
 			del to_return["group"]
 		to_return["result"]["count"] = recipe["result_count"]
 		return to_return
-	
+
 	@stp.simple_cache()
 	def vanilla_furnace_recipe(recipe: dict, item: str) -> dict:
 		result_ingr = ingr_repr(item, namespace) if not recipe.get("result") else recipe["result"]
@@ -90,7 +90,7 @@ def main(config: dict):
 			del to_return["group"]
 		to_return["result"]["count"] = recipe["result_count"]
 		return to_return
-	
+
 	@stp.simple_cache()
 	def smithed_shapeless_recipe(recipe: dict, result_loot: str) -> str:
 		# Get unique ingredients and their count
@@ -105,7 +105,7 @@ def main(config: dict):
 				unique_ingredients.append((1, ingr))
 			else:
 				unique_ingredients[index] = (unique_ingredients[index][0] + 1, unique_ingredients[index][1])
-		
+
 		# Write the line
 		line: str = f"execute if score @s smithed.data matches 0 store result score @s smithed.data if score count smithed.data matches {len(unique_ingredients)} if data storage smithed.crafter:input "
 		r: dict[str, list] = {"recipe": []}
@@ -119,7 +119,7 @@ def main(config: dict):
 		else:
 			line += f" run loot replace block ~ ~ ~ container.16 loot {result_loot}"
 		return line + "\n"
-	
+
 	@stp.simple_cache()
 	def smithed_shaped_recipe(recipe: dict, result_loot: str) -> str:
 
@@ -172,7 +172,7 @@ def main(config: dict):
 			dump = dump[:-1] + "}"  # Close the dump string
 		else:
 			dump += "}"  # Close the dump string without trailing comma
-		
+
 		# Return the line
 		line = f"execute if score @s smithed.data matches 0 store result score @s smithed.data if data storage smithed.crafter:input recipe{dump}"
 		if recipe.get(SMITHED_CRAFTER_COMMAND):
@@ -192,7 +192,7 @@ def main(config: dict):
 		"""
 		ingredient: dict = item_to_id_ingr_repr(recipe["ingredient"])
 		result: dict = item_to_id_ingr_repr(get_item_from_ingredient(config, recipe["result"])) if recipe.get("result") else ingr_repr(item, namespace)
-		line: str = f"execute if score #found simplenergy.data matches 0 store result score #found simplenergy.data if data storage simplenergy:main pulverizer.input"
+		line: str = "execute if score #found simplenergy.data matches 0 store result score #found simplenergy.data if data storage simplenergy:main pulverizer.input"
 		line += json.dumps(ingredient)
 		line += f" run loot replace entity @s contents loot {loot_table_from_ingredient(config, result, recipe['result_count'])}"
 		return line + "\n"
@@ -236,7 +236,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 		write_file(f"{build_datapack}/data/furnace_nbt_recipes/recipe/xp/{experience}.json", stp.super_json_dump(json_file, max_level = -1), overwrite = True)
 
 		# Prepare line and return
-		line: str = f"execute if score #found furnace_nbt_recipes.data matches 0 store result score #found furnace_nbt_recipes.data if data storage furnace_nbt_recipes:main input"
+		line: str = "execute if score #found furnace_nbt_recipes.data matches 0 store result score #found furnace_nbt_recipes.data if data storage furnace_nbt_recipes:main input"
 		ingredient: dict = recipe["ingredient"]
 		line += json.dumps(ingredient)
 		line += f" run function {namespace}:calls/furnace_nbt_recipes/xp_reward/{experience}\n"
@@ -264,22 +264,22 @@ scoreboard players reset #count furnace_nbt_recipes.data
 				ingr = list(ingr.values())
 			if not ingr:
 				ingr = [recipe.get("ingredient", {})]
-			
+
 			# If there is a component in the ingredients of shaped/shapeless, use smithed crafter
 			if not smithed_crafter_used and recipe.get("type") in ["crafting_shapeless", "crafting_shaped"] and any(i.get("components") for i in ingr):
 				smithed_crafter_used = True
 				if not official_lib_used("smithed.crafter"):
-					stp.debug(f"Found a crafting table recipe using custom item in ingredients, adding 'smithed.crafter' dependency")
+					stp.debug("Found a crafting table recipe using custom item in ingredients, adding 'smithed.crafter' dependency")
 
 					# Add to the give_all function the heavy workbench give command
-					write_function(config, f"{namespace}:_give_all", f"loot give @s loot smithed.crafter:blocks/table\n", prepend=True)
-			
+					write_function(config, f"{namespace}:_give_all", "loot give @s loot smithed.crafter:blocks/table\n", prepend=True)
+
 			# If there is a component in the ingredient furnace, use furnace nbt recipes
 			if not furnace_nbt_used and recipe.get("type") in SMELTING and ingr[0].get("components"):
 				furnace_nbt_used = True
 				if not official_lib_used("furnace_nbt_recipes"):
-					stp.debug(f"Found a furnace recipe using custom item in ingredient, adding 'furnace_nbt_recipes' dependency")
-	
+					stp.debug("Found a furnace recipe using custom item in ingredient, adding 'furnace_nbt_recipes' dependency")
+
 	# If there is any shaped or shapeless recipe, link the functions
 	if any_shapeless:
 		shapeless_func_tag: str = f"{build_datapack}/data/smithed.crafter/tags/function/event/shapeless_recipes.json"
@@ -293,7 +293,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 	for item, data in items:
 		crafts: list[dict] = list(data.get(RESULT_OF_CRAFTING, []))
 		crafts += list(data.get(USED_FOR_CRAFTING, []))
-				
+
 		i = 1
 		for recipe in crafts:
 
@@ -302,7 +302,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 			ingr = recipe.get("ingredients", {})
 			if not ingr:
 				ingr = recipe.get("ingredient", {})
-			
+
 			# Get possible result item
 			if not recipe.get("result"):
 				result_loot_table = loot_table_from_ingredient(config, ingr_repr(item, namespace), recipe["result_count"])
@@ -318,10 +318,10 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					write_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", stp.super_json_dump(r, max_level = 5))
 					i += 1
 					vanilla_generated_recipes.append((name, item))
-				
+
 				# Custom ingredients recipe
 				write_file(SMITHED_SHAPELESS_PATH, smithed_shapeless_recipe(recipe, result_loot_table))
-			
+
 			# Shaped
 			elif recipe["type"] == "crafting_shaped":
 
@@ -331,10 +331,10 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					write_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", stp.super_json_dump(r, max_level = 5))
 					i += 1
 					vanilla_generated_recipes.append((name, item))
-				
+
 				# Custom ingredients recipe
 				write_file(SMITHED_SHAPED_PATH, smithed_shaped_recipe(recipe, result_loot_table))
-			
+
 			# Furnace
 			elif recipe["type"] in SMELTING + ["campfire_cooking"]:
 
@@ -344,7 +344,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 					write_file(f"{build_datapack}/data/{namespace}/recipe/{name}.json", stp.super_json_dump(r, max_level = 5))
 					i += 1
 					vanilla_generated_recipes.append((name, item))
-				
+
 				if furnace_nbt_used and recipe["type"] in SMELTING:
 					if recipe.get("result"):
 						line: str = furnace_nbt_recipe(recipe, result_loot_table, recipe["result"])
@@ -373,7 +373,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 
 		pass
 
-	
+
 	# If furnace nbt recipes is used,
 	if furnace_nbt_used:
 
@@ -409,7 +409,7 @@ scoreboard players reset #count furnace_nbt_recipes.data
 				if ingr_str not in ingredients:
 					ingredients[ingr_str] = set()
 				ingredients[ingr_str].add(recipe_name)
-		
+
 		# Write an inventory_changed advancement
 		adv_path: str = f"{build_datapack}/data/{namespace}/advancement/unlock_recipes.json"
 		adv_json: dict = {"criteria":{"requirement":{"trigger":"minecraft:inventory_changed"}},"rewards":{"function":f"{namespace}:advancements/unlock_recipes"}}
@@ -426,12 +426,12 @@ advancement revoke @s only {namespace}:unlock_recipes
 		# Add ingredients
 		for ingr, recipes in ingredients.items():
 			recipes: list = sorted(recipes)
-			
+
 			content += f"# {ingr}\nscoreboard players set #success {namespace}.data 0\nexecute store success score #success {namespace}.data if items entity @s container.* {ingr}\n"
 			for recipe in recipes:
 				content += f"execute if score #success {namespace}.data matches 1 run recipe give @s {namespace}:{recipe}\n"
 			content += "\n"
-		
+
 		# Add result items
 		content += "## Add result items\n"
 		for recipe_name, item in vanilla_generated_recipes:

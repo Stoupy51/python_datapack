@@ -55,7 +55,7 @@ def get_item_component(config: dict, ingredient: dict|str, only_those_components
 	"""
 	# Get the item id
 	formatted: dict = {
-		"text": NONE_FONT, 
+		"text": NONE_FONT,
 		"hover_event": {
 			"action": "show_item",
 			"id": "",  # Inline contents field

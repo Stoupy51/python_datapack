@@ -115,7 +115,8 @@ function {config['namespace']}:v{version}/load/confirm_load
 	# Tick verification
 	if is_in_write_queue(f"{config['build_datapack']}/data/{ns}/function/v{version}/tick.mcfunction"):
 		write_file(f"{config['build_datapack']}/data/minecraft/tags/function/tick.json", stp.super_json_dump({"values": [f"{ns}:v{version}/load/tick_verification"]}))
-		write_versioned_function(config, "load/tick_verification", f"""
+		write_versioned_function(config, "load/tick_verification", 
+f"""
 execute if score #{ns}.major load.status matches {major} if score #{ns}.minor load.status matches {minor} if score #{ns}.patch load.status matches {patch} run function {ns}:v{version}/tick
 
 """)
@@ -152,7 +153,8 @@ execute if score #{ns}.major load.status matches {major} if score #{ns}.minor lo
 
 	# Write check_dependencies.mcfunction
 	if dependencies:
-		write_versioned_function(config, "load/check_dependencies", f"""
+		write_versioned_function(config, "load/check_dependencies", 
+f"""
 ## Check if {config['project_name']} is loadable (dependencies)
 scoreboard players set #dependency_error {ns}.data 0
 {encoder_checks}
@@ -160,7 +162,8 @@ scoreboard players set #dependency_error {ns}.data 0
 
 	# Waiting for player
 	if dependencies:
-		write_versioned_function(config, "load/valid_dependencies", f"""
+		write_versioned_function(config, "load/valid_dependencies", 
+f"""
 # Waiting for a player to get the game version, but stop function if no player found
 execute unless entity @p run schedule function {ns}:v{version}/load/valid_dependencies 1t replace
 execute unless entity @p run return 0

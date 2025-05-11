@@ -15,7 +15,7 @@ FILES_TO_WRITE: dict[str, str] = {}
 """ The files that have been written to (dict[path, content]) """
 DATAPACK_RESOURCE_TYPES: list[str] = [
 	"function",
-	"advancement", 
+	"advancement",
 	"predicate",
 	"tags",
 	"item_modifier",
@@ -24,7 +24,7 @@ DATAPACK_RESOURCE_TYPES: list[str] = [
 
 	"structure",
 	"damage_type",
-	"chat_type", 
+	"chat_type",
 	"banner_pattern",
 	"wolf_variant",
 	"enchantment",

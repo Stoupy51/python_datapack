@@ -34,7 +34,8 @@ def main(config: dict):
 		write_file(f"{build_datapack}/data/{namespace}/predicate/facing/{face}.json", stp.super_json_dump(predicate))
 
 	# Get rotation function
-	write_function(config, f"{namespace}:custom_blocks/get_rotation", f"""
+	write_function(config, f"{namespace}:custom_blocks/get_rotation",
+f"""
 # Set up score
 scoreboard players set #rotation {namespace}.data 0
 
@@ -294,15 +295,18 @@ execute store result entity @s Item.count byte 1 run scoreboard players get #ite
 	# Write a destroy check every 2 ticks, every second, and every 5 seconds
 	ore_vanilla_block = VANILLA_BLOCK_FOR_ORES["id"].replace(':', '_')
 	score_check: str = f"score #total_custom_blocks {namespace}.data matches 1.."
-	write_versioned_function(config, "tick_2", f"""
+	write_versioned_function(config, "tick_2",
+f"""
 # 2 ticks destroy detection
 execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,tag=!{namespace}.vanilla.{ore_vanilla_block},predicate=!{namespace}:check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
-	write_versioned_function(config, "second", f"""
+	write_versioned_function(config, "second",
+f"""
 # 1 second break detection
 execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,tag=!{namespace}.vanilla.{ore_vanilla_block},predicate=!{namespace}:advanced_check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
-	write_versioned_function(config, "second_5", f"""
+	write_versioned_function(config, "second_5",
+f"""
 # 5 seconds break detection
 execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,predicate=!{namespace}:advanced_check_vanilla_blocks] at @s run function {namespace}:custom_blocks/destroy
 """)
@@ -312,11 +316,13 @@ execute if {score_check} as @e[type=item_display,tag={namespace}.custom_block,pr
 	## Custom ores break detection (if any custom ore)
 	if any(data.get(VANILLA_BLOCK) == VANILLA_BLOCK_FOR_ORES for data in database.values()):
 		write_file(f"{build_datapack}/data/common_signals/tags/function/signals/on_new_item.json", stp.super_json_dump({"values": [f"{namespace}:calls/common_signals/new_item"]}))
-		write_function(config, f"{namespace}:calls/common_signals/new_item", f"""
+		write_function(config, f"{namespace}:calls/common_signals/new_item",
+f"""
 # If the item is from a custom ore, launch the on_ore_destroyed function
 execute if data entity @s Item.components.\"minecraft:custom_data\".common_signals.temp at @s align xyz run function {namespace}:calls/common_signals/on_ore_destroyed
 """)
-		write_function(config, f"{namespace}:calls/common_signals/on_ore_destroyed", f"""
+		write_function(config, f"{namespace}:calls/common_signals/on_ore_destroyed",
+f"""
 # Get in a score the item count and if it is a silk touch
 scoreboard players set #item_count {namespace}.data 0
 scoreboard players set #is_silk_touch {namespace}.data 0

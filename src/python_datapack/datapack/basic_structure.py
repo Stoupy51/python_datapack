@@ -14,22 +14,26 @@ def main(config: dict):
 
 	# Prepend to tick_2, second, second_5, and minute if they exists
 	if is_in_write_queue(tick_2):
-		write_versioned_function(config, "tick_2", f"""
+		write_versioned_function(config, "tick_2",
+f"""
 # Reset timer
 scoreboard players set #tick_2 {namespace}.data 1
 """, prepend = True)
 	if is_in_write_queue(second):
-		write_versioned_function(config, "second", f"""
+		write_versioned_function(config, "second",
+f"""
 # Reset timer
 scoreboard players set #second {namespace}.data 0
 """, prepend = True)
 	if is_in_write_queue(second_5):
-		write_versioned_function(config, "second_5", f"""
+		write_versioned_function(config, "second_5",
+f"""
 # Reset timer
 scoreboard players set #second_5 {namespace}.data -10
 """, prepend = True)
 	if is_in_write_queue(minute):
-		write_versioned_function(config, "minute", f"""
+		write_versioned_function(config, "minute",
+f"""
 # Reset timer
 scoreboard players set #minute {namespace}.data 1
 """, prepend = True)

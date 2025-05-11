@@ -33,7 +33,7 @@ def create_click_event(action: Literal["change_page", "run_command", "suggest_co
 		}
 	elif action == "suggest_command":
 		return {
-			"action": "suggest_command", 
+			"action": "suggest_command",
 			"command": value
 		}
 	elif action == "open_url":

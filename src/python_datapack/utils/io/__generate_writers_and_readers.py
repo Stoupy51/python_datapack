@@ -9,8 +9,8 @@ ROOT: str = stp.get_root_path(__file__)
 # Generate content for _writers.py
 writers_content: str = """
 # Imports
-from .write import write_file
 from .general import path_to_file_path
+from .write import write_file
 
 """
 
@@ -42,7 +42,7 @@ for resource_type in DATAPACK_RESOURCE_TYPES:
 	readers_content += f"""
 def read_{resource_type}(config: dict, path: str) -> str:
 	\"\"\" Read the content of the {resource_type.replace('_', ' ')} at the given path.
-	
+
 	Args:
 		config     (dict):    The main configuration
 		path       (str):     The path to the {resource_type.replace('_', ' ')} (ex: "namespace:folder/{resource_type}_name")

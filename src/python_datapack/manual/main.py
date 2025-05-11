@@ -688,7 +688,8 @@ def routine(config: dict):
 	first_page: str = json.dumps(book_content[0], ensure_ascii=False)
 	for r in [("\\n", "\\\\n"), (', "underlined": true','')]:
 		first_page = first_page.replace(*r)
-	write_load_file(config, f"""
+	write_load_file(config,
+f"""
 # Register the manual to the universal manual
 execute unless data storage python_datapack:main universal_manual run data modify storage python_datapack:main universal_manual set value []
 data remove storage python_datapack:main universal_manual[{{"name":"{project_name}"}}]

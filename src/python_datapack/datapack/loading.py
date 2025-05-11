@@ -12,7 +12,8 @@ def main(config: dict):
 	major, minor, patch = version.split(".")
 
 	# Setup enumerate and resolve functions
-	write_versioned_function(config, "load/enumerate", f"""
+	write_versioned_function(config, "load/enumerate",
+f"""
 # If current major is too low, set it to the current major
 execute unless score #{namespace}.major load.status matches {major}.. run scoreboard players set #{namespace}.major load.status {major}
 
@@ -22,7 +23,8 @@ execute if score #{namespace}.major load.status matches {major} unless score #{n
 # If current patch is too low, set it to the current patch (only if major and minor are correct)
 execute if score #{namespace}.major load.status matches {major} if score #{namespace}.minor load.status matches {minor} unless score #{namespace}.patch load.status matches {patch}.. run scoreboard players set #{namespace}.patch load.status {patch}
 """)
-	write_versioned_function(config, "load/resolve", f"""
+	write_versioned_function(config, "load/resolve",
+f"""
 # If correct version, load the datapack
 execute if score #{namespace}.major load.status matches {major} if score #{namespace}.minor load.status matches {minor} if score #{namespace}.patch load.status matches {patch} run function {namespace}:v{version}/load/main
 """)
@@ -32,7 +34,8 @@ execute if score #{namespace}.major load.status matches {major} if score #{names
 	write_file(f"{config['build_datapack']}/data/{namespace}/tags/function/resolve.json", stp.super_json_dump({"values": [f"{namespace}:v{version}/load/resolve"]}))
 
 	# Setup load main function
-	write_versioned_function(config, "load/main", f"""
+	write_versioned_function(config, "load/main",
+f"""
 # Avoiding multiple executions of the same load function
 execute unless score #{namespace}.loaded load.status matches 1 run function {namespace}:v{version}/load/secondary
 
@@ -69,7 +72,8 @@ execute unless score #{namespace}.loaded load.status matches 1 run function {nam
 			items_storage += f"data modify storage {namespace}:items all.{item} set value " + stp.super_json_dump(mc_data, max_level = 0)
 
 	# Write the loading tellraw and score, along with the final dataset
-	write_load_file(config, f"""
+	write_load_file(config,
+f"""
 # Confirm load
 tellraw @a[tag=convention.debug] {{"text":"[Loaded {config['project_name']} v{version}]","color":"green"}}
 scoreboard players set #{namespace}.loaded load.status 1
