@@ -390,15 +390,15 @@ scoreboard players reset #count furnace_nbt_recipes.data
 		if FILES_TO_WRITE.get(f"{FURNACE_NBT_PATH}/recipes_used.mcfunction"):
 			write_file(f"{build_datapack}/data/furnace_nbt_recipes/tags/function/v1/recipes_used.json", stp.super_json_dump({"values": [f"{namespace}:calls/furnace_nbt_recipes/recipes_used"]}))
 
-	# Create a function that will give all recipes
-	content = "\n# Get all recipes\n"
-	for recipe_file, _ in vanilla_generated_recipes:
-		content += f"recipe give @s {namespace}:{recipe_file}\n"
-	write_function(config, f"{namespace}:utils/get_all_recipes", content + "\n")
-
-
-	# Unlock vanilla recipes when at least one of the ingredient is in inventory
+	# Create a function that will give all recipes (if any)
 	if vanilla_generated_recipes:
+		content = "\n# Get all recipes\n"
+		for recipe_file, _ in vanilla_generated_recipes:
+			content += f"recipe give @s {namespace}:{recipe_file}\n"
+		write_function(config, f"{namespace}:utils/get_all_recipes", content + "\n")
+
+
+		# Unlock vanilla recipes when at least one of the ingredient is in inventory
 		ingredients: dict = {}
 
 		# For each recipe, get the ingredients and link them to the recipe
