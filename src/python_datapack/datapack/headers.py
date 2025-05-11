@@ -17,10 +17,10 @@ def main(config: dict):
 			# Get namespace of the file
 			splitted = file_path.split(functions_folder, 1)
 			namespace = splitted[0].split("/")[-1]
-				
+
 			# Get string that is used for calling the function (ex: "namespace:my_function")
 			to_be_called = f"{config['namespace']}:" + splitted[1].replace(".mcfunction","")
-			
+
 			# Add to mcfunctions dictionary
 			mcfunctions[to_be_called] = {"path": file_path, "within": []}
 
@@ -44,7 +44,7 @@ def main(config: dict):
 					for value in data["values"]:
 
 						# Get the function that is called, either "function" or {"id": "function", ...}
-						calling = value if type(value) == str else value["id"]
+						calling = value if isinstance(value, str) else value["id"]
 
 						# If the called function is registered, append the name of this file
 						if calling in mcfunctions.keys() and to_be_called not in mcfunctions[calling]["within"]:
@@ -76,13 +76,13 @@ def main(config: dict):
 
 				# Get the called function
 				splitted = line.split("function ", 1)[1].replace("\n","").split(" ")
-				calling = splitted[0]
+				calling = splitted[0].replace('"', '').replace("'", "")
 
 				# Get additional text like macros, ex: function iyc:function {id:"51"}
 				more = ""
 				if len(splitted) > 0:
 					more = " " + " ".join(splitted[1:]) # Add Macros or schedule time
-				
+
 				# If the called function is registered, append the name of this file as well as the additional text
 				if calling in mcfunctions.keys() and (file + more) not in mcfunctions[calling]["within"]:
 					mcfunctions[calling]["within"].append(file + more)
@@ -95,7 +95,7 @@ def main(config: dict):
 		content = FILES_TO_WRITE[data["path"]]
 		if not content.startswith("\n"):
 			content = "\n" + content
-		
+
 		# Prepare header
 		header: str = f"""
 #> {file}
