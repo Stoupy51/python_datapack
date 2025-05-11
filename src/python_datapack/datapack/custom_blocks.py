@@ -69,7 +69,7 @@ execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:f
 			if block_id in BLOCKS_WITH_INTERFACES:
 				beautify_name = custom_name
 
-			## Place function	
+			## Place function
 			content = ""
 			if block["apply_facing"]:
 				content += f"function {namespace}:custom_blocks/get_rotation\n"
@@ -87,7 +87,7 @@ execute if score #rotation {namespace}.data matches 0 if predicate {namespace}:f
 				# Simple setblock
 				content += "setblock ~ ~ ~ air\n"
 				content += f"setblock ~ ~ ~ {block_id}{beautify_name}\n"
-			
+
 			# Summon item display and call secondary function
 			content += f"execute align xyz positioned ~.5 ~.5 ~.5 summon item_display at @s run function {namespace}:custom_blocks/{item}/place_secondary\n"
 
@@ -146,12 +146,12 @@ execute if score #rotation {namespace}.data matches 2 run data modify entity @s 
 execute if score #rotation {namespace}.data matches 3 run data modify entity @s Rotation[0] set value 0.0f
 execute if score #rotation {namespace}.data matches 4 run data modify entity @s Rotation[0] set value 90.0f
 """
-			
+
 			# If Furnace NBT Recipes is enabled and the block is a furnace, summon the marker
 			if OFFICIAL_LIBS["furnace_nbt_recipes"]["is_used"] and block_id.endswith(("_furnace", "_smoker")):
 				content += '\n# Furnace NBT Recipes\n'
 				content += 'execute align xyz positioned ~.5 ~ ~.5 unless entity @e[type=marker,dx=-1,dy=-1,dz=-1,tag=furnace_nbt_recipes.furnace] run summon marker ~ ~ ~ {Tags:["furnace_nbt_recipes.furnace"]}\n'
-				
+
 			# Write file
 			write_function(config, f"{path}/place_secondary", content)
 		pass
@@ -228,13 +228,13 @@ execute if score #rotation {namespace}.data matches 4 run data modify entity @s 
 			block = data[VANILLA_BLOCK]
 			path = f"{namespace}:custom_blocks/{item}"
 			block_id: str = block["id"].split('[')[0].split('{')[0]
-			
+
 			# Destroy function
 			content = f"""
 # Replace the item with the custom one
 execute as @n[type=item,nbt={{Item:{{id:"{block_id}"}}}},distance=..1] run function {namespace}:custom_blocks/{item}/replace_item
 """
-			
+
 			# Decrease count scores for stats and optimization
 			content += f"""
 # Decrease count scores
@@ -242,7 +242,7 @@ scoreboard players remove #total_custom_blocks {namespace}.data 1
 scoreboard players remove #total_vanilla_{block_id.replace('minecraft:','')} {namespace}.data 1
 scoreboard players remove #total_{item} {namespace}.data 1
 """
-			
+
 			# Add the destroy function
 			write_function(config, f"{path}/destroy", content + "\n# Kill the custom block entity\nkill @s\n\n")
 
@@ -326,7 +326,7 @@ execute store success score #is_silk_touch {namespace}.data if data entity @s It
 # Try to destroy the block
 execute as @e[tag={namespace}.custom_block,dx=0,dy=0,dz=0] at @s run function {namespace}:custom_blocks/destroy
 """)
-	
+
 
 	# Add line in the stats_custom_blocks file
 	write_function(config, f"{namespace}:_stats_custom_blocks",

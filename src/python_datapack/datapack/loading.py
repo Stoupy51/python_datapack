@@ -26,7 +26,7 @@ execute if score #{namespace}.major load.status matches {major} if score #{names
 # If correct version, load the datapack
 execute if score #{namespace}.major load.status matches {major} if score #{namespace}.minor load.status matches {minor} if score #{namespace}.patch load.status matches {patch} run function {namespace}:v{version}/load/main
 """)
-	
+
 	# Setup enumerate and resolve function tags
 	write_file(f"{config['build_datapack']}/data/{namespace}/tags/function/enumerate.json", stp.super_json_dump({"values": [f"{namespace}:v{version}/load/enumerate"]}))
 	write_file(f"{config['build_datapack']}/data/{namespace}/tags/function/resolve.json", stp.super_json_dump({"values": [f"{namespace}:v{version}/load/resolve"]}))
@@ -59,12 +59,12 @@ execute unless score #{namespace}.loaded load.status matches 1 run function {nam
 				# Copy the id
 				elif k == "id":
 					mc_data[k] = v
-			
+
 			# If no item_model, remove it
 			if mc_data["components"]["minecraft:item_model"] == "":
 				del mc_data["components"]["minecraft:item_model"]
 
-			# Append to the storage database, json_dump adds 
+			# Append to the storage database, json_dump adds
 
 			items_storage += f"data modify storage {namespace}:items all.{item} set value " + stp.super_json_dump(mc_data, max_level = 0)
 
