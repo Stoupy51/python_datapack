@@ -1,7 +1,7 @@
 
 # Imports
-from .write import write_file
 from .general import path_to_file_path
+from .write import write_file
 
 
 def write_function(config: dict, path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:

@@ -1,12 +1,12 @@
 
 # Imports
-from .general import *
-from .read import *
-from .write import *
-from .delete import *
-from .deprecated import *
+from ._readers import *
 
 # Automatically generated
 from ._writers import *
-from ._readers import *
+from .delete import *
+from .deprecated import *
+from .general import *
+from .read import *
+from .write import *
 

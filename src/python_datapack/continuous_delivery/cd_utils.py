@@ -1,11 +1,14 @@
 
 # Imports
-import stouputils as stp
-from ..constants import MINECRAFT_VERSION
-import requests
 import json
-import yaml
 import os
+
+import requests
+import stouputils as stp
+import yaml
+
+from ..constants import MINECRAFT_VERSION
+
 
 # Function that replace the "~" by the user's home directory
 def replace_tilde(path: str) -> str:

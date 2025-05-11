@@ -1,7 +1,7 @@
 
 # Imports
-from .read import read_file
 from .general import path_to_file_path
+from .read import read_file
 
 
 def read_function(config: dict, path: str) -> str:

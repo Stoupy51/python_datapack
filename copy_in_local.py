@@ -1,6 +1,6 @@
 
-import shutil
 import os
+import shutil
 
 source = os.path.dirname(os.path.realpath(__file__)).replace("\\","/") + "/src/python_datapack"
 destinations: list[str] = [

@@ -1,9 +1,10 @@
 
-import os
 import json
+import os
 import shutil
-import stouputils as stp
 from typing import Literal
+
+import stouputils as stp
 
 # Variable constants
 INITIAL_FILES: dict[str, str] = {}

@@ -2,11 +2,14 @@
 # Imports
 import os
 import time
-import stouputils as stp
-from ..dependencies.main import OFFICIAL_LIBS, OFFICIAL_LIBS_PATH
-from smithed.weld.toolchain.cli import weld
 from pathlib import Path
-from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
+
+import stouputils as stp
+from smithed.weld.toolchain.cli import weld
+
+from ..dependencies.main import OFFICIAL_LIBS, OFFICIAL_LIBS_PATH
+
 
 # Weld datapack
 @stp.handle_error()

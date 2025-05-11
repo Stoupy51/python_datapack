@@ -1,17 +1,28 @@
 
 # Imports
 import json
+
 import stouputils as stp
-from ..utils.io import write_file, write_function, read_file, FILES_TO_WRITE
-from ..utils.ingredients import ingr_repr, get_vanilla_item_id_from_ingredient, get_item_from_ingredient, item_to_id_ingr_repr, ingr_to_id, loot_table_from_ingredient, get_ingredients_from_recipe
+
 from ..constants import (
-	RESULT_OF_CRAFTING,
-	USED_FOR_CRAFTING,
 	CATEGORY,
-	SMITHED_CRAFTER_COMMAND,
 	PULVERIZING,
+	RESULT_OF_CRAFTING,
+	SMITHED_CRAFTER_COMMAND,
+	USED_FOR_CRAFTING,
 	official_lib_used,
 )
+from ..utils.ingredients import (
+	get_ingredients_from_recipe,
+	get_item_from_ingredient,
+	get_vanilla_item_id_from_ingredient,
+	ingr_repr,
+	ingr_to_id,
+	item_to_id_ingr_repr,
+	loot_table_from_ingredient,
+)
+from ..utils.io import FILES_TO_WRITE, read_file, write_file, write_function
+
 
 # Generate recipes
 def main(config: dict):

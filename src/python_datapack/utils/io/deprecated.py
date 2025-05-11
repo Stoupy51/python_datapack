@@ -1,8 +1,10 @@
 
 # Imports
 import stouputils as stp
-from .write import write_versioned_function, write_file
-from ._writers import write_function, write_advancement
+
+from ._writers import write_advancement, write_function
+from .write import write_file, write_versioned_function
+
 
 # Deprecated functions
 @stp.deprecated(message="This function has been renamed to write_to_versioned_function(), please update your code")

@@ -2,9 +2,11 @@
 # Imports
 import os
 import shutil
+
 import stouputils as stp
-from .utils.io import read_initial_files, write_file
+
 from .constants import DATAPACK_FORMAT, RESOURCE_PACK_FORMAT
+from .utils.io import read_initial_files, write_file
 
 
 def main(config: dict):

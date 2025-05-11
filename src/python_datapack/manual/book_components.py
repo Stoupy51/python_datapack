@@ -2,11 +2,14 @@
 Handles generation of book components and content
 """
 import os
+
 import stouputils as stp
 from PIL import Image
+
 from ..utils.ingredients import ingr_to_id
 from .image_utils import generate_high_res_font
-from .shared_import import NONE_FONT, COMPONENTS_TO_INCLUDE, get_page_number
+from .shared_import import COMPONENTS_TO_INCLUDE, NONE_FONT, get_page_number
+
 
 # Call the previous function
 def high_res_font_from_ingredient(config: dict, ingredient: str|dict, count: int = 1) -> str:

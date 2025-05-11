@@ -2,10 +2,17 @@
 # Imports
 from ..constants import PULVERIZING
 from ..utils.ingredients import FURNACES_RECIPES_TYPES
-from .shared_import import SMALL_NONE_FONT, MICRO_NONE_FONT, VERY_SMALL_NONE_FONT, INVISIBLE_ITEM_WIDTH, FONT_FILE
 from .book_components import get_item_component
-from .page_font import generate_page_font
 from .other_utils import convert_shapeless_to_shaped, high_res_font_from_craft
+from .page_font import generate_page_font
+from .shared_import import (
+	FONT_FILE,
+	INVISIBLE_ITEM_WIDTH,
+	MICRO_NONE_FONT,
+	SMALL_NONE_FONT,
+	VERY_SMALL_NONE_FONT,
+)
+
 
 # Generate all craft types content
 def generate_craft_content(config: dict, craft: dict, name: str, page_font: str) -> list:

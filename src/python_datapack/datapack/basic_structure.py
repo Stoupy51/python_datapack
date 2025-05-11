@@ -1,6 +1,6 @@
 
 # Imports
-from ..utils.io import is_in_write_queue, write_versioned_function, write_tick_file
+from ..utils.io import is_in_write_queue, write_tick_file, write_versioned_function
 
 
 def main(config: dict):

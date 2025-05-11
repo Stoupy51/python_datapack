@@ -8,14 +8,16 @@ Returns:
 """
 
 # Imports
-import os
 import json
-import requests
+import os
 from typing import Any
+
+import requests
 import stouputils as stp
 
 # Constants
-from on_bookshelf_release import CONFIG_PATH, API_URL
+from on_bookshelf_release import API_URL, CONFIG_PATH
+
 
 def load_current_version() -> str | None:
 	"""Load the current Bookshelf version from config.

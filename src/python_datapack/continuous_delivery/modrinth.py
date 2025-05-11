@@ -1,10 +1,12 @@
 
 # Imports
-import os
 import json
+import os
+
 import requests
 import stouputils as stp
-from .cd_utils import handle_response, get_supported_versions
+
+from .cd_utils import get_supported_versions, handle_response
 
 # Constants
 MODRINTH_API_URL: str = "https://api.modrinth.com/v2"

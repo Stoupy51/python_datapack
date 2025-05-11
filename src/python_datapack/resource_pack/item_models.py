@@ -1,9 +1,12 @@
 
 # Imports
 import os
+
 import stouputils as stp
-from ..utils.io import write_file, super_copy
+
 from ..constants import CUSTOM_BLOCK_VANILLA, CUSTOM_ITEM_VANILLA, OVERRIDE_MODEL
+from ..utils.io import super_copy, write_file
+
 
 # Utility functions
 def get_powered_texture(variants: list[str], side: str, on_off: str) -> str:
@@ -230,7 +233,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 		item_model_path: str = f"{dest_base_model}/{item}{on_off}.json"
 		write_file(item_model_path, dump)
 		config['rendered_item_models'].append(data["item_model"])
-	
+
 		# Generate the json file required in items/
 		if not data["id"].endswith("bow"):
 			model_path: str = item_model_path.replace("models/item", "items")

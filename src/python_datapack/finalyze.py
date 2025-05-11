@@ -1,21 +1,32 @@
 
 # Imports
-import os
-import time
-import json
-import shutil
 import hashlib
+import json
+import os
+import shutil
+import time
+from typing import Callable
+
 import stouputils as stp
-from .utils.io import super_copy, super_merge_dict, write_file, delete_files, delete_old_files, write_all_files, FILES_TO_WRITE
-from .utils.weld import weld_datapack, weld_resource_pack
-from .utils.archive import make_archive
-from .datapack.lang import main as lang_main
-from .datapack.headers import main as headers_main
+
 from .datapack.basic_structure import main as basic_structure_main
 from .datapack.custom_block_ticks import custom_blocks_ticks_and_second_functions
+from .datapack.headers import main as headers_main
+from .datapack.lang import main as lang_main
+from .dependencies.main import OFFICIAL_LIBS, OFFICIAL_LIBS_PATH
+from .dependencies.main import main as dependencies_main
 from .resource_pack.check_unused_textures import main as check_unused_textures_main
-from .dependencies.main import main as dependencies_main, OFFICIAL_LIBS_PATH, OFFICIAL_LIBS
-from typing import Callable
+from .utils.archive import make_archive
+from .utils.io import (
+	FILES_TO_WRITE,
+	delete_files,
+	delete_old_files,
+	super_copy,
+	super_merge_dict,
+	write_all_files,
+	write_file,
+)
+from .utils.weld import weld_datapack, weld_resource_pack
 
 
 def main(config: dict, user_code: Callable|None = None):

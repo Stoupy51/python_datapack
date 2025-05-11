@@ -1,8 +1,10 @@
 
 # Imports
 import os
+
 import requests
 import stouputils as stp
+
 from .cd_utils import handle_response
 
 # Constants

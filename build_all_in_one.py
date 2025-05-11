@@ -1,6 +1,7 @@
 
 import os
 import sys
+
 commands = [
 	f"{sys.executable} 1_upgrades.py",
 	f"{sys.executable} 2_build.py",

@@ -1,12 +1,14 @@
 
 # Imports
-import sys
 import os
-import time
+import sys
 import threading
+import time
+
 import stouputils as stp
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileSystemEvent
+
 
 # Build processor
 class BuildProcessor(threading.Thread):

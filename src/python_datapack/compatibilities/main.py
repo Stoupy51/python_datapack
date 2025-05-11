@@ -1,7 +1,8 @@
 
 # Imports
-from .simpledrawer import main as simpledrawer
 from .neo_enchant import main as neo_enchant
+from .simpledrawer import main as simpledrawer
+
 
 def main(config: dict):
 

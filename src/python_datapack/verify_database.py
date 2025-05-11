@@ -1,18 +1,20 @@
 # Imports
 import os
+
 import stouputils as stp
-from .utils.ingredients import FURNACES_RECIPES_TYPES
+
 from .constants import (
+	CATEGORY,
+	CUSTOM_BLOCK_ALTERNATIVE,
+	CUSTOM_BLOCK_VANILLA,
+	NO_SILK_TOUCH_DROP,
 	RESULT_OF_CRAFTING,
 	USED_FOR_CRAFTING,
-	CUSTOM_BLOCK_VANILLA,
-	CUSTOM_BLOCK_ALTERNATIVE,
 	VANILLA_BLOCK,
 	VANILLA_BLOCK_FOR_ORES,
-	NO_SILK_TOUCH_DROP,
-	CATEGORY,
-	VANILLA_BLOCK,
 )
+from .utils.ingredients import FURNACES_RECIPES_TYPES
+
 
 def main(config: dict):
 	database: dict[str, dict] = config['database']

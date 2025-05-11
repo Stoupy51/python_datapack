@@ -1,10 +1,12 @@
 
 # Imports
 from __future__ import annotations
+
 from enum import Enum
 from typing import Any
-from mutagen.oggvorbis import OggVorbis
+
 import stouputils as stp
+from mutagen.oggvorbis import OggVorbis
 
 # Import utils
 from ..constants import *

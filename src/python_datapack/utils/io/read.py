@@ -1,8 +1,11 @@
 
 # Imports
 import os
+
 import stouputils as stp
-from .general import FILES_TO_WRITE, DATAPACK_RESOURCE_TYPES, path_to_file_path
+
+from .general import DATAPACK_RESOURCE_TYPES, FILES_TO_WRITE, path_to_file_path
+
 
 # Functions
 def read_file(file_path: str) -> str:

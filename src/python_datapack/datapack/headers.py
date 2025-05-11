@@ -2,7 +2,9 @@
 # Imports
 import json
 from typing import Any
+
 from ..utils.io import FILES_TO_WRITE
+
 
 def main(config: dict):
 

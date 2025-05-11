@@ -1,14 +1,22 @@
 
 # Imports
 import os
+
 import stouputils as stp
 from PIL import Image
-from .shared_import import (
-	TEMPLATES_PATH, SQUARE_SIZE, BORDER_COLOR, BORDER_SIZE, WIKI_INGR_OF_CRAFT_FONT,
-	font_providers, get_next_font
-)
-from .image_utils import careful_resize, add_border, image_count
+
 from ..utils.ingredients import FURNACES_RECIPES_TYPES, ingr_to_id
+from .image_utils import add_border, careful_resize, image_count
+from .shared_import import (
+	BORDER_COLOR,
+	BORDER_SIZE,
+	SQUARE_SIZE,
+	TEMPLATES_PATH,
+	WIKI_INGR_OF_CRAFT_FONT,
+	font_providers,
+	get_next_font,
+)
+
 
 # Generate page font function (called in utils)
 def generate_page_font(config: dict, name: str, page_font: str, craft: dict|None = None, output_name: str = "") -> None:

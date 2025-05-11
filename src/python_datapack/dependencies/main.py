@@ -1,8 +1,21 @@
 
 # Imports
 import stouputils as stp
-from ..constants import OFFICIAL_LIBS, DATA_VERSION, MINECRAFT_VERSION, BOOKSHELF_MODULES, official_lib_used
-from ..utils.io import write_file, write_function, write_versioned_function, is_in_write_queue, FILES_TO_WRITE
+
+from ..constants import (
+	BOOKSHELF_MODULES,
+	DATA_VERSION,
+	MINECRAFT_VERSION,
+	OFFICIAL_LIBS,
+	official_lib_used,
+)
+from ..utils.io import (
+	FILES_TO_WRITE,
+	is_in_write_queue,
+	write_file,
+	write_function,
+	write_versioned_function,
+)
 
 # This folder path
 OFFICIAL_LIBS_PATH: str = stp.get_root_path(__file__)
@@ -89,7 +102,7 @@ scoreboard players reset * load.status
 		write_file(f"{config['build_datapack']}/data/{ns}/tags/function/dependencies.json", stp.super_json_dump({"values": calls}))
 
 	# Write secondary function
-	authors = config['author'].split(" ")
+	authors = config["author"].replace(",", " ").replace("  ", " ").split(" ")
 	convention_debug = "".join([f"tag {author} add convention.debug\n" for author in authors])
 	content = f"""
 # {config['project_name']}

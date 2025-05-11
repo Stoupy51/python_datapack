@@ -1,9 +1,12 @@
 
 # Imports
 import os
+
 import stouputils as stp
-from ..utils.io import write_file
 from PIL import Image
+
+from ..utils.io import write_file
+
 
 # Utility functions
 def main(config: dict) -> dict:

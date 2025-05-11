@@ -1,8 +1,10 @@
 
 # Imports
 import stouputils as stp
-from ..utils.io import write_file, write_function
+
 from ..constants import NOT_COMPONENTS, RESULT_OF_CRAFTING
+from ..utils.io import write_file, write_function
+
 
 def main(config: dict):
 	database: dict[str,dict] = config["database"]

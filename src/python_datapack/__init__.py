@@ -2,21 +2,23 @@
 # Imports
 import os
 import time
-import stouputils as stp
 from typing import Callable
+
+import stouputils as stp
+
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 
 # Main function imports
-from .enhance_config import main as enhance_config_main
-from .initialize import main as initialize_main
-from .verify_database import main as verify_database_main
-from .resource_pack.main import main as resource_pack_main
-from .datapack.recipes import main as recipes_main
-from .manual.main import main as manual_main
-from .datapack.main import main as datapack_main
 from .compatibilities.main import main as compatibilities_main
+from .datapack.main import main as datapack_main
+from .datapack.recipes import main as recipes_main
+from .enhance_config import main as enhance_config_main
 from .finalyze import main as finalyze_main
+from .initialize import main as initialize_main
+from .manual.main import main as manual_main
+from .resource_pack.main import main as resource_pack_main
+from .verify_database import main as verify_database_main
 
 
 # Functions

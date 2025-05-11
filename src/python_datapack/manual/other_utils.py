@@ -1,11 +1,20 @@
 
 # Imports
 import stouputils as stp
+
 from ..constants import PULVERIZING, RESULT_OF_CRAFTING
-from .shared_import import FURNACE_FONT, SHAPED_3X3_FONT, SHAPED_2X2_FONT, PULVERIZING_FONT
 from ..utils.ingredients import (
-	CRAFTING_RECIPES_TYPES, FURNACES_RECIPES_TYPES, SPECIAL_RECIPES_TYPES,
-	ingr_repr, ingr_to_id
+	CRAFTING_RECIPES_TYPES,
+	FURNACES_RECIPES_TYPES,
+	SPECIAL_RECIPES_TYPES,
+	ingr_repr,
+	ingr_to_id,
+)
+from .shared_import import (
+	FURNACE_FONT,
+	PULVERIZING_FONT,
+	SHAPED_2X2_FONT,
+	SHAPED_3X3_FONT,
 )
 
 

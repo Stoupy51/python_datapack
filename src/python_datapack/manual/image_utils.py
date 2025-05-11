@@ -1,9 +1,16 @@
 
 # Imports
 import os
-from PIL import Image, ImageDraw, ImageFont
 from typing import Any, Tuple
-from .shared_import import TEMPLATES_PATH, MICRO_NONE_FONT, font_providers, get_next_font
+
+from PIL import Image, ImageDraw, ImageFont
+
+from .shared_import import (
+	MICRO_NONE_FONT,
+	TEMPLATES_PATH,
+	font_providers,
+	get_next_font,
+)
 
 
 # Generate high res simple case no border

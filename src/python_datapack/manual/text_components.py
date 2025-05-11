@@ -1,7 +1,8 @@
 """
 Handles text component formatting and updates for the manual
 """
-from typing import Union, Literal
+from typing import Literal, Union
+
 
 def create_hover_event(action: Literal["show_text", "show_item"], value: Union[str, dict, list]) -> dict:
 	"""Creates a hover event with the new format"""

@@ -1,8 +1,10 @@
 
 # Imports
 import os
+
 import stouputils as stp
 from PIL import Image
+
 
 def main(config: dict):
 

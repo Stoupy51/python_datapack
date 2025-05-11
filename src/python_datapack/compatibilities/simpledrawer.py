@@ -1,9 +1,11 @@
 
 # Imports
 import stouputils as stp
-from ..utils.io import write_file
-from ..utils.ingredients import ingr_to_id
+
 from ..constants import RESULT_OF_CRAFTING
+from ..utils.ingredients import ingr_to_id
+from ..utils.io import write_file
+
 
 # Get result count of an item
 def get_result_count(config: dict, item: str, ingr_to_seek: str) -> int:

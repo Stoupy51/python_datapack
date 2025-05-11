@@ -1,8 +1,10 @@
 
 # Imports
 import stouputils as stp
+
+from ..constants import VANILLA_BLOCK, VANILLA_BLOCK_FOR_ORES
 from ..utils.io import write_file
-from ..constants import VANILLA_BLOCK_FOR_ORES, VANILLA_BLOCK
+
 
 # Main function
 def main(config: dict):

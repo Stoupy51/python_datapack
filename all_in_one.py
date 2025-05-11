@@ -1,6 +1,7 @@
 
 import os
 import sys
+
 commands = [
 	f"{sys.executable} upgrade.py",				# Upgrade the version in pyproject.toml
 	f"{sys.executable} build_all_in_one.py",	# Build the package and upload it

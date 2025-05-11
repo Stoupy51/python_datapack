@@ -17,16 +17,33 @@ from ..constants import (
 	USED_FOR_CRAFTING,
 	WIKI_COMPONENT,
 )
-from ..resource_pack.item_models import handle_item  # Handle new items models (used for the manual and the heavy workbench)
+from ..resource_pack.item_models import (
+	handle_item,  # Handle new items models (used for the manual and the heavy workbench)
+)
 from ..utils.database_helper import add_item_name_and_lore_if_missing
 from ..utils.ingredients import ingr_repr, ingr_to_id
-from ..utils.io import delete_file, super_copy, super_merge_dict, write_all_files, write_load_file
+from ..utils.io import (
+	delete_file,
+	super_copy,
+	super_merge_dict,
+	write_all_files,
+	write_load_file,
+)
 from .book_components import get_item_component
 from .book_optimizer import optimize_element, remove_events
 from .craft_content import generate_craft_content
-from .image_utils import add_border, careful_resize, generate_high_res_font, load_simple_case_no_border
+from .image_utils import (
+	add_border,
+	careful_resize,
+	generate_high_res_font,
+	load_simple_case_no_border,
+)
 from .iso_renders import generate_all_iso_renders
-from .other_utils import convert_shapeless_to_shaped, generate_otherside_crafts, remove_unknown_crafts
+from .other_utils import (
+	convert_shapeless_to_shaped,
+	generate_otherside_crafts,
+	remove_unknown_crafts,
+)
 from .page_font import generate_page_font, generate_wiki_font_for_ingr
 from .shared_import import (
 	BORDER_COLOR,
@@ -640,7 +657,7 @@ def routine(config: dict):
 			"id": "minecraft:written_book",
 			"written_book_content": {
 				"title": config.get("manual_name", "Manual"),
-				"author": config['author'],
+				"author": config["author"],
 				"pages": book_content,
 			},
 			"item_model": f"{namespace}:manual",

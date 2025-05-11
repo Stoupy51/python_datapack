@@ -1,20 +1,22 @@
 
 # Imports
-import stouputils as stp
 from typing import Any
-from ..utils.io import write_file, write_function, write_versioned_function
+
+import stouputils as stp
+
 from ..constants import (
-	VANILLA_BLOCK,
-	CUSTOM_BLOCK_VANILLA,
 	BLOCKS_WITH_INTERFACES,
-	VANILLA_BLOCK_FOR_ORES,
+	CUSTOM_BLOCK_HEAD,
+	CUSTOM_BLOCK_HEAD_CUBE_RADIUS,
+	CUSTOM_BLOCK_VANILLA,
 	NO_SILK_TOUCH_DROP,
 	OFFICIAL_LIBS,
 	VANILLA_BLOCK,
-	CUSTOM_BLOCK_HEAD,
-	CUSTOM_BLOCK_HEAD_CUBE_RADIUS,
-	official_lib_used
+	VANILLA_BLOCK_FOR_ORES,
+	official_lib_used,
 )
+from ..utils.io import write_file, write_function, write_versioned_function
+
 
 def main(config: dict):
 	namespace: str = config['namespace']

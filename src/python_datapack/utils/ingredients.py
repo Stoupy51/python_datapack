@@ -1,8 +1,9 @@
 
 # Imports
 import stouputils as stp
+
+from ..constants import NOT_COMPONENTS, PULVERIZING
 from .io import write_file
-from ..constants import PULVERIZING, NOT_COMPONENTS
 
 # Recipes constants
 FURNACES_RECIPES_TYPES: tuple[str, ...] = ("smelting", "blasting", "smoking", "campfire_cooking")

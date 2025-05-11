@@ -7,6 +7,7 @@ credentials: dict = load_credentials("~/python_datapack/credentials.yml")
 
 # Upload to GitHub
 from upgrade import current_version
+
 github_config: dict = {
 	"project_name": "python_datapack",
 	"version": current_version,

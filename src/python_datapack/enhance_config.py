@@ -1,8 +1,11 @@
 
 # Imports
 import os
+
 import stouputils as stp
+
 from .resource_pack.source_lore_font import main as source_lore_font
+
 
 # Main function
 def main(config: dict) -> dict:

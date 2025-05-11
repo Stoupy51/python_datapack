@@ -1,6 +1,6 @@
 
 # Imports
-from ..utils.io import write_file, write_function, FILES_TO_WRITE
+from ..utils.io import FILES_TO_WRITE, write_file, write_function
 
 
 def custom_blocks_ticks_and_second_functions(config: dict) -> None:

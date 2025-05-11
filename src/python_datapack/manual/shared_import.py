@@ -1,7 +1,9 @@
 
 # Imports
 import os
+
 import stouputils as stp
+
 
 # Utils functions for fonts (item start at 0x0000, pages at 0xa000)
 # Return the character that will be used for font, ex: chr(0x0002) with i = 2
