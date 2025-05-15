@@ -51,7 +51,7 @@ def main(config: dict):
 				errors.append(f"'id' key should be namespaced in the format 'minecraft:{data['id']}' for '{item}'")
 			elif data["id"] == "minecraft:deepslate":
 				errors.append(f"'id' key should not be 'minecraft:deepslate' for '{item}', it's a reserved ID")
-			
+
 			# Force VANILLA_BLOCK key for custom blocks
 			elif data["id"] in [CUSTOM_BLOCK_VANILLA, CUSTOM_BLOCK_ALTERNATIVE]:
 				if not data.get(VANILLA_BLOCK):
@@ -90,7 +90,7 @@ def main(config: dict):
 			errors.append(f"'item_name' key missing for '{item}', should be a dict or a list (SNBT), ex: {{\"text\":\"This is an Item Name\"}} or [\"This is an Item Name\"]")
 		elif not isinstance(data["item_name"], dict|list|str):
 			errors.append(f"'item_name' key should be a dict or a list (SNBT) for '{item}'")
-		
+
 		# Force the use of "lore" key to be in a correct format
 		if data.get("lore"):
 			if not isinstance(data["lore"], list):
@@ -107,7 +107,7 @@ def main(config: dict):
 							and not (line.startswith('"') and line.endswith('"')) \
 							and not (line.startswith("'") and line.endswith("'")):
 							errors.append(f"Item '{item}' has a lore line that is not in a correct text component format: {line}\n We recommend using 'https://misode.github.io/text-component/' to generate the text component")
-		
+
 		# Check all the recipes
 		if data.get(RESULT_OF_CRAFTING) or data.get(USED_FOR_CRAFTING):
 
@@ -138,7 +138,7 @@ def main(config: dict):
 								row_size = len(recipe["shape"][0])
 								if any(len(row) != row_size for row in recipe["shape"]):
 									errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have the same number of columns for each row for '{item}'")
-								
+
 							if not recipe.get("ingredients") or not isinstance(recipe["ingredients"], dict):
 								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'ingredients' key for '{item}'")
 							else:
@@ -164,7 +164,7 @@ def main(config: dict):
 										errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an 'item' or 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
 									elif ingredient.get("components") and not isinstance(ingredient["components"], dict):
 										errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
-						
+
 						# Check the furnaces recipes
 						elif recipe["type"] in FURNACES_RECIPES_TYPES:
 							if not recipe.get("ingredient") or not isinstance(recipe["ingredient"], dict):
@@ -173,7 +173,7 @@ def main(config: dict):
 								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an 'item' or 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
 							elif recipe["ingredient"].get("components") and not isinstance(recipe["ingredient"]["components"], dict):
 								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
-							
+
 							if not recipe.get("experience") or not isinstance(recipe["experience"], (float, int)):
 								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a float 'experience' key for '{item}'")
 							if not recipe.get("cookingtime") or not isinstance(recipe["cookingtime"], int):
@@ -187,7 +187,7 @@ def main(config: dict):
 	if errors:
 		stp.error("Errors found in the database during verification:\n" + "\n".join(errors))
 	else:
-		stp.info(f"No errors found in the database during verification")
+		stp.info("No errors found in the database during verification")
 
 
 	# Add additional data to the custom blocks
