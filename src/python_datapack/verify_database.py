@@ -58,9 +58,9 @@ def main(config: dict):
 					errors.append(f"VANILLA_BLOCK key missing for '{item}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
 				elif not isinstance(data[VANILLA_BLOCK], dict):
 					errors.append(f"VANILLA_BLOCK key should be a dictionary for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
-				elif data[VANILLA_BLOCK].get("id", None) == None:
+				elif data[VANILLA_BLOCK].get("id", None) is None:
 					errors.append(f"VANILLA_BLOCK key should have an 'id' key for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
-				elif data[VANILLA_BLOCK].get("apply_facing", None) == None:
+				elif data[VANILLA_BLOCK].get("apply_facing", None) is None:
 					errors.append(f"VANILLA_BLOCK key should have a 'apply_facing' key to boolean for '{item}', found '{data[VANILLA_BLOCK]}', needed format: VANILLA_BLOCK: {{\"id\":\"minecraft:stone\", \"apply_facing\":False}}.")
 
 			# Prevent the use of "container" key for custom blocks
@@ -88,7 +88,7 @@ def main(config: dict):
 		# Force the use of "item_name" key for every item
 		if not data.get("item_name"):
 			errors.append(f"'item_name' key missing for '{item}', should be a dict or a list (SNBT), ex: {{\"text\":\"This is an Item Name\"}} or [\"This is an Item Name\"]")
-		elif not isinstance(data["item_name"], dict|list|str):
+		elif not isinstance(data["item_name"], dict | list | str):
 			errors.append(f"'item_name' key should be a dict or a list (SNBT) for '{item}'")
 
 		# Force the use of "lore" key to be in a correct format
@@ -97,7 +97,7 @@ def main(config: dict):
 				errors.append(f"'lore' key should be a list for '{item}'")
 			else:
 				for i, line in enumerate(data["lore"]):
-					if not isinstance(line, (dict, list, str)):
+					if not isinstance(line, dict | list | str):
 						errors.append(f"Line #{i} in 'lore' key should be a dict or a list (SNBT) for '{item}', ex: {{\"text\":\"This is a lore line\"}} or [\"This is a lore line\"]")
 					else:
 						# Verify format {"text":"..."} or "..."
@@ -105,7 +105,8 @@ def main(config: dict):
 						if not (line.startswith('{') and line.endswith('}')) \
 							and not (line.startswith('[') and line.endswith(']')) \
 							and not (line.startswith('"') and line.endswith('"')) \
-							and not (line.startswith("'") and line.endswith("'")):
+							and not (line.startswith("'") and line.endswith("'")) \
+							and not line == "":
 							errors.append(f"Item '{item}' has a lore line that is not in a correct text component format: {line}\n We recommend using 'https://misode.github.io/text-component/' to generate the text component")
 
 		# Check all the recipes
@@ -174,7 +175,7 @@ def main(config: dict):
 							elif recipe["ingredient"].get("components") and not isinstance(recipe["ingredient"]["components"], dict):
 								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a dict 'components' key for ingredient for '{item}', please use 'ingr_repr' function")
 
-							if not recipe.get("experience") or not isinstance(recipe["experience"], (float, int)):
+							if not recipe.get("experience") or not isinstance(recipe["experience"], float | int):
 								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have a float 'experience' key for '{item}'")
 							if not recipe.get("cookingtime") or not isinstance(recipe["cookingtime"], int):
 								errors.append(f"Recipe #{i} in RESULT_OF_CRAFTING should have an int 'cookingtime' key for '{item}'")
