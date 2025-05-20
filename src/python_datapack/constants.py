@@ -3,10 +3,10 @@
 from .dependencies.bookshelf import BOOKSHELF_MODULES
 
 # Minecraft version constants
-DATAPACK_FORMAT: int = 71			# Pack format version, see https://minecraft.wiki/w/Pack_format#List_of_data_pack_formats
-RESOURCE_PACK_FORMAT: int = 55		# Resource pack format version, see https://minecraft.wiki/w/Pack_format#List_of_resource_pack_formats
-MINECRAFT_VERSION: str = "1.21.5"	# Text used when loading the datapack to warn the user when the data version is not right
-DATA_VERSION: int = 4321			# Depending on MC version, given by /data get entity @p DataVersion to check if the datapack is not running in an older version of MC
+DATAPACK_FORMAT: int = 78			# Pack format version, see https://minecraft.wiki/w/Pack_format#List_of_data_pack_formats
+RESOURCE_PACK_FORMAT: int = 62		# Resource pack format version, see https://minecraft.wiki/w/Pack_format#List_of_resource_pack_formats
+MINECRAFT_VERSION: str = "25w21a"	# Text used when loading the datapack to warn the user when the data version is not right
+DATA_VERSION: int = 4429			# Depending on MC version, given by /data get entity @p DataVersion to check if the datapack is not running in an older version of MC
 
 
 # Databases
