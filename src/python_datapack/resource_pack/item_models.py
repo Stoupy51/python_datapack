@@ -46,7 +46,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 
 	# Initialize variables
 	block_or_item: str = "item"
-	if data.get("id") == CUSTOM_BLOCK_VANILLA or any("block" in x for x in data.get(OVERRIDE_MODEL, {}).values()):
+	if data.get("id") == CUSTOM_BLOCK_VANILLA or any((isinstance(x, str) and "block" in x) for x in data.get(OVERRIDE_MODEL, {}).values()):
 		block_or_item = "block"
 	dest_base_textu = f"{config['build_resource_pack']}/assets/{config['namespace']}/textures/item"
 	overrides: dict = data.get(OVERRIDE_MODEL, {})
@@ -75,7 +75,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 
 				# Get parent
 				content = {"parent": "block/cube_all", "textures": {}}
-				
+
 				## Check in which variants state we are
 				# If one texture, apply on all faces
 				variants_without_on = [x for x in variants if "_on" not in x]
@@ -93,7 +93,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 						content["parent"] = "block/cake"
 						for side in cake:
 							content["textures"][side.replace("inner","inside")] = f"{config['namespace']}:item/" + get_powered_texture(variants, side, on_off)
-						
+
 						# Generate 6 models for each cake slice
 						for i in range(1, 7):
 							name: str = f"{item}_slice{i}"
@@ -105,19 +105,19 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 						content["parent"] = "block/cube_bottom_top"
 						for side in cube_bottom_top:
 							content["textures"][side] = f"{config['namespace']}:item/" + get_powered_texture(variants, side, on_off)
-					
+
 					# Check orientable model
 					elif model_in_variants(orientable, variants):
 						content["parent"] = "block/orientable"
 						for side in orientable:
 							content["textures"][side] = f"{config['namespace']}:item/" + get_powered_texture(variants, side, on_off)
-					
+
 					# Check cube_column model
 					elif model_in_variants(cube_column, variants):
 						content["parent"] = "block/cube_column"
 						for side in cube_column:
 							content["textures"][side] = f"{config['namespace']}:item/" + get_powered_texture(variants, side, on_off)
-					
+
 					# Else, if there are no textures override, show error
 					elif not data.get(OVERRIDE_MODEL,{}).get("textures"):
 						patterns = stp.super_json_dump({
@@ -136,7 +136,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 				data_id: str = data["id"]
 				if data_id != CUSTOM_ITEM_VANILLA:
 					parent = data_id.replace(':', ":item/")
-				
+
 				# Get textures
 				textures = {"layer0": f"{config['namespace']}:item/{item}{on_off}"}
 				content = {"parent": parent, "textures": textures}
@@ -186,14 +186,14 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 									},
 									"threshold": pull
 								})
-						
+
 						# Write the items/bow.json file
 						write_file(f"{dest_base_model}/{item}{on_off}.json".replace("models/item", "items"), stp.super_json_dump(items_content, max_level = 4))
 
 		# Add overrides
 		for key, value in overrides.items():
 			content[key] = value
-		
+
 		# If powered, check if the on state is in the variants and add it
 		if on_off == "_on":
 			for key, texture in content.get("textures", {}).items():
