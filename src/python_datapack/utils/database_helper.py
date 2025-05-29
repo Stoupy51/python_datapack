@@ -94,7 +94,7 @@ class VanillaEquipments(Enum):
 						DEFAULT_ORE.NETHERITE:	{"durability": 2031,	"attack_damage": 1,		"attack_speed": 0.00}
 					}
 
-class EquipmentsConfig():
+class EquipmentsConfig:
 	def __init__(self, equivalent_to: DEFAULT_ORE = DEFAULT_ORE.DIAMOND, pickaxe_durability: int = 1561, attributes: dict[str, float] = {}):
 		""" Creates a configuration for equipments (based on the pickaxe)
 		Args:
@@ -111,9 +111,9 @@ class EquipmentsConfig():
 		self.attributes = attributes
 		for key in attributes.keys():
 			if "player." in key:
-				stp.warning(f"Since 1.21.3, the 'player.' prefix is no longer written in attributes!!!")
+				stp.warning("Since 1.21.3, the 'player.' prefix is no longer written in attributes!!!")
 			elif "generic." in key:
-				stp.warning(f"Since 1.21.3, the 'generic.' prefix is no longer written in attributes!!!")
+				stp.warning("Since 1.21.3, the 'generic.' prefix is no longer written in attributes!!!")
 			if "knockback_resistance" in key and attributes[key] >= 1:
 				stp.warning(f"You are setting the Knockback Resistance of an equipment to {attributes[key]}. Be aware that Minecraft automatically multiplies it by 10 when applied to an equipment.")
 
@@ -136,7 +136,7 @@ def format_attributes(config: dict, attributes: dict, slot: str, attr_config: di
 		# We already have a base_attack_damage
 		if attribute_name == "attack_damage":
 			value -= 1
-		
+
 		# If not durability, we add the base attribute
 		if attribute_name != "durability":
 			if attribute_name in ["attack_damage", "attack_speed"]:
@@ -217,7 +217,7 @@ def generate_everything_about_this_material(config: dict, database: dict[str, di
 			source: str = f"{config['assets_folder']}/textures/{layer_file}"
 			destination: str = f"{namespace_rp}/textures/entity/equipment/{humanoid_type}/{layer_file}"
 			super_copy(source, destination)
-			
+
 			model_file: str = f"{namespace_rp}/equipment/{material_base}.json"
 			model_data: dict = {"layers": {humanoid_type: [{"texture": f"{namespace}:{layer_file.replace('.png', '')}"}]}}
 			write_file(model_file, stp.super_json_dump(model_data))
@@ -384,11 +384,11 @@ def add_recipes_for_dust(config: dict, database: dict[str, dict], material: str,
 	if f"{dust}.png" not in config['textures_files']:
 		stp.error(f"Error during dust recipe generation: texture '{dust}.png' not found (required for '{material}' dust)")
 		return
-	
+
 	# Add dust to the database if not found
 	if dust not in database:
 		database[dust] = {"id": CUSTOM_ITEM_VANILLA, CATEGORY: "material"}
-	
+
 	# Add smelting and blasting recipes
 	ingredient: dict = ingr_repr(dust, config['namespace'])
 	database[dust][USED_FOR_CRAFTING] = database[dust].get(USED_FOR_CRAFTING, [])
@@ -437,7 +437,7 @@ def clean_record_name(name: str) -> str:
 	for r in to_replace:
 		name = name.replace(r, "_")
 	return "".join([c for c in name if c in A_Z + ZERO_NINE + UNDERSCORE])
-			
+
 # Custom records
 def generate_custom_records(config: dict, database: dict[str, dict], records: dict[str, str]|str|None = "auto", category: str|None = None) -> None:
 	""" Generate custom records by searching in config['assets_folder']/records/ for the files and copying them to the database and resource pack folder.
@@ -453,7 +453,7 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 
 	# If no records specified, search in the records folder
 	if not records or records in ["auto", "all"]:
-		
+
 		songs: list[str] = [x for x in os.listdir(config["assets_folder"] + "/records") if x.endswith((".ogg",".wav"))]
 		records_to_check: dict[str, str] = { clean_record_name(file): file for file in songs }
 	else:
@@ -477,13 +477,13 @@ def generate_custom_records(config: dict, database: dict[str, dict], records: di
 		}
 		if category:
 			database[record][CATEGORY] = category
-		
+
 		# Get song duration
 		file_path = f"{config['assets_folder']}/records/{sound}"
 		if os.path.exists(file_path):
 			try:
 				duration: int = round(OggVorbis(file_path).info.length) # type: ignore
-				
+
 				# Set jukebox song
 				json_song = {"comparator_output": duration % 16, "length_in_seconds": duration + 1, "sound_event": {"sound_id":f"{config['namespace']}:{record}"}, "description": {"text": item_name}}
 				write_file(f"{config['build_datapack']}/data/{config['namespace']}/jukebox_song/{record}.json", stp.super_json_dump(json_song))
@@ -619,7 +619,7 @@ def add_smithed_ignore_vanilla_behaviours_convention(database: dict[str, dict]) 
 			data["custom_data"]["smithed"]["ignore"]["crafting"] = True
 	return
 
-class CustomOreGeneration():
+class CustomOreGeneration:
 	def __init__(self, dimensions: list[str], maximum_height: int = 70, minimum_height: int|None = None, veins_per_region: int = 4, vein_size_logic: float = 0.4, provider: str|list[str] = "#minecraft:overworld_carver_replaceables", placer_command: str = "") -> None:
 		""" Creates a custom ore generation configuration.
 
@@ -642,7 +642,7 @@ class CustomOreGeneration():
 		if not official_lib_used("smart_ore_generation"):
 			stp.debug("Found custom ore generation, adding 'smart_ore_generation' dependency")
 		self.check_validity()
-	
+
 	def check_validity(self) -> None:
 		""" Check if the custom ore generation configuration is valid """
 		if not isinstance(self.dimensions, list) or not all(isinstance(dimension, str) for dimension in self.dimensions):
@@ -663,7 +663,7 @@ class CustomOreGeneration():
 			stp.error("Custom ore generation 'provider' must be a list of strings")
 		if not isinstance(self.placer_command, str):
 			stp.error("Custom ore generation 'placer_command' must be a string")
-	
+
 	def generate_files(self, config: dict, custom_ore: str, number: int|None = None):
 		""" Generate the files for the custom ore generation
 
@@ -688,14 +688,14 @@ class CustomOreGeneration():
 			# If the custom ore is a normal ore and deepslate ore exists, cancel the command if the block is not deepslate
 			elif f"deepslate_{custom_ore}" in database:
 				self.placer_command = "unless block ~ ~ ~ minecraft:deepslate " + self.placer_command
-		
+
 		# Add ore to generate ores function
 		path: str = f"{lib_folder}/generate_ores.mcfunction"
 		dimensions_check: str = ""
 		for index, dimension in enumerate(self.dimensions):
 			dimensions_check += f"\nexecute if dimension {dimension} run scoreboard players set #dimension smart_ore_generation.data {index}"
 		if self.minimum_height == None:
-			op_mini: str = f"scoreboard players operation #min_height smart_ore_generation.data = _OVERWORLD_BOTTOM smart_ore_generation.data"
+			op_mini: str = "scoreboard players operation #min_height smart_ore_generation.data = _OVERWORLD_BOTTOM smart_ore_generation.data"
 		else:
 			op_mini: str = f"scoreboard players set #min_height smart_ore_generation.data {self.minimum_height}"
 		content: str = f"""
@@ -720,16 +720,16 @@ execute at @s if block ~ ~ ~ {self.provider} {self.placer_command}
 		if self.vein_size_logic > 0:
 			radius: float = self.vein_size_logic % 1
 			while radius <= self.vein_size_logic:
-				
+
 				# Make a sphere of radius
 				for x in range(-1, 2):
 					for y in range(-1, 2):
 						for z in range(-1, 2):
 							content += f"execute at @s positioned ~{x*radius} ~{y*radius} ~{z*radius} if block ~ ~ ~ {self.provider} {self.placer_command}\n"
-				
+
 				# Increase radius
 				radius += 1
-		
+
 		# Write file
 		write_file(path, content)
 
