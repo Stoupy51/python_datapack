@@ -93,7 +93,7 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] | N
 	file_list: list[tuple[str, bool]] = [(f, False) for f in not_known_files] + [(f, True) for f in FILES_TO_WRITE.keys()]
 
 	# Process files in parallel
-	results: list[tuple[ZipInfo, bytes] | None] = stp.multithreading(process_file, sorted(file_list), use_starmap=True)
+	results: list[tuple[ZipInfo, bytes] | None] = stp.multithreading(process_file, sorted(file_list), use_starmap=True, max_workers=min(32, len(file_list)))
 
 	# Write results directly to zip file
 	with ZipFile(destination, "w", compression=ZIP_DEFLATED, compresslevel=6) as zip:

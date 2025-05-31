@@ -47,7 +47,13 @@ def write_all_files(contains: str = "", verbose: int = 0):
 	def really_write(file_path: str, content: str):
 		with stp.super_open(file_path, "w") as f:
 			f.write(content)
-	stp.multithreading(really_write, filtered_files.items(), use_starmap=True, desc="Writing all files" if verbose > 0 else "")
+	stp.multithreading(
+		really_write,
+		filtered_files.items(),
+		use_starmap=True,
+		desc="Writing all files" if verbose > 0 else "",
+		max_workers=min(32, len(filtered_files))
+	)
 
 def write_file(file_path: str, content: str, overwrite: bool = False, prepend: bool = False) -> None:
 	""" Write the content to the file at the given path.

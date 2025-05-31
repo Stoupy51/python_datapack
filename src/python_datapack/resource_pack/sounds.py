@@ -48,7 +48,7 @@ def main(config: dict):
 				sound_groups[sound_file_no_ext] = [sound_file_no_ext]
 
 		# Process sounds in parallel
-		stp.multithreading(handle_sound, sounds_names)
+		stp.multithreading(handle_sound, sounds_names, max_workers=min(32, len(sounds_names)))
 
 		# Create sounds.json with grouped sounds
 		sounds_json: dict = {}

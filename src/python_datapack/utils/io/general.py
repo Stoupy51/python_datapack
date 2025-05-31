@@ -58,7 +58,7 @@ def read_initial_files(folders: list[str]) -> None:
 		for root, _, files in os.walk(folder)
 		for file in files
 	]
-	stp.multithreading(_read_file, file_paths)
+	stp.multithreading(_read_file, file_paths, max_workers=min(32, len(file_paths)))
 
 @stp.handle_error(exceptions=KeyError)
 def remove_initial_file(file_path: str) -> None:

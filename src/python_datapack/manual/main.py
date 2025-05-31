@@ -480,7 +480,9 @@ def routine(config: dict):
 			# Add page to the book
 			book_content.append(content)
 			pass
-		stp.multithreading(encode_page, manual_pages, desc="Creating manual pages", max_workers=1)
+
+		for page in stp.colored_for_loop(manual_pages, desc="Creating manual pages"):
+			encode_page(page)
 
 		## Add categories page
 		content = []
