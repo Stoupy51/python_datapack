@@ -3,7 +3,6 @@
 import os
 import shutil
 import time
-import zlib
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 import stouputils as stp
@@ -96,32 +95,9 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] | N
 	# Process files in parallel
 	results: list[tuple[ZipInfo, bytes] | None] = stp.multithreading(process_file, sorted(file_list), use_starmap=True)
 
-	# Pre-compress content in parallel
-	def precompress_content(result: tuple[ZipInfo, bytes] | None) -> tuple[ZipInfo, bytes] | None:
-		""" Pre-compress content using zlib for faster zip writing.
-
-		Args:
-			result (tuple[ZipInfo, bytes] | None): The result tuple containing ZipInfo and content.
-
-		Returns:
-			tuple[ZipInfo, bytes] | None: The result tuple with compressed content, or None if input was None.
-		"""
-		if result is None:
-			return None
-
-		info, content = result
-		compressed: bytes = zlib.compress(content, level=9)
-		info.compress_type = ZIP_DEFLATED
-		info.file_size = len(content)
-		info.compress_size = len(compressed)
-		return info, compressed
-
-	# Pre-compress all content in parallel
-	compressed_results: list[tuple[ZipInfo, bytes] | None] = stp.multithreading(precompress_content,results,use_starmap=False)
-
-	# Write pre-compressed results to zip file
-	with ZipFile(destination, "w", compression=ZIP_DEFLATED, compresslevel=9) as zip:
-		for result in compressed_results:
+	# Write results directly to zip file
+	with ZipFile(destination, "w", compression=ZIP_DEFLATED, compresslevel=6) as zip:
+		for result in results:
 			if result is not None:
 				info, content = result
 				zip.writestr(info, content)

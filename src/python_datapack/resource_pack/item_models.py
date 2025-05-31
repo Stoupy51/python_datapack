@@ -249,13 +249,11 @@ def main(config: dict):
 	config["rendered_item_models"] = set()
 
 	# For each item, handle it
-	used_textures = set()
-	items_to_process = [
-		(config, item, data, used_textures) for item, data in database.items()
-		if data.get("item_model") not in config["rendered_item_models"]
-		and data.get("item_model", "").startswith(namespace)
-	]
-	stp.multithreading(handle_item, items_to_process, use_starmap=True, max_workers=1)
+	used_textures: set[str] = set()
+	for item, data in database.items():
+		item_model: str = data.get("item_model", "")
+		if (item_model not in config["rendered_item_models"] and item_model.startswith(namespace)):
+			handle_item(config, item, data, used_textures)
 
 	# Make warning for missing textures
 	warns = []
