@@ -26,10 +26,18 @@ def main(config: dict):
 		if data.get(USED_FOR_CRAFTING) == []:
 			data.pop(USED_FOR_CRAFTING)
 
+	# Create a copy of the database without OVERRIDE_MODEL key
+	database_copy: dict[str, dict] = {}
+	for item, data in database.items():
+		database_copy[item] = data.copy()
+		if "override_model" in database_copy[item]:
+			del database_copy[item]["override_model"]
+
 	# Export database to JSON for debugging generation
 	database_debug: str = config["database_debug"]
 	with stp.super_open(database_debug, "w") as f:
-		stp.super_json_dump(database, file = f)
+		stp.super_json_dump(database_copy, file = f)
+
 	rel_debug: str = stp.clean_path(os.path.relpath(database_debug, os.getcwd()))
 	stp.debug(f"Received database exported to './{rel_debug}'")
 
