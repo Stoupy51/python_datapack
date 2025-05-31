@@ -5,7 +5,7 @@ import json
 import os
 import shutil
 import time
-from typing import Callable
+from collections.abc import Callable
 
 import stouputils as stp
 
@@ -37,7 +37,7 @@ def main(config: dict, user_code: Callable|None = None):
 		super_copy(f"{config['assets_folder']}/original_icon.png", f"{config['build_datapack']}/pack.png")
 		super_copy(f"{config['assets_folder']}/original_icon.png", f"{config['build_resource_pack']}/pack.png")
 	else:
-		stp.warning(f"No 'original_icon.png' found in assets folder, no icon will be set")
+		stp.warning("No 'original_icon.png' found in assets folder, no icon will be set")
 
 	# For every file in the merge folder, copy it to the build folder (with append content)
 	if config.get('merge_folder'):
@@ -45,7 +45,7 @@ def main(config: dict, user_code: Callable|None = None):
 			for file in files:
 				merge_path = stp.clean_path(f"{root}/{file}")
 				build_path = merge_path.replace(config['merge_folder'], config['build_folder'])
-				
+
 				# Append content to the build file is any
 				if FILES_TO_WRITE.get(build_path):
 
@@ -59,7 +59,7 @@ def main(config: dict, user_code: Callable|None = None):
 						with stp.super_open(merge_path, "r") as f:
 							merge_dict = json.load(f)
 						build_dict = json.loads(FILES_TO_WRITE[build_path])
-						
+
 						# Write the merged dictionnaries to the build file
 						merged_dict = super_merge_dict(build_dict, merge_dict)
 						write_file(build_path, stp.super_json_dump(merged_dict), overwrite = True)
@@ -71,7 +71,7 @@ def main(config: dict, user_code: Callable|None = None):
 								write_file(build_path, f.read())
 						except Exception as e:
 							stp.warning(f"Could not read '{merge_path}': {e}")
-					
+
 					# Else, just copy the file, such as pack.mcmeta, pack.png, ...
 					else:
 						super_copy(merge_path, build_path)
@@ -87,7 +87,7 @@ def main(config: dict, user_code: Callable|None = None):
 		user_code(config)
 		total_time: float = time.perf_counter() - start_time
 		stp.info(f"User code ran in {total_time:.5f}s")
-	
+
 	# Second and tick functions for custom blocks
 	custom_blocks_ticks_and_second_functions(config)
 
@@ -98,7 +98,7 @@ def main(config: dict, user_code: Callable|None = None):
 	dependencies_main(config)
 
 	# Generate lang file
-	if config.get('enable_translations') == True:
+	if config.get("enable_translations") is True:
 		lang_main(config)
 
 	# Add a small header for each .mcfunction file
@@ -133,7 +133,7 @@ def main(config: dict, user_code: Callable|None = None):
 			stp.debug(f"'./{rel_dest}.zip' file generated and copied to destinations in {total_time:.5f}s")
 
 	# Copy datapack libraries
-	try:		
+	try:
 		# Copy lib folder
 		if config.get("libs_folder"):
 			for root, _, files in os.walk(config["libs_folder"] + "/datapack"):
@@ -154,7 +154,7 @@ def main(config: dict, user_code: Callable|None = None):
 
 
 	# If merge libs is enabled, use weld to generate datapack and resource pack with bundled libraries
-	if config.get('merge_libs') == True:
+	if config.get("merge_libs") is True:
 
 		# Merge weld dp
 		weld_dp: str = f"{config['build_folder']}/{config['project_name_simple']}_datapack_with_libs.zip"
@@ -176,7 +176,7 @@ def main(config: dict, user_code: Callable|None = None):
 		# Debug time taken
 		total_time: float = weld_dp_time + weld_rp_time
 		stp.info(f"Datapack and resource pack merged with bundled libraries in {total_time:.5f}s ({weld_dp_time:.5f}s + {weld_rp_time:.5f}s)")
-	
+
 	# Get SHA1 hash for each zip file in build folder
 	sha1_hashes: dict[str, str] = {}
 	for file in os.listdir(config['build_folder']):

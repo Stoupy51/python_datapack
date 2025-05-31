@@ -47,9 +47,12 @@ def read_initial_files(folders: list[str]) -> None:
 	"""
 	def _read_file(path: str) -> None:
 		try:
-			with open(path) as f:
-				INITIAL_FILES[path] = f.read()
-				INITIAL_FILES_SET.add(path)
+			if os.path.exists(path):
+				with open(path) as f:
+					INITIAL_FILES[path] = f.read()
+					INITIAL_FILES_SET.add(path)
+			else:
+				os.remove(path)
 		except Exception:
 			pass
 	file_paths: list[str] = [

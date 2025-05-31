@@ -30,7 +30,7 @@ def delete_file(file_path: str, clean_on_disk: bool = True) -> bool:
 	if clean_on_disk and os.path.exists(file_path):
 		os.remove(file_path)
 		deleted = True
-	
+
 	# If the file wasn't deleted, print a warning
 	if not deleted:
 		stp.warning(f"Couldn't delete the file '{file_path}', it doesn't exists")
