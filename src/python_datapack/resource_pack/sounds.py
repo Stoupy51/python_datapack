@@ -73,6 +73,6 @@ def main(config: dict):
 		write_file(f"{config['build_resource_pack']}/assets/{config['namespace']}/sounds.json", stp.super_json_dump(sounds_json))
 
 		total_time: float = time.perf_counter() - start_time
-		stp.info(f"All sounds in '{sounds_folder}/' have been copied to the resource pack in {total_time:.5f}s")
+		stp.info(f"All sounds in '{stp.replace_tilde(sounds_folder)}/' have been copied to the resource pack in {total_time:.5f}s")
 
 

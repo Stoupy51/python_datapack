@@ -255,7 +255,7 @@ def main(config: dict):
 		if data.get("item_model") not in config["rendered_item_models"]
 		and data.get("item_model", "").startswith(namespace)
 	]
-	stp.multithreading(handle_item, items_to_process, use_starmap=True)
+	stp.multithreading(handle_item, items_to_process, use_starmap=True, max_workers=1)
 
 	# Make warning for missing textures
 	warns = []

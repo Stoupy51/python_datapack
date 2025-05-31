@@ -85,7 +85,7 @@ def main(config: dict):
 		FILES_TO_WRITE[file] = content
 
 	# Show progress of the handle_file function
-	stp.multithreading(handle_file, FILES_TO_WRITE.items(), use_starmap=True, desc="Generating lang file", max_workers=1)
+	stp.multithreading(handle_file, FILES_TO_WRITE.items(), use_starmap=True, desc="Generating lang file")
 
 	# Sort the lang dictionary (by value)
 	lang = dict(sorted(lang.items(), key=lambda x: x[1]))

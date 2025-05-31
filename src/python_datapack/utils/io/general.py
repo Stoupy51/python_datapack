@@ -1,5 +1,4 @@
 
-import json
 import os
 import shutil
 from typing import Literal
@@ -54,7 +53,7 @@ def read_initial_files(folders: list[str]) -> None:
 					with stp.super_open(path, "r") as f:
 						INITIAL_FILES[path] = f.read()
 						INITIAL_FILES_SET.add(path)
-				except:
+				except Exception:
 					pass
 
 @stp.handle_error(exceptions=KeyError)
@@ -81,7 +80,7 @@ def is_in_initial_files(file_paths: list[str]|str) -> bool:
 
 # For easy file copy
 def super_copy(src: str, dst: str) -> str:
-	""" Copy a file (or a folder) from the source to the destination
+	""" Create a symbolic link from source to destination
 	Args:
 		src	(str): The source path
 		dst	(str): The destination path
@@ -91,17 +90,32 @@ def super_copy(src: str, dst: str) -> str:
 	# Make directory
 	os.makedirs(os.path.dirname(dst), exist_ok=True)
 
-	# If source is a folder, copy it recursively
+	# If source is a folder, create a directory symlink
 	if os.path.isdir(src):
-		return shutil.copytree(src, dst, dirs_exist_ok = True)
+		if os.path.exists(dst):
+			if os.path.samefile(src, dst) is False:
+				if os.path.isdir(dst):
+					shutil.rmtree(dst)
+				else:
+					os.remove(dst)
+				os.symlink(src, dst, target_is_directory=True)
+		else:
+			os.symlink(src, dst, target_is_directory=True)
+		return dst
 	else:
 		# Remove destination path from old files
 		cleaned_dst = stp.clean_path(dst)
 		if is_in_initial_files(cleaned_dst):
 			remove_initial_file(cleaned_dst)
 
-		# Copy file
-		return shutil.copy(src, dst)
+		# Create file symlink
+		if os.path.exists(dst):
+			if os.path.samefile(src, dst) is False:
+				os.remove(dst)
+				os.symlink(src, dst, target_is_directory=False)
+		else:
+			os.symlink(src, dst, target_is_directory=False)
+		return dst
 
 # Merge two dict recuirsively
 def super_merge_dict(dict1: dict, dict2: dict) -> dict:
@@ -116,24 +130,24 @@ def super_merge_dict(dict1: dict, dict2: dict) -> dict:
 	new_dict = {}
 	for key, value in dict1.items():
 		new_dict[key] = value
-	
+
 	# For each key of the second dictionnary,
 	for key, value in dict2.items():
 
 		# If key exists in dict1, and both values are also dict, merge recursively
 		if key in dict1 and isinstance(dict1[key], dict) and isinstance(value, dict):
 			new_dict[key] = super_merge_dict(dict1[key], value)
-		
+
 		# Else if it's a list, merge it
 		elif key in dict1 and isinstance(dict1[key], list) and isinstance(value, list):
 			new_dict[key] = dict1[key] + value
 			if not any(isinstance(x, dict) for x in new_dict[key]):
 				new_dict[key] = stp.unique_list(new_dict[key])
-		
+
 		# Else, just overwrite or add value
 		else:
 			new_dict[key] = value
-	
+
 	# Return the new dict
 	return new_dict
 
@@ -165,7 +179,7 @@ def path_to_file_path(config: dict, path: str, folder: Literal["function", "adva
 		str: The file path
 	"""
 	if isinstance(config, str):
-		stp.error(f"The first argument should be the configuration dict, not a string. You probably swapped the arguments.")
+		stp.error("The first argument should be the configuration dict, not a string. You probably swapped the arguments.")
 
 	# Get the namespace (if any)
 	namespace: str = path.split(":")[0] if ":" in path else "minecraft"
