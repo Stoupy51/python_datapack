@@ -4,7 +4,7 @@ import os
 
 import stouputils as stp
 
-from .general import DATAPACK_RESOURCE_TYPES, FILES_TO_WRITE, path_to_file_path
+from .general import FILES_TO_WRITE
 
 
 # Functions
@@ -27,7 +27,7 @@ def read_file(file_path: str) -> str:
 	if os.path.exists(file_path):
 		with stp.super_open(file_path, "r") as f:
 			return f.read()
-	
+
 	# Else, return an empty string
 	return ""
 

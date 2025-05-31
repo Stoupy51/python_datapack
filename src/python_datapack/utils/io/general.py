@@ -45,16 +45,20 @@ def read_initial_files(folders: list[str]) -> None:
 	Args:
 		folders (list[str]): The list of folders to read the files from
 	"""
-	for folder in folders:
-		for root, _, files in os.walk(folder):
-			for file in files:
-				path: str = stp.clean_path(os.path.join(root, file))
-				try:
-					with stp.super_open(path, "r") as f:
-						INITIAL_FILES[path] = f.read()
-						INITIAL_FILES_SET.add(path)
-				except Exception:
-					pass
+	def _read_file(path: str) -> None:
+		try:
+			with open(path) as f:
+				INITIAL_FILES[path] = f.read()
+				INITIAL_FILES_SET.add(path)
+		except Exception:
+			pass
+	file_paths: list[str] = [
+		stp.clean_path(os.path.join(root, file))
+		for folder in folders
+		for root, _, files in os.walk(folder)
+		for file in files
+	]
+	stp.multithreading(_read_file, file_paths)
 
 @stp.handle_error(exceptions=KeyError)
 def remove_initial_file(file_path: str) -> None:
