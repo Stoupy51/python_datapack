@@ -3,6 +3,7 @@
 import os
 import shutil
 import time
+import zlib
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 import stouputils as stp
@@ -93,16 +94,34 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] | N
 	file_list: list[tuple[str, bool]] = [(f, False) for f in not_known_files] + [(f, True) for f in FILES_TO_WRITE.keys()]
 
 	# Process files in parallel
-	results: list[tuple[ZipInfo, bytes] | None] = stp.multithreading(
-		process_file,
-		sorted(file_list),
-		use_starmap=True,
-		desc="Creating archive"
-	)
+	results: list[tuple[ZipInfo, bytes] | None] = stp.multithreading(process_file, sorted(file_list), use_starmap=True)
 
-	# Write results to zip file
+	# Pre-compress content in parallel
+	def precompress_content(result: tuple[ZipInfo, bytes] | None) -> tuple[ZipInfo, bytes] | None:
+		""" Pre-compress content using zlib for faster zip writing.
+
+		Args:
+			result (tuple[ZipInfo, bytes] | None): The result tuple containing ZipInfo and content.
+
+		Returns:
+			tuple[ZipInfo, bytes] | None: The result tuple with compressed content, or None if input was None.
+		"""
+		if result is None:
+			return None
+
+		info, content = result
+		compressed: bytes = zlib.compress(content, level=9)
+		info.compress_type = ZIP_DEFLATED
+		info.file_size = len(content)
+		info.compress_size = len(compressed)
+		return info, compressed
+
+	# Pre-compress all content in parallel
+	compressed_results: list[tuple[ZipInfo, bytes] | None] = stp.multithreading(precompress_content,results,use_starmap=False)
+
+	# Write pre-compressed results to zip file
 	with ZipFile(destination, "w", compression=ZIP_DEFLATED, compresslevel=9) as zip:
-		for result in results:
+		for result in compressed_results:
 			if result is not None:
 				info, content = result
 				zip.writestr(info, content)
@@ -114,7 +133,9 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] | N
 			if dest_folder.endswith("/"):
 				file_name = destination.split("/")[-1]
 				shutil.copy(stp.clean_path(destination), f"{dest_folder}/{file_name}")
-			else:	# Else, it's not a folder but a file path
+
+			# Else, it's not a folder but a file path
+			else:
 				shutil.copy(stp.clean_path(destination), dest_folder)
 		except Exception as e:
 			stp.warning(f"Unable to copy '{stp.clean_path(destination)}' to '{dest_folder}', reason: {e}")
