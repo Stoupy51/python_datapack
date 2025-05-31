@@ -26,7 +26,7 @@ def main(config: dict):
 		# Dictionary to group sound variants
 		sound_groups: dict[str, list[str]] = defaultdict(list)
 
-		for sound in sounds_names:
+		def handle_sound(sound: str) -> None:
 			rel_sound: str = sound.replace(sounds_folder + "/", "")
 
 			# Get sound without spaces and special characters
@@ -47,9 +47,12 @@ def main(config: dict):
 				# Not a numbered variant, add as individual sound
 				sound_groups[sound_file_no_ext] = [sound_file_no_ext]
 
+		# Process sounds in parallel
+		stp.multithreading(handle_sound, sounds_names)
+
 		# Create sounds.json with grouped sounds
 		sounds_json: dict = {}
-		for base_name, variants in sound_groups.items():
+		for base_name, variants in sorted(sound_groups.items()):
 			# Convert directory separators to dots for the sound ID
 			sound_id: str = base_name
 

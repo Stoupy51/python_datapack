@@ -1,6 +1,7 @@
 
 # Imports
 import os
+from typing import Any
 
 import stouputils as stp
 
@@ -232,7 +233,7 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 			dump: str = "{}\n"
 		item_model_path: str = f"{dest_base_model}/{item}{on_off}.json"
 		write_file(item_model_path, dump)
-		config['rendered_item_models'].append(data["item_model"])
+		config["rendered_item_models"].add(data["item_model"])
 
 		# Generate the json file required in items/
 		if not data["id"].endswith("bow"):
@@ -243,16 +244,18 @@ def handle_item(config: dict, item: str, data: dict, used_textures: set|None = N
 
 
 def main(config: dict):
-	namespace: str = config['namespace']
-	config['rendered_item_models'] = []
+	namespace: str = config["namespace"]
+	database: dict[str, Any] = config["database"]
+	config["rendered_item_models"] = set()
 
-	# For each item,
+	# For each item, handle it
 	used_textures = set()
-	for item, data in config['database'].items():
-		if data.get("item_model") not in config['rendered_item_models']:
-			item_model: str = data.get("item_model", "")
-			if item_model.startswith(namespace):
-				handle_item(config, item, data, used_textures)
+	items_to_process = [
+		(config, item, data, used_textures) for item, data in database.items()
+		if data.get("item_model") not in config["rendered_item_models"]
+		and data.get("item_model", "").startswith(namespace)
+	]
+	stp.multithreading(handle_item, items_to_process, use_starmap=True)
 
 	# Make warning for missing textures
 	warns = []
