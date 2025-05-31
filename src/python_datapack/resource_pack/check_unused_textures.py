@@ -55,11 +55,11 @@ def main(config: dict[str, Any]) -> None:
 	if unused_textures:
 		sorted_unused: list[str] = sorted(unused_textures)
 		unused_paths: list[str] = [
-			f"'{config['assets_folder']}/textures/{name}.png'"
+			f"{config['assets_folder']}/textures/{name}.png"
 			for name in sorted_unused
 		]
 		warning_lines: list[str] = [
-			f"{path} not used in the resource pack"
+			f"'{stp.relative_path(path)}' not used in the resource pack"
 			for path in unused_paths
 		]
 		warning_msg: str = (
