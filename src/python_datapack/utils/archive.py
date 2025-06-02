@@ -95,27 +95,39 @@ def make_archive(source: str, destination: str, copy_destinations: list[str] | N
 	# Process files in parallel
 	results: list[tuple[ZipInfo, bytes] | None] = stp.multithreading(process_file, sorted(file_list), use_starmap=True, max_workers=min(32, len(file_list)))
 
-	# Write results directly to zip file
-	with ZipFile(destination, "w", compression=ZIP_DEFLATED, compresslevel=6) as zip:
-		for result in results:
-			if result is not None:
-				info, content = result
-				zip.writestr(info, content)
-
-	# Copy the archive to the destination(s)
-	for dest_folder in copy_destinations:
+	for retry in range(10):
 		try:
-			dest_folder = stp.clean_path(dest_folder)
-			if dest_folder.endswith("/"):
-				file_name = destination.split("/")[-1]
-				shutil.copy(stp.clean_path(destination), f"{dest_folder}/{file_name}")
+			# Write results directly to zip file
+			with ZipFile(destination, "w", compression=ZIP_DEFLATED, compresslevel=6) as zip:
+				for result in results:
+					if result is not None:
+						info, content = result
+						zip.writestr(info, content)
 
-			# Else, it's not a folder but a file path
-			else:
-				shutil.copy(stp.clean_path(destination), dest_folder)
-		except Exception as e:
-			stp.warning(f"Unable to copy '{stp.clean_path(destination)}' to '{dest_folder}', reason: {e}")
+			# Copy the archive to the destination(s)
+			for dest_folder in copy_destinations:
+				try:
+					dest_folder = stp.clean_path(dest_folder)
+					if dest_folder.endswith("/"):
+						file_name = destination.split("/")[-1]
+						shutil.copy(stp.clean_path(destination), f"{dest_folder}/{file_name}")
 
-	# Return the time taken to archive the source folder
-	return time.perf_counter() - start_time
+					# Else, it's not a folder but a file path
+					else:
+						shutil.copy(stp.clean_path(destination), dest_folder)
+				except Exception as e:
+					stp.warning(f"Unable to copy '{stp.clean_path(destination)}' to '{dest_folder}', reason: {e}")
+
+			# Return the time taken to archive the source folder
+			return time.perf_counter() - start_time
+
+		# If OSError, means another program tried to read the zip file.
+		# Therefore, try 10 times before stopping and send warning
+		except OSError:
+			stp.warning(f"Unable to archive '{source}' due to file being locked by another process. Retry {retry+1}/10...")
+			time.sleep(1.0)  # Wait a bit before retrying
+
+	# Final error message
+	stp.error(f"Failed to archive '{source}' after 10 attempts due to file being locked by another process")
+	return 0.0
 
