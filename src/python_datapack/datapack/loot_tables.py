@@ -20,12 +20,13 @@ def main(config: dict):
 		for k, v in data.items():
 			if k not in NOT_COMPONENTS:
 				set_components["components"][f"minecraft:{k}"] = v
-		
+
 		# Add functions
 		loot_table["pools"][0]["entries"][0]["functions"] = [set_components]
 
-		write_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{item}.json", stp.super_json_dump(loot_table, max_level = 9))
-	
+		json_content: str = stp.super_json_dump(loot_table, max_level = 10)
+		write_file(f"{config['build_datapack']}/data/{namespace}/loot_table/i/{item}.json", json_content)
+
 	# Same for external items
 	for item, data in external_database.items():
 		ns, item = item.split(":")
@@ -66,7 +67,7 @@ def main(config: dict):
 	database_copy = list(database.items())
 	for i in range(total_chests):
 		chest_contents = []
-	
+
 		# For each slot of the chest, append an item and remove it from the copy
 		for j in range(CHEST_SIZE):
 			if not database_copy:

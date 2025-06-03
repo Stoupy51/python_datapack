@@ -1,7 +1,7 @@
 
 # Imports
 import os
-from typing import Any, Tuple
+from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -38,7 +38,7 @@ def careful_resize(image: Image.Image, max_result_size: int) -> Image.Image:
 		factor = max_result_size / image.size[1]
 		return image.resize((int(image.size[0] * factor), max_result_size), Image.Resampling.NEAREST)
 
-def add_border(image: Image.Image, border_color: Tuple[int, int, int, int], border_size: int, is_rectangle_shape: bool) -> Image.Image:
+def add_border(image: Image.Image, border_color: tuple[int, int, int, int], border_size: int, is_rectangle_shape: bool) -> Image.Image:
 	"""Add a border to every part of the image"""
 	image = image.convert("RGBA")
 	pixels: Any = image.load()
@@ -50,7 +50,7 @@ def add_border(image: Image.Image, border_color: Tuple[int, int, int, int], bord
 			try:
 				if any(pixels[x + dx, y + dy][3] != 0 and pixels[x + dx, y + dy] != border_color for dx in r for dy in r):
 					pixels[x, y] = border_color
-			except:
+			except Exception:
 				pass
 	else:
 		height, width = 8, 8
@@ -58,11 +58,11 @@ def add_border(image: Image.Image, border_color: Tuple[int, int, int, int], bord
 			height += 1
 		while width < image.width and pixels[width, 8][3]!= 0:
 			width += 1
-		
+
 		border = Image.new("RGBA", (width + 2, height + 2), border_color)
 		border.paste(image, (0, 0), image)
 		image.paste(border, (0, 0), border)
-	
+
 	return image
 
 # Generate an image showing the result count
@@ -84,7 +84,7 @@ def image_count(count: int) -> Image.Image:
 	text_height = font_size + 4
 	pos_1 = (34-text_width), (32-text_height)
 	pos_2 = (32-text_width), (30-text_height)
-	
+
 	# Draw the count
 	draw.text(pos_1, str(count), (50, 50, 50), font = font)
 	draw.text(pos_2, str(count), (255, 255, 255), font = font)
@@ -102,7 +102,7 @@ def generate_high_res_font(config: dict, item: str, item_image: Image.Image, cou
 	"""
 	font = get_next_font()
 	item = f"{item}_{count}" if count > 1 else item
-	
+
 	# Get output path
 	path = f"{config['manual_path']}/font/high_res/{item}.png"
 	provider_path = f"{config['namespace']}:font/high_res/{item}.png"

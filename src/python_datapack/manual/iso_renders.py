@@ -76,7 +76,7 @@ def generate_all_iso_renders(config: dict):
 		beet_config = ProjectConfig(
 			output=None,
 			resource_pack={"load": load_dir, "name": load_dir.name}, # type: ignore
-			meta={"model_resolver": {"dont_merge_datapack": True}}
+			meta={"model_resolver": {"dont_merge_datapack": True, "use_cache": True}}
 		)
 
 		stp.debug(f"Generating iso renders for {len(for_model_resolver)} items, this may take a while...")

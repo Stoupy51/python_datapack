@@ -86,18 +86,19 @@ def is_in_initial_files(file_paths: list[str]|str) -> bool:
 	return all(file_path in INITIAL_FILES_SET for file_path in file_paths)
 
 # For easy file copy
-def super_copy(src: str, dst: str) -> str:
-	""" Create a symbolic link from source to destination
+def super_copy(src: str, dst: str, symlink: bool = True) -> str:
+	""" Create a symbolic link or copy from source to destination
 	Args:
 		src	(str): The source path
 		dst	(str): The destination path
+		symlink (bool): If True, create a symbolic link. If False, copy the file/directory
 	Returns:
 		str: The destination path
 	"""
 	# Make directory
 	os.makedirs(os.path.dirname(dst), exist_ok=True)
 
-	# If source is a folder, create a directory symlink
+	# If source is a folder
 	if os.path.isdir(src):
 		if os.path.exists(dst):
 			if os.path.samefile(src, dst) is False:
@@ -105,9 +106,15 @@ def super_copy(src: str, dst: str) -> str:
 					shutil.rmtree(dst)
 				else:
 					os.remove(dst)
-				os.symlink(src, dst, target_is_directory=True)
+				if symlink:
+					os.symlink(src, dst, target_is_directory=True)
+				else:
+					shutil.copytree(src, dst)
 		else:
-			os.symlink(src, dst, target_is_directory=True)
+			if symlink:
+				os.symlink(src, dst, target_is_directory=True)
+			else:
+				shutil.copytree(src, dst)
 		return dst
 	else:
 		# Remove destination path from old files
@@ -115,13 +122,19 @@ def super_copy(src: str, dst: str) -> str:
 		if is_in_initial_files(cleaned_dst):
 			remove_initial_file(cleaned_dst)
 
-		# Create file symlink
+		# Create file symlink or copy
 		if os.path.exists(dst):
 			if os.path.samefile(src, dst) is False:
 				os.remove(dst)
-				os.symlink(src, dst, target_is_directory=False)
+				if symlink:
+					os.symlink(src, dst, target_is_directory=False)
+				else:
+					shutil.copy2(src, dst)
 		else:
-			os.symlink(src, dst, target_is_directory=False)
+			if symlink:
+				os.symlink(src, dst, target_is_directory=False)
+			else:
+				shutil.copy2(src, dst)
 		return dst
 
 # Merge two dict recuirsively

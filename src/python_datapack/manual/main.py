@@ -142,19 +142,19 @@ def routine(config: dict):
 
 	# Copy assets in the resource pack
 	if not config['debug_mode']:
-		super_copy(f"{TEMPLATES_PATH}/none_release.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/none.png")
-		super_copy(f"{TEMPLATES_PATH}/invisible_item_release.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/invisible_item.png")
+		super_copy(f"{TEMPLATES_PATH}/none_release.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/none.png", symlink=False)
+		super_copy(f"{TEMPLATES_PATH}/invisible_item_release.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/invisible_item.png", symlink=False)
 	else:
-		super_copy(f"{TEMPLATES_PATH}/none.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/none.png")
-		super_copy(f"{TEMPLATES_PATH}/invisible_item.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/invisible_item.png")
-	super_copy(f"{TEMPLATES_PATH}/wiki_information.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_information.png")
-	super_copy(f"{TEMPLATES_PATH}/wiki_result_of_craft.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_result_of_craft.png")
-	super_copy(f"{TEMPLATES_PATH}/wiki_ingredient_of_craft.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_ingredient_of_craft.png")
+		super_copy(f"{TEMPLATES_PATH}/none.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/none.png", symlink=False)
+		super_copy(f"{TEMPLATES_PATH}/invisible_item.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/invisible_item.png", symlink=False)
+	super_copy(f"{TEMPLATES_PATH}/wiki_information.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_information.png", symlink=False)
+	super_copy(f"{TEMPLATES_PATH}/wiki_result_of_craft.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_result_of_craft.png", symlink=False)
+	super_copy(f"{TEMPLATES_PATH}/wiki_ingredient_of_craft.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/wiki_ingredient_of_craft.png", symlink=False)
 	if config['manual_high_resolution']:
-		super_copy(f"{TEMPLATES_PATH}/shaped_2x2.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/shaped_2x2.png")
-		super_copy(f"{TEMPLATES_PATH}/shaped_3x3.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/shaped_3x3.png")
-		super_copy(f"{TEMPLATES_PATH}/furnace.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/furnace.png")
-		super_copy(f"{TEMPLATES_PATH}/pulverizing.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/pulverizing.png")
+		super_copy(f"{TEMPLATES_PATH}/shaped_2x2.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/shaped_2x2.png", symlink=False)
+		super_copy(f"{TEMPLATES_PATH}/shaped_3x3.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/shaped_3x3.png", symlink=False)
+		super_copy(f"{TEMPLATES_PATH}/furnace.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/furnace.png", symlink=False)
+		super_copy(f"{TEMPLATES_PATH}/pulverizing.png", f"{config['build_resource_pack']}/assets/{namespace}/textures/font/pulverizing.png", symlink=False)
 
 	# If the manual cache is enabled and we have a cache file, load it
 	if config['cache_manual_pages'] and os.path.exists(config['manual_debug']) and os.path.exists(f"{config['manual_path']}/font/manual.json"):
