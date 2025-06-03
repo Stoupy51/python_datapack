@@ -95,6 +95,10 @@ def super_copy(src: str, dst: str, symlink: bool = True) -> str:
 	Returns:
 		str: The destination path
 	"""
+	# If on windows, force disable symlink
+	if os.name == 'nt':
+		symlink = False
+
 	# Make directory
 	os.makedirs(os.path.dirname(dst), exist_ok=True)
 
