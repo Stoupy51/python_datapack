@@ -8,6 +8,7 @@ import time
 from collections.abc import Callable
 
 import stouputils as stp
+from beet import PackConfig, ProjectConfig, run_beet
 
 from .datapack.basic_structure import main as basic_structure_main
 from .datapack.custom_block_ticks import custom_blocks_ticks_and_second_functions
@@ -27,6 +28,13 @@ from .utils.io import (
 	write_file,
 )
 from .utils.weld import weld_datapack, weld_resource_pack
+
+confff = []
+
+def beet_pipeline(ctx):
+	user_code, config = confff
+	config["beet_ctx"] = ctx
+	user_code(config)
 
 
 def main(config: dict, user_code: Callable|None = None):
@@ -83,8 +91,26 @@ def main(config: dict, user_code: Callable|None = None):
 
 	# Run user code
 	if user_code:
+		merge_folder: str = config["merge_folder"]
+		beet_config = ProjectConfig(
+			id=config["namespace"],
+			name=config["project_name"],
+			description=config["description"],
+			author=config["author"],
+			version=config["version"],
+
+			output=config["build_folder"],
+			data_pack = PackConfig(load=f"{merge_folder}/datapack"), # type: ignore
+			resource_pack = PackConfig(load=f"{merge_folder}/resource_pack"), # type: ignore
+			meta={"model_resolver": {"use_cache": True}},
+			pipeline=["python_datapack.finalyze.beet_pipeline"]
+		)
+
 		start_time: float = time.perf_counter()
-		user_code(config)
+		confff.append(user_code)
+		confff.append(config)
+		with run_beet(config=beet_config, cache=True):
+			pass
 		total_time: float = time.perf_counter() - start_time
 		stp.info(f"User code ran in {total_time:.5f}s")
 
