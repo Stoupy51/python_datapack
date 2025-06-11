@@ -10,6 +10,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 
 # Main function imports
+from .__memory__ import PythonDatapackConfig  # noqa: F401
 from .compatibilities.main import main as compatibilities_main
 from .datapack.main import main as datapack_main
 from .datapack.recipes import main as recipes_main
